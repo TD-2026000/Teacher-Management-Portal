@@ -10625,7 +10625,7 @@ content.innerHTML=`
 
   <div class="student-profile-section">
    <h4>STUDENT CONTRACT</h4>
-   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><button type="button" class="primary-action" style="margin-top:10px" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">VIEW CONTRACT IMAGE</button>`:'<div class="small">No Student Contract saved yet.</div>'}
+   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">VIEW CONTRACT IMAGE</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD / PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
   </div>
 
   <div class="student-profile-section">
@@ -10796,13 +10796,14 @@ students[index]={
  currentPackageId:newPackageId,
  packageHistory:history,
  status:'Active',
- contractRenewalRequired:true,
- contractRenewalRequestedAt:new Date().toISOString(),
+ /* Renewing classes does NOT require another Student Contract. */
+ contractRenewalRequired:false,
+ contractRenewalRequestedAt:'',
  paymentRenewalRequired:true,
  paymentRenewalRequestedAt:new Date().toISOString(),
- contractRenewalPackageId:newPackageId,
- contractRenewalPackageName:newPackageName,
- contractRenewalVersion:Number(students[index].contractRenewalVersion||getStudentContracts()?.[student.id]?.renewalVersion||0)+1
+ contractRenewalPackageId:'',
+ contractRenewalPackageName:'',
+ contractRenewalVersion:Number(students[index].contractRenewalVersion||0)
 };
 saveStudents(students);
 
@@ -10875,7 +10876,7 @@ const bookingMessage=created
  ? `${created} new future class${created===1?'':'es'} booked. ${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining.`
  : `${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining. Existing future appointments were kept; no duplicate classes were created.`;
 
-const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} A new Student Contract is now required for this renewal.`;
+const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
 showStudentStatus(successMessage,true);
 
 /* LIVE UPDATE: all affected screens are refreshed in memory.
@@ -10888,7 +10889,7 @@ if(refreshMessage){
   refreshMessage.innerHTML=
     `<strong>${escapeHtml(successMessage)}</strong><br><br>`+
     `Everything has been updated automatically — <strong>no page refresh is needed.</strong> `+
-    `The new classes is active, future classes are in the Appointment Calendar, and the new Student Contract is ready under Contract.`;
+    `The new classes are active and the future classes are in the Appointment Calendar. The existing Student Contract remains on the student's record.`;
 }
 if(refreshModal)refreshModal.classList.add('show');
 }catch(error){
@@ -13357,17 +13358,16 @@ function getStudentContracts(){try{return JSON.parse(localStorage.getItem(contra
 function saveStudentContracts(data){localStorage.setItem(contractStorageKey(),JSON.stringify(data));}
 function hasCurrentStudentContract(student,contracts){
   const record=contracts?.[student?.id];
-  return !!(record && record.submittedAt && student?.contractRenewalRequired!==true);
+  /* A Student Contract is permanent for each student. Class renewals never require a new contract. */
+  return !!(record && record.submittedAt);
 }
 function renderContractStudentLists(){
  const p=document.getElementById('contractPendingList'),c=document.getElementById('contractCompletedList');if(!p||!c)return;
  const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base'})), contracts=getStudentContracts();
- /* A submitted contract disappears from the Add Student selection immediately.
-    A successful renewal deliberately makes the same student visible again by setting
-    contractRenewalRequired=true until the new contract is submitted. */
- const pending=students.filter(s=>s.contractRenewalRequired===true || !hasCurrentStudentContract(s,contracts)), completed=students.filter(s=>hasCurrentStudentContract(s,contracts));
+ /* Each student receives one Student Contract only. Renewing classes never creates another contract. */
+ const pending=students.filter(s=>!hasCurrentStudentContract(s,contracts)), completed=students.filter(s=>hasCurrentStudentContract(s,contracts));
  p.innerHTML=`<div class="contract-list-title">⚠ STUDENTS FOR CONTRACT SIGNING <span class="small">(${pending.length})</span></div>`+
- (pending.length?pending.map(s=>{const renewal=!!s.contractRenewalRequired;return `<div class="contract-student-card pending"><div class="contract-student-meta"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}</span><span class="contract-badge ${renewal?'renewal':'pending'}">${renewal?'NEW CONTRACT REQUIRED — CLASSES RENEWAL':'CONTRACT NOT SUBMITTED'}</span></div><div class="contract-list-actions"><button type="button" class="primary-action" onclick="openStudentContract('${escapeAttr(s.id)}')">${renewal?'FILL OUT NEW CONTRACT':'ADD STUDENT TO SIGN A CONTRACT'}</button></div></div>`}).join(''):`<div class="contract-list-empty">All added students already have a current Student Contract record.</div>`);
+ (pending.length?pending.map(s=>`<div class="contract-student-card pending"><div class="contract-student-meta"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}</span><span class="contract-badge pending">CONTRACT NOT SUBMITTED</span></div><div class="contract-list-actions"><button type="button" class="primary-action" onclick="openStudentContract('${escapeAttr(s.id)}')">ADD STUDENT TO SIGN A CONTRACT</button></div></div>`).join(''):`<div class="contract-list-empty">All added students already have a Student Contract record.</div>`);
  c.innerHTML=`<div class="contract-completed-summary"><div><div class="contract-list-title">✓ COMPLETED / SIGNED CONTRACTS <span class="small">(${completed.length})</span></div><div class="small" style="margin-top:4px">Completed contracts are hidden here. Click View All to see and open them.</div></div><button type="button" class="secondary-action contract-view-all-btn" onclick="openCompletedContractsModal()" ${completed.length?'':'disabled'}>VIEW ALL (${completed.length})</button></div>`;
 }
 function openCompletedContractsModal(){
@@ -13389,11 +13389,9 @@ function openStudentContract(studentId=''){showPage('contract');renderContractSt
 function openContractStudentPicker(){
  const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),undefined,{sensitivity:'base'}));
  const contracts=getStudentContracts();
- /* Add Student Contract must show ONLY students who need a contract.
-    A submitted/current contract is hidden. A successful classes renewal sets
-    contractRenewalRequired=true, which intentionally makes that student visible again. */
- const eligible=students.filter(s=>s.contractRenewalRequired===true || !hasCurrentStudentContract(s,contracts));
- const choices=eligible.map(s=>`<button type=\"button\" class=\"contract-picker-item\" onclick=\"closeContractStudentPicker();openStudentContract('${escapeAttr(s.id)}')\"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}${s.contractRenewalRequired?' · NEW CONTRACT REQUIRED':''}</span></button>`).join('');
+ /* Add Student Contract shows only students who do not yet have their one permanent contract. */
+ const eligible=students.filter(s=>!hasCurrentStudentContract(s,contracts));
+ const choices=eligible.map(s=>`<button type=\"button\" class=\"contract-picker-item\" onclick=\"closeContractStudentPicker();openStudentContract('${escapeAttr(s.id)}')\"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}</span></button>`).join('');
  let modal=document.getElementById('contractStudentPickerModal');
  if(!modal){
   modal=document.createElement('div');modal.id='contractStudentPickerModal';modal.className='modal-backdrop';
@@ -13417,20 +13415,20 @@ function loadStudentContractDetails(id, options={}){
  if(!id){if(w)w.style.display='none';if(status)status.textContent='Not Selected';return;} if(w)w.style.display='grid';
  const student=getStudents().find(s=>s.id===id);if(!student)return;const current=getCurrentStudentPackage(student),info=document.getElementById('contractStudentInfo');
  updateContractTeacherIdentity();
- const renewalPending=student.contractRenewalRequired===true && options.viewSaved!==true; const savedContract=renewalPending ? null : getStudentContracts()[id];
+ const renewalPending=false; const savedContract=getStudentContracts()[id];
  const custom=savedContract?.customSections||{};
  const agreementEl=document.getElementById('contractAgreementText');
  if(agreementEl) agreementEl.value=custom.agreementText || [custom.classArrangement,custom.lessonMaterials,custom.packagePayment].filter(Boolean).join('\n\n') || ''; const agreementEditor=document.getElementById('contractAgreementEditor'); if(agreementEditor) agreementEditor.innerHTML=custom.agreementHtml || (agreementEl?.value ? escapeHtml(agreementEl.value).replace(/\n/g,'<br>') : '');
  if(savedContract?.teacherFileData && savedContract?.teacherFileName) contractFileData.teacher={name:savedContract.teacherFileName,type:savedContract.teacherFileType||'',data:savedContract.teacherFileData};
  if(savedContract?.parentFileData && savedContract?.parentFileName) contractFileData.parent={name:savedContract.parentFileName,type:savedContract.parentFileType||'',data:savedContract.parentFileData};
  ['teacher','parent'].forEach(role=>{const f=contractFileData[role];if(!f)return;const nm=document.getElementById(role+'ContractFileName');if(nm)nm.textContent=f.name||'';const pv=document.getElementById(role+'ContractPreview');if(pv&&String(f.type||'').startsWith('image/'))pv.innerHTML=`<img src="${f.data}" alt="${role} signed contract" style="max-width:100%;max-height:180px;border-radius:10px">`;});
- if(status)status.textContent=renewalPending?`${student.name} — Renewal Contract Required`:(student.name||'Selected');
+ if(status)status.textContent=(student.name||'Selected');
  if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const pn=document.getElementById('contractParentName');if(pn)pn.textContent=student.parentName||'____________________________';const record=getStudentContracts()[id];
- contractSavedForStudentId=(!renewalPending && record?.submittedAt)?id:''; setStudentContractActionState(!!contractSavedForStudentId); contractPreviewDataUrl='';
- if(status&&record?.submittedAt && !renewalPending)status.textContent=`${student.name} — Submitted`;
- if(!renewalPending && record?.teacherFileData){contractFileData.teacher={name:record.teacherFileName||'Teacher Signed Contract',type:record.teacherFileType||'',data:record.teacherFileData};renderContractPreview(contractFileData.teacher,'teacher');}
- if(!renewalPending && record?.parentFileData){contractFileData.parent={name:record.parentFileName||'Parent Signed Contract',type:record.parentFileType||'',data:record.parentFileData};renderContractPreview(contractFileData.parent,'parent');}
+ contractSavedForStudentId=record?.submittedAt?id:''; setStudentContractActionState(!!contractSavedForStudentId); contractPreviewDataUrl='';
+ if(status&&record?.submittedAt)status.textContent=`${student.name} — Submitted`;
+ if(record?.teacherFileData){contractFileData.teacher={name:record.teacherFileName||'Teacher Signed Contract',type:record.teacherFileType||'',data:record.teacherFileData};renderContractPreview(contractFileData.teacher,'teacher');}
+ if(record?.parentFileData){contractFileData.parent={name:record.parentFileName||'Parent Signed Contract',type:record.parentFileType||'',data:record.parentFileData};renderContractPreview(contractFileData.parent,'parent');}
 }
 function handleContractFile(event,role){const file=event.target.files?.[0];if(!file)return;if(file.size>8*1024*1024){showContractError('Please upload a file smaller than 8 MB.');event.target.value='';return;}const r=new FileReader();r.onload=async()=>{let data=r.result,type=file.type;if(type.startsWith('image/')){try{const cleaned=await removeWhiteSignatureBackground(data);data=cleaned.data;type='image/png';}catch(e){}}contractFileData[role]={name:file.name,type,data};const n=document.getElementById(role+'ContractFileName');if(n)n.textContent=`Selected: ${file.name}`;renderContractPreview(contractFileData[role],role);};r.readAsDataURL(file);}
 async function removeWhiteSignatureBackground(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;for(let i=0;i<a.length;i+=4){const r=a[i],g=a[i+1],b=a[i+2];if(r>235&&g>235&&b>235)a[i+3]=0;else if(r>210&&g>210&&b>210){const whiteness=(r+g+b)/3;a[i+3]=Math.max(0,Math.min(255,Math.round((255-whiteness)*6)));}}resolve({data:c.toDataURL('image/png')});};img.onerror=reject;img.src=dataUrl;});}
@@ -13745,6 +13743,19 @@ async function downloadStudentContractPDF(){
   showContractError(err.message||'Unable to download the Student Contract image.');
  }
 }
+async function downloadSavedStudentContract(studentId){
+ const record=getStudentContracts()?.[studentId];
+ if(!record?.submittedAt){alert('No saved Student Contract was found for this student.');return;}
+ contractSelectedStudentId=studentId;
+ contractSavedForStudentId=studentId;
+ try{
+   loadStudentContractDetails(studentId,{viewSaved:true});
+   await downloadStudentContractPDF();
+ }catch(err){
+   showContractError(err.message||'Unable to download the Student Contract image.');
+ }
+}
+
 function saveStudentContract(){
  try{
  updateContractTeacherIdentity();
@@ -13755,16 +13766,12 @@ function saveStudentContract(){
  const contracts=getStudentContracts();
  const savedAt=new Date().toISOString();
  const previous=contracts[student.id]||null;
- const isRenewal=student.contractRenewalRequired===true;
- const previousVersions=Array.isArray(previous?.previousVersions)?previous.previousVersions.slice():[];
- if(isRenewal && previous && previous.submittedAt){ previousVersions.push(previous); }
- const renewalVersion=isRenewal ? Number(student.contractRenewalVersion||previous?.renewalVersion||1) : Number(previous?.renewalVersion||0)+1;
- const record={studentId:student.id,studentName:student.name,parentEmail:student.email,teacherFileName:contractFileData.teacher?.name||'',teacherFileType:contractFileData.teacher?.type||'',teacherFileData:contractFileData.teacher?.data||'',customSections:getContractCustomSectionValues(),parentFileName:contractFileData.parent?.name||'',parentFileType:contractFileData.parent?.type||'',parentFileData:contractFileData.parent?.data||'',submittedAt:savedAt,savedAt,status:'Completed',renewalVersion,packageId:getCurrentStudentPackage(student)?.id||student.currentPackageId||'',packageName:student.packageName||'',previousVersions};
+ const record={studentId:student.id,studentName:student.name,parentEmail:student.email,teacherFileName:contractFileData.teacher?.name||'',teacherFileType:contractFileData.teacher?.type||'',teacherFileData:contractFileData.teacher?.data||'',customSections:getContractCustomSectionValues(),parentFileName:contractFileData.parent?.name||'',parentFileType:contractFileData.parent?.type||'',parentFileData:contractFileData.parent?.data||'',submittedAt:savedAt,savedAt,status:'Completed',packageId:getCurrentStudentPackage(student)?.id||student.currentPackageId||'',packageName:student.packageName||''};
  contracts[student.id]=record;
  saveStudentContracts(contracts);
  const students=getStudents();
  const idx=students.findIndex(s=>s.id===student.id);
- if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalVersion=renewalVersion;students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';students[idx].contractRenewalRequestedAt='';saveStudents(students);}
+ if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);}
  contractSavedForStudentId=student.id;
  setStudentContractActionState(true);
  /* SAVE CONTRACT is the completion point: refresh every affected student view
@@ -13773,6 +13780,7 @@ function saveStudentContract(){
  const st=document.getElementById('contractStatusText');if(st)st.textContent=`${student.name} — Completed`;
  const completedBox=document.getElementById('contractCompletedList');
  if(completedBox){ completedBox.scrollIntoView({behavior:'smooth',block:'start'}); }
+ setTimeout(()=>openCompletedContractsModal(),0);
  showContractSuccess(`Student Contract for ${student.name} was saved successfully and moved to COMPLETED / SIGNED CONTRACTS.`);
  }catch(error){
   console.error('Save Student Contract error:',error);
