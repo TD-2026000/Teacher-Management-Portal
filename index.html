@@ -4491,26 +4491,7 @@ onclick="if(event.target===this) closeAddStudent()"
     </div>
 
     <div class="contract-upload-panel">
-      <h3>SIGNED CONTRACT FILES</h3>
-      <p class="small">Upload the two signed copies separately: your signed copy and the parent's signed copy.</p>
-
-      <div class="contract-sign-upload">
-        <h4>1. Teacher's Signed Contract</h4>
-        <input id="teacherContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'teacher')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
-        <div id="teacherContractFileName" class="contract-sign-file"></div>
-        <div id="teacherContractPreview" class="contract-sign-preview"></div>
-      </div>
-
-      <div class="contract-sign-upload">
-        <h4>2. Parent's Signed Contract</h4>
-        <input id="parentContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'parent')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
-        <div id="parentContractFileName" class="contract-sign-file"></div>
-        <div id="parentContractPreview" class="contract-sign-preview"></div>
-      </div>
-
       <div class="contract-actions">
-        <button type="button" class="modal-cancel" onclick="removeContractFile('teacher')">Remove Teacher File</button>
-        <button type="button" class="modal-cancel" onclick="removeContractFile('parent')">Remove Parent File</button>
         <button type="button" class="modal-cancel" onclick="cancelStudentContract()">CANCEL</button>
         <button id="saveStudentContractBtn" type="button" class="modal-save" onclick="saveStudentContract()">SAVE CONTRACT</button>
         <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()" disabled>DOWNLOAD IMAGE</button>
@@ -13536,29 +13517,7 @@ function makeContractPreviewPage(title, infoHtml, sections, includeInfo=true){
    if(sig){const sg=document.createElement('div');sg.className='pdf-signatures';sg.innerHTML=sig.innerHTML;wrap.appendChild(sg);}
    content.appendChild(wrap);
  });
- const signedFiles=document.createElement('div');
- signedFiles.className='pdf-signed-signatures';
- signedFiles.innerHTML='<h3>Signatures</h3><div class="pdf-signed-signature-grid"></div>';
- const signedGrid=signedFiles.querySelector('.pdf-signed-signature-grid');
- const teacherName=getTeacherContractDisplayName() || 'Teacher';
- const studentForSignature=contractSelectedStudentId ? getStudents().find(s=>s.id===contractSelectedStudentId) : null;
- const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim() || 'Parent / Guardian';
- [['teacher',`Teacher: ${teacherName}`],['parent',`Parent / Guardian: ${parentName}`]].forEach(([role,label])=>{
-   const savedFile=role==='teacher' ? savedContract?.teacherFileData : savedContract?.parentFileData;
-   const savedType=role==='teacher' ? savedContract?.teacherFileType : savedContract?.parentFileType;
-   const file=contractFileData[role] || (savedFile ? {data:savedFile,type:savedType||''} : null);
-   const card=document.createElement('div'); card.className='pdf-signed-signature-card';
-   const title=document.createElement('div'); title.className='pdf-signed-signature-label'; title.textContent=label; card.appendChild(title);
-   if(file?.data && String(file.type||'').startsWith('image/')){
-     const img=document.createElement('img'); img.src=file.data; img.alt=label; img.className='pdf-signed-signature-image'; card.appendChild(img);
-   }else if(file?.data && file.type==='application/pdf'){
-     const note=document.createElement('div'); note.className='pdf-signed-signature-note'; note.textContent='Signed PDF uploaded.'; card.appendChild(note);
-   }else{
-     const note=document.createElement('div'); note.className='pdf-signed-signature-note'; note.textContent='Signature not uploaded.'; card.appendChild(note);
-   }
-   signedGrid.appendChild(card);
- });
- page.appendChild(signedFiles);
+
  return page;
 }
 
