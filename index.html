@@ -13402,7 +13402,7 @@ function openContractStudentPicker(){
  const list=document.getElementById('contractPickerList');if(list)list.innerHTML=choices||'<div class=\"contract-list-empty\">All students already have a Student Contract. A student will appear here again after a successful classes renewal.</div>';modal.classList.add('show');
 }
 function closeContractStudentPicker(){const m=document.getElementById('contractStudentPickerModal');if(m)m.classList.remove('show');}
-function loadStudentContractById(id){contractSelectedStudentId=id||'';const student=getStudents().find(s=>s.id===id);if(!student)return;loadStudentContractDetails(id);}
+function loadStudentContractById(id){contractSelectedStudentId=id||'';const student=getStudents().find(s=>s.id===id);if(!student)return;loadStudentContractDetails(id);setTimeout(()=>{const w=document.getElementById('contractWorkspace');if(w)w.scrollIntoView({behavior:'smooth',block:'start'});},80);}
 function loadStudentContract(){loadStudentContractDetails(contractSelectedStudentId);}
 function loadStudentContractDetails(id, options={}){
  contractSelectedStudentId=id||'';contractFileData={teacher:null,parent:null};const w=document.getElementById('contractWorkspace'),e=document.getElementById('contractError'),input=document.getElementById('contractFileInput'),preview=document.getElementById('contractPreview'),name=document.getElementById('contractFileName'),status=document.getElementById('contractStatusText');
@@ -13689,7 +13689,10 @@ async function previewStudentContract(){
 function closeStudentContractPreview(){const m=document.getElementById('studentContractPreviewModal');if(m)m.style.display='none';}
 
 async function downloadStudentContractPDF(){
- if(!contractSavedForStudentId || contractSavedForStudentId!==contractSelectedStudentId){showContractError('Please save the Student Contract first before downloading.');return;}
+ const selectedId=String(contractSelectedStudentId||'');
+ const savedRecord=selectedId ? (getStudentContracts()?.[selectedId] || null) : null;
+ if(!selectedId || !savedRecord?.submittedAt){showContractError('Please save the Student Contract first before downloading.');return;}
+ contractSavedForStudentId=selectedId;
  try{
   if(typeof html2canvas!=='function')throw new Error('Contract image renderer is not available right now.');
 
@@ -13772,11 +13775,15 @@ function saveStudentContract(){
  const students=getStudents();
  const idx=students.findIndex(s=>s.id===student.id);
  if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);}
+ contractSelectedStudentId=student.id;
  contractSavedForStudentId=student.id;
  setStudentContractActionState(true);
- /* SAVE CONTRACT is the completion point: refresh every affected student view
-    immediately so the student leaves Pending and appears in Completed. */
- refreshLiveUI({appointments:false,studentId:student.id});
+ /* Contract UI is refreshed directly so another student can immediately
+    receive and save their own independent contract even if another dashboard
+    renderer has a warning. */
+ try{renderContractStudentLists();}catch(e){console.warn('Contract list refresh warning:',e);}
+ try{if(typeof renderStudents==='function')renderStudents();}catch(e){console.warn('Student list refresh warning:',e);}
+ try{if(typeof renderDashboard==='function')renderDashboard();}catch(e){console.warn('Dashboard refresh warning:',e);}
  const st=document.getElementById('contractStatusText');if(st)st.textContent=`${student.name} — Completed`;
  const completedBox=document.getElementById('contractCompletedList');
  if(completedBox){ completedBox.scrollIntoView({behavior:'smooth',block:'start'}); }
