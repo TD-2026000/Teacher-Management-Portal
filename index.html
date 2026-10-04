@@ -4396,8 +4396,6 @@ onclick="if(event.target===this) closeAddStudent()"
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
 
-<div><label>Status</label><select id="newStudentStatus"><option>Active</option><option>Completed</option></select></div>
-
 <div class="full">
 <label>Preferred Class Schedule</label>
 <div class="small" style="margin-top:4px">Select the day(s) and choose the class start time. No typing required.</div>
@@ -4519,7 +4517,7 @@ onclick="if(event.target===this) closeAddStudent()"
         <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()" disabled>PREVIEW CONTRACT</button>
       </div>
       <div id="contractError" class="modal-error"></div>
-      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image and Preview Contract stay disabled until the contract is saved. Preview Contract shows the parent-facing image format.</div>
+      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image is available as soon as a student is selected. Preview Contract becomes available after the contract is saved.</div>
     </div>
   </div>
 </div>
@@ -8720,7 +8718,6 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
-const status=document.getElementById('newStudentStatus').value;
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8776,7 +8773,6 @@ students.push({
   level,
   duration,
   packageName,
-  status,
   preferredSchedule:schedule,
   scheduleDetails,
   classTime,
@@ -8801,7 +8797,6 @@ if(el)el.value='';
 
 document.getElementById('newStudentLevel').value='';
 document.getElementById('newStudentDuration').value='30 Minutes';
-document.getElementById('newStudentStatus').value='Active';
 
 setSchedulePicker('new',{},[]);
 
@@ -13423,7 +13418,7 @@ function loadStudentContractDetails(id, options={}){
  if(savedContract?.parentFileData && savedContract?.parentFileName) contractFileData.parent={name:savedContract.parentFileName,type:savedContract.parentFileType||'',data:savedContract.parentFileData};
  ['teacher','parent'].forEach(role=>{const f=contractFileData[role];if(!f)return;const nm=document.getElementById(role+'ContractFileName');if(nm)nm.textContent=f.name||'';const pv=document.getElementById(role+'ContractPreview');if(pv&&String(f.type||'').startsWith('image/'))pv.innerHTML=`<img src="${f.data}" alt="${role} signed contract" style="max-width:100%;max-height:180px;border-radius:10px">`;});
  if(status)status.textContent=(student.name||'Selected');
- if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
+ if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const pn=document.getElementById('contractParentName');if(pn)pn.textContent=student.parentName||'____________________________';const record=getStudentContracts()[id];
  contractSavedForStudentId=record?.submittedAt?id:''; setStudentContractActionState(!!contractSavedForStudentId); contractPreviewDataUrl='';
  if(status&&record?.submittedAt)status.textContent=`${student.name} — Submitted`;
@@ -13451,7 +13446,7 @@ function cancelStudentContract(){
 async function setStudentContractActionState(saved){
  const b=document.getElementById('downloadStudentContractBtn');
  const p=document.getElementById('previewStudentContractBtn');
- if(b)b.disabled=!saved;
+ if(b)b.disabled=!contractSelectedStudentId;
  if(p)p.disabled=!saved;
 }
 
@@ -13690,8 +13685,7 @@ function closeStudentContractPreview(){const m=document.getElementById('studentC
 
 async function downloadStudentContractPDF(){
  const selectedId=String(contractSelectedStudentId||'');
- const savedRecord=selectedId ? (getStudentContracts()?.[selectedId] || null) : null;
- if(!selectedId || !savedRecord?.submittedAt){showContractError('Please save the Student Contract first before downloading.');return;}
+ if(!selectedId){showContractError('Please select a student first.');return;}
  contractSavedForStudentId=selectedId;
  try{
   if(typeof html2canvas!=='function')throw new Error('Contract image renderer is not available right now.');
