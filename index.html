@@ -8807,10 +8807,9 @@ setSchedulePicker('new',{},[]);
 
 showStudentStatus('Student added successfully.',true);
 closeAddStudent();
-renderDashboard();
-populateStudentSelect();
-renderRecords();
-renderStudents();
+/* Saving is already complete. Refresh visible modules safely so a UI redraw
+   cannot turn a successful student save into a false error message. */
+refreshLiveUI({appointments:false,contracts:true});
 }
 
 
@@ -9799,6 +9798,7 @@ return {created,remaining:Math.max(0,remaining-created),reason:created<remaining
 }
 
 function saveAppointment(){
+try{
 const studentId=document.getElementById('appointmentStudent').value;
 const date=document.getElementById('appointmentDate').value;
 const time=document.getElementById('appointmentTime').value;
@@ -9934,7 +9934,12 @@ saveAppointments(appointments);
 closeAppointmentModal();
 selectedAppointmentDate=date;
 apptShowMessage(`${type} manually booked for ${student.name}. ${type==='Regular Class'&&packageLimit?`Remaining classes: ${Math.max(0,packageLimit-(bookedForClasses+1))}.`:''}`);
-refreshLiveUI({students:false,records:false,contracts:false});
+refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id});
+}catch(error){
+ console.error('Save Appointment error:',error);
+ const message=document.getElementById('appointmentStatusMessage');
+ if(message){message.textContent='Unable to save the appointment. Please check the selected student, date, time, and class limit.';message.className='status show error';}
+}
 }
 
 function aptFilterMatch(item){
@@ -10719,6 +10724,7 @@ box.innerHTML=count?`<strong>${count} future classes</strong> will be generated 
 }
 
 function confirmRenewPackage(){
+try{
 const id=document.getElementById('renewStudentId')?.value||'';
 const student=getStudents().find(s=>s.id===id);
 const err=document.getElementById('renewPackageError');
@@ -10874,12 +10880,7 @@ showStudentStatus(successMessage,true);
 
 /* LIVE UPDATE: all affected screens are refreshed in memory.
    No browser/page refresh is required. */
-renderStudents();
-renderDashboard();
-renderAppointments();
-renderRecords();
-renderContractStudentLists();
-populateStudentSelect(student.id);
+refreshLiveUI({studentId:student.id});
 
 const refreshModal=document.getElementById('renewRefreshModal');
 const refreshMessage=document.getElementById('renewRefreshMessage');
@@ -10890,6 +10891,11 @@ if(refreshMessage){
     `The new classes is active, future classes are in the Appointment Calendar, and the new Student Contract is ready under Contract.`;
 }
 if(refreshModal)refreshModal.classList.add('show');
+}catch(error){
+ console.error('Renew Classes error:',error);
+ const err=document.getElementById('renewPackageError');
+ if(err){err.textContent='Unable to renew and book classes. Please check the class count, renewal date, preferred schedule, and existing bookings.';err.classList.add('show');}
+}
 }
 
 function closeRenewRefreshNotice(){
@@ -13740,6 +13746,7 @@ async function downloadStudentContractPDF(){
  }
 }
 function saveStudentContract(){
+ try{
  updateContractTeacherIdentity();
  const e=document.getElementById('contractError');if(e){e.textContent='';e.style.padding='';}
  const student=getStudents().find(s=>s.id===contractSelectedStudentId);
@@ -13762,13 +13769,15 @@ function saveStudentContract(){
  setStudentContractActionState(true);
  /* SAVE CONTRACT is the completion point: refresh every affected student view
     immediately so the student leaves Pending and appears in Completed. */
- renderContractStudentLists();
- if(typeof renderStudents==='function') renderStudents();
- if(typeof renderDashboard==='function') renderDashboard();
+ refreshLiveUI({appointments:false,studentId:student.id});
  const st=document.getElementById('contractStatusText');if(st)st.textContent=`${student.name} — Completed`;
  const completedBox=document.getElementById('contractCompletedList');
  if(completedBox){ completedBox.scrollIntoView({behavior:'smooth',block:'start'}); }
  showContractSuccess(`Student Contract for ${student.name} was saved successfully and moved to COMPLETED / SIGNED CONTRACTS.`);
+ }catch(error){
+  console.error('Save Student Contract error:',error);
+  showContractError(error.message||'Unable to save the Student Contract. Please try again.');
+ }
 }
 
 function submitStudentContract(){return saveStudentContract();}
@@ -14491,6 +14500,7 @@ function clearPaymentReceipt(){
   clearPaymentReceiptStatus(); drawPaymentReceiptCanvas();
 }
 function savePaymentReceipt(){
+ try{
   const d=getPaymentReceiptData();
   if(!d.studentId)return setPaymentReceiptStatus('Please select a student first.',false);
   if(!d.receiptNo){
@@ -14521,10 +14531,14 @@ function savePaymentReceipt(){
   setPaymentReceiptStatus('Payment receipt saved successfully.',true);
   updatePaymentReceiptPreview();
   /* LIVE UPDATE: no browser refresh required. */
-  renderStudents();
-  renderDashboard();
-  renderRecords();
-  if(document.getElementById('paymentStudentPickerModal')?.style.display==='flex') renderPaymentStudentPickerList(document.getElementById('paymentStudentSearch')?.value||'');
+  refreshLiveUI({appointments:false,contracts:false,studentId:d.studentId});
+  if(document.getElementById('paymentStudentPickerModal')?.style.display==='flex'){
+    try{renderPaymentStudentPickerList(document.getElementById('paymentStudentSearch')?.value||'');}catch(e){console.warn('Payment picker refresh warning:',e);}
+  }
+ }catch(error){
+   console.error('Save Payment Receipt error:',error);
+   setPaymentReceiptStatus(error.message||'Unable to save the payment receipt. Please try again.',false);
+ }
 }
 function downloadPaymentReceipt(){
   if(!paymentReceiptSaved)return;
