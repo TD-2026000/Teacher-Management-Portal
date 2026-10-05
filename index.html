@@ -113,6 +113,13 @@ body{
   transform:translateY(0);
 }
 
+/* Center only the Lesson Materials dashboard button */
+.dashboard-lesson-materials-btn{
+  grid-column:1 / -1;
+  justify-self:center;
+  width:calc(50% - 8px);
+}
+
 .dashboard-menu-label{
   display:block;
   margin-bottom:7px;
@@ -2526,6 +2533,12 @@ button.secondary,
 #contractFontFamily option[value="Roboto"]{font-family:Roboto,sans-serif}
 #contractFontFamily option[value="Poppins"]{font-family:Poppins,sans-serif}
 #contractFontFamily option[value="Montserrat"]{font-family:Montserrat,sans-serif}
+@media (max-width:700px){
+  .dashboard-lesson-materials-btn{
+    width:100%;
+  }
+}
+
 </style>
 
 
@@ -4290,7 +4303,7 @@ Dashboard
 <span class="dashboard-menu-label">RECORD OF EVALUATION</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
+<button type="button" class="dashboard-menu-btn dashboard-lesson-materials-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 </div>
