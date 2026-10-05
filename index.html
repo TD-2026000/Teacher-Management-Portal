@@ -119,6 +119,19 @@ body{
   font-size:20px;
 }
 
+/* Center the Lesson Materials button on the last row only */
+.dashboard-menu-btn:nth-child(7){
+  grid-column:1 / -1;
+  width:calc(50% - 8px);
+  justify-self:center;
+}
+
+@media(max-width:700px){
+  .dashboard-menu-btn:nth-child(7){
+    width:100%;
+  }
+}
+
 .dashboard-menu-sub{
   display:none;
 }
@@ -3709,16 +3722,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-page-header{display:none!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-info-bullets{display:none!important}
 </style>
-<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style>
-<style id="td-contract-preview-signature-layout">
-.preview-contract-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:18px;font-size:12pt;line-height:2;color:#111}
-.preview-contract-signature-block{min-width:0;color:#111}
-.preview-contract-signature-block strong{display:block;font-weight:700}
-.preview-contract-signature-name{min-height:1.5em}
-.preview-contract-signature-line{white-space:nowrap}
-@media(max-width:700px){.preview-contract-signature-grid{grid-template-columns:1fr;gap:18px}}
-</style>
-</head>
+<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style></head>
 
 <body>
 
@@ -4405,6 +4409,8 @@ onclick="if(event.target===this) closeAddStudent()"
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
 
+<div><label>Status</label><select id="newStudentStatus"><option>Active</option><option>Completed</option></select></div>
+
 <div class="full">
 <label>Preferred Class Schedule</label>
 <div class="small" style="margin-top:4px">Select the day(s) and choose the class start time. No typing required.</div>
@@ -4500,14 +4506,33 @@ onclick="if(event.target===this) closeAddStudent()"
     </div>
 
     <div class="contract-upload-panel">
+      <h3>SIGNED CONTRACT FILES</h3>
+      <p class="small">Upload the two signed copies separately: your signed copy and the parent's signed copy.</p>
+
+      <div class="contract-sign-upload">
+        <h4>1. Teacher's Signed Contract</h4>
+        <input id="teacherContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'teacher')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
+        <div id="teacherContractFileName" class="contract-sign-file"></div>
+        <div id="teacherContractPreview" class="contract-sign-preview"></div>
+      </div>
+
+      <div class="contract-sign-upload">
+        <h4>2. Parent's Signed Contract</h4>
+        <input id="parentContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'parent')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
+        <div id="parentContractFileName" class="contract-sign-file"></div>
+        <div id="parentContractPreview" class="contract-sign-preview"></div>
+      </div>
+
       <div class="contract-actions">
+        <button type="button" class="modal-cancel" onclick="removeContractFile('teacher')">Remove Teacher File</button>
+        <button type="button" class="modal-cancel" onclick="removeContractFile('parent')">Remove Parent File</button>
         <button type="button" class="modal-cancel" onclick="cancelStudentContract()">CANCEL</button>
         <button id="saveStudentContractBtn" type="button" class="modal-save" onclick="saveStudentContract()">SAVE CONTRACT</button>
         <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()" disabled>DOWNLOAD IMAGE</button>
         <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()" disabled>PREVIEW CONTRACT</button>
       </div>
       <div id="contractError" class="modal-error"></div>
-      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image is available as soon as a student is selected. Preview Contract becomes available after the contract is saved.</div>
+      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image and Preview Contract stay disabled until the contract is saved. Preview Contract shows the parent-facing image format.</div>
     </div>
   </div>
 </div>
@@ -5944,13 +5969,13 @@ const STUDENTS_BASE_KEY='teacherDanyealStudents_v2';
 const EVALUATIONS_BASE_KEY='teacherDanyealEvaluations_v2';
 
 const SUPABASE_URL=
-'https://ifaptabszmvxgaltmrnh.supabase.co';
+'https://ibhmimpmeftzkrtzhkmp.supabase.co';
 
 const SUPABASE_PUBLISHABLE_KEY=
-'sb_publishable_XWdNI0Jix2y_TGMVOAfYjA_bADlqGpq';
+'sb_publishable_HqQA24yJsm_PE_1TKi2W4g_Mpdr9GI3';
 
 const SUPABASE_REDIRECT_URL=
-'https://td-2026000.github.io/Teacher-Management-Portal/';
+'https://td-2026000.github.io/TD-PH-Teacher-Management-Portal/';
 
 const supabaseClient=
 window.supabase.createClient(
@@ -8708,6 +8733,7 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
+const status=document.getElementById('newStudentStatus').value;
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8763,6 +8789,7 @@ students.push({
   level,
   duration,
   packageName,
+  status,
   preferredSchedule:schedule,
   scheduleDetails,
   classTime,
@@ -8787,6 +8814,7 @@ if(el)el.value='';
 
 document.getElementById('newStudentLevel').value='';
 document.getElementById('newStudentDuration').value='30 Minutes';
+document.getElementById('newStudentStatus').value='Active';
 
 setSchedulePicker('new',{},[]);
 
@@ -13408,7 +13436,7 @@ function loadStudentContractDetails(id, options={}){
  if(savedContract?.parentFileData && savedContract?.parentFileName) contractFileData.parent={name:savedContract.parentFileName,type:savedContract.parentFileType||'',data:savedContract.parentFileData};
  ['teacher','parent'].forEach(role=>{const f=contractFileData[role];if(!f)return;const nm=document.getElementById(role+'ContractFileName');if(nm)nm.textContent=f.name||'';const pv=document.getElementById(role+'ContractPreview');if(pv&&String(f.type||'').startsWith('image/'))pv.innerHTML=`<img src="${f.data}" alt="${role} signed contract" style="max-width:100%;max-height:180px;border-radius:10px">`;});
  if(status)status.textContent=(student.name||'Selected');
- if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
+ if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const pn=document.getElementById('contractParentName');if(pn)pn.textContent=student.parentName||'____________________________';const record=getStudentContracts()[id];
  contractSavedForStudentId=record?.submittedAt?id:''; setStudentContractActionState(!!contractSavedForStudentId); contractPreviewDataUrl='';
  if(status&&record?.submittedAt)status.textContent=`${student.name} — Submitted`;
@@ -13436,7 +13464,7 @@ function cancelStudentContract(){
 async function setStudentContractActionState(saved){
  const b=document.getElementById('downloadStudentContractBtn');
  const p=document.getElementById('previewStudentContractBtn');
- if(b)b.disabled=!contractSelectedStudentId;
+ if(b)b.disabled=!saved;
  if(p)p.disabled=!saved;
 }
 
@@ -13526,7 +13554,29 @@ function makeContractPreviewPage(title, infoHtml, sections, includeInfo=true){
    if(sig){const sg=document.createElement('div');sg.className='pdf-signatures';sg.innerHTML=sig.innerHTML;wrap.appendChild(sg);}
    content.appendChild(wrap);
  });
-
+ const signedFiles=document.createElement('div');
+ signedFiles.className='pdf-signed-signatures';
+ signedFiles.innerHTML='<h3>Signatures</h3><div class="pdf-signed-signature-grid"></div>';
+ const signedGrid=signedFiles.querySelector('.pdf-signed-signature-grid');
+ const teacherName=getTeacherContractDisplayName() || 'Teacher';
+ const studentForSignature=contractSelectedStudentId ? getStudents().find(s=>s.id===contractSelectedStudentId) : null;
+ const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim() || 'Parent / Guardian';
+ [['teacher',`Teacher: ${teacherName}`],['parent',`Parent / Guardian: ${parentName}`]].forEach(([role,label])=>{
+   const savedFile=role==='teacher' ? savedContract?.teacherFileData : savedContract?.parentFileData;
+   const savedType=role==='teacher' ? savedContract?.teacherFileType : savedContract?.parentFileType;
+   const file=contractFileData[role] || (savedFile ? {data:savedFile,type:savedType||''} : null);
+   const card=document.createElement('div'); card.className='pdf-signed-signature-card';
+   const title=document.createElement('div'); title.className='pdf-signed-signature-label'; title.textContent=label; card.appendChild(title);
+   if(file?.data && String(file.type||'').startsWith('image/')){
+     const img=document.createElement('img'); img.src=file.data; img.alt=label; img.className='pdf-signed-signature-image'; card.appendChild(img);
+   }else if(file?.data && file.type==='application/pdf'){
+     const note=document.createElement('div'); note.className='pdf-signed-signature-note'; note.textContent='Signed PDF uploaded.'; card.appendChild(note);
+   }else{
+     const note=document.createElement('div'); note.className='pdf-signed-signature-note'; note.textContent='Signature not uploaded.'; card.appendChild(note);
+   }
+   signedGrid.appendChild(card);
+ });
+ page.appendChild(signedFiles);
  return page;
 }
 
@@ -13633,25 +13683,16 @@ async function previewStudentContract(){
       const ack=document.createElement('div'); ack.className='preview-contract-agreement-signatures-note';
       ack.innerHTML='<h3>AGREEMENT &amp; SIGNATURES</h3><p>By signing this contract, the parent/student confirms that they have read, understood, and agreed to the teacher\'s Private English Class agreement written above.</p>'; page.appendChild(ack);
       page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
-      const signatureGrid=document.createElement('div');
-      signatureGrid.className='preview-contract-signature-grid';
-      const teacherName=getTeacherContractDisplayName()||'Teacher';
-      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
-      const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
-      signatureGrid.innerHTML=`
-        <div class="preview-contract-signature-block">
-          <strong>Parent Name:</strong>
-          <div class="preview-contract-signature-name">${escapeHtml(parentName)}</div>
-          <strong>Signature:</strong>
-          <div class="preview-contract-signature-line">____________________________</div>
-        </div>
-        <div class="preview-contract-signature-block">
-          <strong>Teacher:</strong>
-          <div class="preview-contract-signature-name">${escapeHtml(teacherName)}</div>
-          <strong>Teacher's Signature:</strong>
-          <div class="preview-contract-signature-line">____________________________</div>
-        </div>`;
-      page.appendChild(signatureGrid);
+      const signedFiles=document.createElement('div'); signedFiles.className='pdf-signed-signatures'; signedFiles.innerHTML='<h3>Signatures</h3><div class="pdf-signed-signature-grid"></div>';
+      const signedGrid=signedFiles.querySelector('.pdf-signed-signature-grid'); const teacherName=getTeacherContractDisplayName()||'Teacher';
+      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null; const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
+      [['teacher',`Teacher: ${teacherName}`],['parent',`Parent / Guardian: ${parentName}`]].forEach(([role,label])=>{
+        const savedFile=role==='teacher'?savedContract?.teacherFileData:savedContract?.parentFileData; const savedType=role==='teacher'?savedContract?.teacherFileType:savedContract?.parentFileType; const file=contractFileData[role]||(savedFile?{data:savedFile,type:savedType||''}:null);
+        const card=document.createElement('div');card.className='pdf-signed-signature-card'; const title=document.createElement('div');title.className='pdf-signed-signature-label';title.textContent=label;card.appendChild(title);
+        if(file?.data&&String(file.type||'').startsWith('image/')){const img=document.createElement('img');img.src=file.data;img.alt=label;img.className='pdf-signed-signature-image';card.appendChild(img);} else if(file?.data&&file.type==='application/pdf'){const note=document.createElement('div');note.className='pdf-signed-signature-note';note.textContent='Signed PDF uploaded.';card.appendChild(note);} else {const note=document.createElement('div');note.className='pdf-signed-signature-note';note.textContent='Signature not uploaded.';card.appendChild(note);}
+        signedGrid.appendChild(card);
+      });
+      page.appendChild(signedFiles);
     }
     pages.appendChild(page);
   });
@@ -13662,7 +13703,8 @@ function closeStudentContractPreview(){const m=document.getElementById('studentC
 
 async function downloadStudentContractPDF(){
  const selectedId=String(contractSelectedStudentId||'');
- if(!selectedId){showContractError('Please select a student first.');return;}
+ const savedRecord=selectedId ? (getStudentContracts()?.[selectedId] || null) : null;
+ if(!selectedId || !savedRecord?.submittedAt){showContractError('Please save the Student Contract first before downloading.');return;}
  contractSavedForStudentId=selectedId;
  try{
   if(typeof html2canvas!=='function')throw new Error('Contract image renderer is not available right now.');
