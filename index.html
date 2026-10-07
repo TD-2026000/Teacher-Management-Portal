@@ -303,6 +303,13 @@ body{
   color:#111;
 }
 
+/* Keep LESSON MATERIALS as a single centered dashboard button. */
+#dashboardPage .dashboard-menu-btn.lesson-materials-menu-btn{
+  grid-column:1 / -1;
+  width:50%;
+  justify-self:center;
+}
+
 .page-back-wrap{
   margin-bottom:14px;
 }
@@ -4249,7 +4256,7 @@ Dashboard
 <span class="dashboard-menu-label">RECORD OF EVALUATION</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
+<button type="button" class="dashboard-menu-btn lesson-materials-menu-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 </div>
@@ -4354,8 +4361,6 @@ onclick="if(event.target===this) closeAddStudent()"
 <option value="50 Minutes">50 Minutes</option>
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
-
-<div><label>Status</label><select id="newStudentStatus"><option>Active</option><option>Completed</option></select></div>
 
 <div class="full">
 <label>Preferred Class Schedule</label>
@@ -7782,6 +7787,11 @@ const LESSON_MATERIAL_LINKS = [
     description: 'Google Drive lesson folder',
     url: 'https://drive.google.com/drive/folders/1w4c6I9kh8AUg2nRYawBCIWWwgf8Ybclr?usp=sharing'
   }
+  {
+    name: '200 Words You Must Know',
+    description: 'Google Drive lesson folder',
+    url: 'https://drive.google.com/drive/folders/1WjHqayB7hBQr_cHD-j4kq5gTnMnxzTep?usp=sharing'
+  }
   // ADD MORE FOLDERS HERE, for example:
   // ,{
   //   name: 'Level 1 Lesson',
@@ -8164,7 +8174,7 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
-const status=document.getElementById('newStudentStatus').value;
+const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8245,7 +8255,6 @@ if(el)el.value='';
 
 document.getElementById('newStudentLevel').value='';
 document.getElementById('newStudentDuration').value='30 Minutes';
-document.getElementById('newStudentStatus').value='Active';
 
 setSchedulePicker('new',{},[]);
 
