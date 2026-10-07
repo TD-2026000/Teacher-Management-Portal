@@ -305,7 +305,7 @@ body{
 
 #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
   grid-column:1 / -1;
-  width:calc(50% - 8px);
+  width:50%;
   justify-self:center;
 }
 
@@ -7786,19 +7786,33 @@ behavior:'smooth'
    - Only someone with access to this GitHub code can change the lesson list.
 ========================================================= */
 
-const LESSON_MATERIAL_LINKS = [
-  {
-    name: '51Talk Lesson',
-    description: 'Google Drive lesson folder',
-    url: ''
-  }
-  // ADD MORE FOLDERS HERE, for example:
-  // ,{
-  //   name: 'Level 1 Lesson',
-  //   description: 'Google Drive lesson folder',
-  //   url: ''
-  // }
-];
+const LESSON_MATERIAL_LINKS = [];
+
+/*
+   ADD / CHANGE LESSON FOLDERS HERE.
+   IMPORTANT: Each folder is a separate registerLessonMaterial(...) line.
+   This avoids comma/bracket mistakes that can stop the whole portal script.
+*/
+function registerLessonMaterial(name, description, url){
+  LESSON_MATERIAL_LINKS.push({
+    name: String(name || ''),
+    description: String(description || 'Google Drive lesson folder'),
+    url: String(url || '')
+  });
+}
+
+registerLessonMaterial(
+  '51Talk Lesson',
+  'Google Drive lesson folder',
+  'https://drive.google.com/drive/folders/1w4c6I9kh8AUg2nRYawBCIWWwgf8Ybclr?usp=drive_link'
+);
+
+// ADD MORE FOLDERS BELOW. Example:
+// registerLessonMaterial(
+//   'Level 1 Lesson',
+//   'Google Drive lesson folder',
+//   ''
+// );
 
 function lessonMaterialEscape(value){
   return String(value ?? '').replace(/[&<>"']/g,ch=>({
@@ -8174,6 +8188,7 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
+const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8209,7 +8224,6 @@ schedule,
 duration
 );
 
-const status='Active';
 const initialClassesCount=getPackageClassCount(packageName);
 const initialPackageId=`pkg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
 const initialClasses={
