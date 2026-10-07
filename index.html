@@ -303,11 +303,16 @@ body{
   color:#111;
 }
 
-/* Keep LESSON MATERIALS as a single centered dashboard button. */
-#dashboardPage .dashboard-menu-btn.lesson-materials-menu-btn{
+#dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
   grid-column:1 / -1;
-  width:50%;
+  width:calc(50% - 8px);
   justify-self:center;
+}
+
+@media(max-width:700px){
+  #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
+    width:100%;
+  }
 }
 
 .page-back-wrap{
@@ -4256,7 +4261,7 @@ Dashboard
 <span class="dashboard-menu-label">RECORD OF EVALUATION</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn lesson-materials-menu-btn" onclick="showPage('lessonMaterials')">
+<button type="button" class="dashboard-menu-btn lesson-materials-dashboard-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 </div>
@@ -7787,7 +7792,7 @@ const LESSON_MATERIAL_LINKS = [
     description: 'Google Drive lesson folder',
     url: 'https://drive.google.com/drive/folders/1w4c6I9kh8AUg2nRYawBCIWWwgf8Ybclr?usp=sharing'
   }
-   {
+  {
     name: '200 Words You Must Know',
     description: 'Google Drive lesson folder',
     url: 'https://drive.google.com/drive/folders/1WjHqayB7hBQr_cHD-j4kq5gTnMnxzTep?usp=sharing'
@@ -8174,7 +8179,6 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
-const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8210,6 +8214,7 @@ schedule,
 duration
 );
 
+const status='Active';
 const initialClassesCount=getPackageClassCount(packageName);
 const initialPackageId=`pkg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
 const initialClasses={
