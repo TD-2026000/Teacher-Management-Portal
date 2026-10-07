@@ -305,7 +305,7 @@ body{
 
 #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
   grid-column:1 / -1;
-  width:50%;
+  width:calc(50% - 8px);
   justify-self:center;
 }
 
@@ -8174,7 +8174,6 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
-const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8210,6 +8209,7 @@ schedule,
 duration
 );
 
+const status='Active';
 const initialClassesCount=getPackageClassCount(packageName);
 const initialPackageId=`pkg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
 const initialClasses={
