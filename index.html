@@ -113,13 +113,6 @@ body{
   transform:translateY(0);
 }
 
-/* Center only the Lesson Materials dashboard button */
-.dashboard-lesson-materials-btn{
-  grid-column:1 / -1;
-  justify-self:center;
-  width:calc(50% - 8px);
-}
-
 .dashboard-menu-label{
   display:block;
   margin-bottom:7px;
@@ -131,66 +124,25 @@ body{
 }
 
 
-/* Lesson Materials */
+/* Lesson Materials - Google Drive links */
 .lesson-materials-wrap{max-width:1100px;margin:0 auto;}
 .lesson-materials-header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
 .lesson-materials-title{margin:0;font-size:clamp(26px,4vw,38px);font-weight:900;}
-.lesson-materials-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-.lesson-material-more{position:relative;}
-.lesson-material-more-btn{width:42px;height:42px;border:1px solid #aaa;border-radius:9px;background:#fff;font-size:24px;font-weight:900;line-height:1;cursor:pointer;}
-.lesson-material-more-menu{display:none;position:absolute;right:0;top:48px;z-index:50;min-width:190px;padding:7px;border:1px solid #ccc;border-radius:10px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.15);}
-.lesson-material-more-menu.show{display:block;}
-.lesson-material-more-menu button{width:100%;border:0;border-radius:7px;background:#fff;text-align:left;padding:10px 12px;font-weight:800;cursor:pointer;}
-.lesson-material-more-menu button:hover{background:#f3f3f3;}
-/* Lesson Materials rename mode */
-.lesson-material-rename-actions{display:none;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fafafa;}
-.lesson-material-rename-actions.show{display:flex;}
-.lesson-material-rename-actions button{border:1px solid #aaa;border-radius:8px;padding:8px 11px;background:#f5f5f5;font-weight:800;cursor:pointer;}
-.lesson-material-rename-actions .rename-selected{background:#e8f5ff;border-color:#79b7df;color:#075985;}
-.lesson-rename-confirm-overlay{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px;}
-.lesson-rename-confirm-overlay.show{display:flex;}
-.lesson-rename-confirm-box{width:min(520px,96vw);background:#fff;border-radius:14px;padding:22px;box-shadow:0 15px 40px rgba(0,0,0,.25);}
-.lesson-rename-confirm-title{font-size:20px;font-weight:900;margin-bottom:8px;}
-.lesson-rename-confirm-text{font-size:14px;color:#555;margin-bottom:12px;}
-.lesson-rename-input{width:100%;padding:12px 13px;border:1px solid #aaa;border-radius:9px;font-size:16px;box-sizing:border-box;outline:none;}
-.lesson-rename-input:focus{border-color:#75aeda;box-shadow:0 0 0 3px rgba(117,174,218,.16);}
-.lesson-rename-error{min-height:20px;margin-top:7px;color:#b00020;font-size:13px;font-weight:700;}
-.lesson-rename-confirm-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:14px;}
-.lesson-rename-confirm-actions button{border:1px solid #aaa;border-radius:8px;padding:9px 14px;background:#f5f5f5;font-weight:800;cursor:pointer;}
-.lesson-rename-confirm-actions .save{background:#e8f5ff;border-color:#79b7df;color:#075985;}
-
-.lesson-material-select-actions{display:none;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;border:1px solid #ddd;border-radius:10px;background:#fafafa;}
-.lesson-material-select-actions.show{display:flex;}
-.lesson-material-select-actions button{border:1px solid #aaa;border-radius:8px;padding:8px 11px;background:#f5f5f5;font-weight:800;cursor:pointer;}
-.lesson-material-select-actions .delete-selected{background:#ffe7e7;border-color:#d66;color:#a00;}
-.lesson-material-card.select-mode,.lesson-material-folder-card.select-mode{cursor:default;}
-.lesson-material-select-box{width:20px;height:20px;flex:0 0 auto;accent-color:#87CEEB;cursor:pointer;}
-.lesson-material-card.select-mode .lesson-material-info,.lesson-material-folder-card.select-mode .lesson-material-folder-main{min-width:0;}
-
-.lesson-materials-btn{border:1px solid #aaa;border-radius:9px;padding:10px 15px;background:#87CEEB;font-weight:800;cursor:pointer;}
-.lesson-materials-btn:hover{filter:brightness(.96);}
-.lesson-materials-btn.secondary{background:#f3f3f3;}
 .lesson-materials-list{display:flex;flex-direction:column;gap:12px;}
-.lesson-material-card{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px;border:1px solid #d2d2d2;border-radius:12px;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.05);}
-.lesson-material-info{min-width:0;}
-.lesson-material-name{font-weight:900;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lesson-material-meta{margin-top:5px;color:#777;font-size:13px;}
-.lesson-material-actions{display:flex;gap:8px;flex-shrink:0;}
-.lesson-material-actions button{border:1px solid #aaa;border-radius:8px;padding:8px 11px;background:#f5f5f5;font-weight:800;cursor:pointer;}
-.lesson-material-actions .download{background:#87CEEB;}
+.lesson-material-link-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border:1px solid #d2d2d2;border-radius:12px;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.05);}
+.lesson-material-link-main{display:flex;align-items:center;gap:13px;min-width:0;flex:1;}
+.lesson-material-link-icon{font-size:30px;flex:0 0 auto;}
+.lesson-material-link-info{min-width:0;flex:1;}
+.lesson-material-link-name{font-weight:900;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lesson-material-link-meta{margin-top:5px;color:#777;font-size:13px;}
+.lesson-material-link-box{width:min(430px,100%);margin-top:8px;box-sizing:border-box;padding:9px 11px;border:1px solid #ccc;border-radius:8px;background:#f8f8f8;color:#666;font-size:13px;}
+.lesson-material-link-actions{display:flex;gap:8px;flex-shrink:0;}
+.lesson-material-link-actions button{border:1px solid #aaa;border-radius:8px;padding:9px 12px;background:#f5f5f5;font-weight:800;cursor:pointer;}
+.lesson-material-link-actions .open{background:#87CEEB;}
+.lesson-material-link-actions button:disabled{opacity:.55;cursor:not-allowed;}
 .lesson-material-empty{padding:30px 15px;text-align:center;color:#777;border:1px dashed #bbb;border-radius:12px;background:#fafafa;}
 .lesson-material-note{margin:0 0 18px;padding:12px 14px;border-radius:10px;background:#f7f7f7;color:#666;font-size:13px;line-height:1.5;}
-.lesson-materials-breadcrumb{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 14px;padding:11px 13px;border:1px solid #ddd;border-radius:10px;background:#fafafa;font-size:14px;font-weight:800;}
-.lesson-materials-breadcrumb button{border:0;background:transparent;padding:3px 5px;font-weight:900;cursor:pointer;text-decoration:underline;}
-.lesson-material-folder-card{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px;border:1px solid #d2d2d2;border-radius:12px;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.05);cursor:pointer;}
-.lesson-material-folder-card:hover{background:#f7fbfd;}
-.lesson-material-folder-icon{font-size:28px;flex:0 0 auto;}
-.lesson-material-folder-main{display:flex;align-items:center;gap:12px;min-width:0;}
-.lesson-material-folder-name{font-weight:900;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lesson-material-folder-meta{margin-top:4px;color:#777;font-size:13px;}
-.lesson-material-folder-actions{display:flex;gap:8px;flex-shrink:0;}
-.lesson-material-folder-actions button{border:1px solid #aaa;border-radius:8px;padding:8px 11px;background:#f5f5f5;font-weight:800;cursor:pointer;}
-@media(max-width:650px){.lesson-material-card{align-items:flex-start;flex-direction:column;}.lesson-material-actions{width:100%;}.lesson-material-actions button{flex:1;}}
+@media(max-width:760px){.lesson-material-link-card{align-items:flex-start;flex-direction:column;}.lesson-material-link-main{width:100%;}.lesson-material-link-actions{width:100%;}.lesson-material-link-actions button{flex:1;}}
 
 /* Dashboard overview */
 #dashboardPage > h2,
@@ -2533,12 +2485,6 @@ button.secondary,
 #contractFontFamily option[value="Roboto"]{font-family:Roboto,sans-serif}
 #contractFontFamily option[value="Poppins"]{font-family:Poppins,sans-serif}
 #contractFontFamily option[value="Montserrat"]{font-family:Montserrat,sans-serif}
-@media (max-width:700px){
-  .dashboard-lesson-materials-btn{
-    width:100%;
-  }
-}
-
 </style>
 
 
@@ -4303,7 +4249,7 @@ Dashboard
 <span class="dashboard-menu-label">RECORD OF EVALUATION</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn dashboard-lesson-materials-btn" onclick="showPage('lessonMaterials')">
+<button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 </div>
@@ -5238,32 +5184,10 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 </div>
 <div class="lesson-materials-header">
 <h2 class="lesson-materials-title">LESSON MATERIALS</h2>
-<div class="lesson-materials-actions">
-<button type="button" class="lesson-materials-btn" onclick="createLessonMaterialFolder()">＋ CREATE NEW FOLDER</button>
-<button type="button" class="lesson-materials-btn" onclick="openLessonMaterialPicker()">＋ ADD FILE</button>
-<div class="lesson-material-more">
-<button type="button" class="lesson-material-more-btn" aria-label="More options" onclick="toggleLessonMaterialMoreMenu(event)">⋮</button>
-<div id="lessonMaterialMoreMenu" class="lesson-material-more-menu">
-<button type="button" onclick="startLessonMaterialSelectMode()">☑ SELECT TO DELETE</button>
-<button type="button" onclick="startLessonMaterialRenameMode()">✎ RENAME</button>
-</div>
-</div>
-</div>
 </div>
 
-<p class="lesson-material-note">Create folders and subfolders to organize your lesson materials. You can add folders or files inside any folder.</p>
-<input id="lessonMaterialFileInput" type="file" multiple style="display:none" onchange="handleLessonMaterialFiles(this.files)">
-<div id="lessonMaterialSelectActions" class="lesson-material-select-actions">
-<span id="lessonMaterialSelectedCount" style="font-weight:800;">0 selected</span>
-<button type="button" class="delete-selected" onclick="deleteSelectedLessonMaterials()">DELETE SELECTED</button>
-<button type="button" onclick="cancelLessonMaterialSelectMode()">CANCEL</button>
-</div>
-<div id="lessonMaterialRenameActions" class="lesson-material-rename-actions">
-<span id="lessonMaterialRenameSelectedCount" style="font-weight:800;">0 selected</span>
-<button type="button" class="rename-selected" onclick="renameSelectedLessonMaterial()">RENAME SELECTED</button>
-<button type="button" onclick="cancelLessonMaterialRenameMode()">CANCEL</button>
-</div>
-<div id="lessonMaterialsBreadcrumb" class="lesson-materials-breadcrumb"></div>
+<p class="lesson-material-note">Select a lesson folder below to open its Google Drive. Teachers can only view/open the links. The lesson folders and links are managed by Teacher Danyeal in the website code.</p>
+
 <div id="lessonMaterialsList" class="lesson-materials-list"></div>
 </div>
 </div>
@@ -5969,13 +5893,13 @@ const STUDENTS_BASE_KEY='teacherDanyealStudents_v2';
 const EVALUATIONS_BASE_KEY='teacherDanyealEvaluations_v2';
 
 const SUPABASE_URL=
-'https://ifaptabszmvxgaltmrnh.supabase.co';
+'https://ibhmimpmeftzkrtzhkmp.supabase.co';
 
 const SUPABASE_PUBLISHABLE_KEY=
-'sb_publishable_XWdNI0Jix2y_TGMVOAfYjA_bADlqGpq';
+'sb_publishable_HqQA24yJsm_PE_1TKi2W4g_Mpdr9GI3';
 
 const SUPABASE_REDIRECT_URL=
-'https://td-2026000.github.io/Teacher-Management-Portal/';
+'https://td-2026000.github.io/TD-PH-Teacher-Management-Portal/';
 
 const supabaseClient=
 window.supabase.createClient(
@@ -7842,593 +7766,100 @@ behavior:'smooth'
    LESSON MATERIALS
 ========================================================= */
 
-const LESSON_MATERIALS_KEY='teacherDanyealLessonMaterials';
-const LESSON_MATERIALS_ROOT_KEY='teacherDanyealLessonMaterialsTree';
-const LESSON_MATERIALS_RESET_V64_KEY='teacherDanyealLessonMaterialsResetV64';
-let lessonMaterialCurrentPath=[];
+/* =========================================================
+   LESSON MATERIALS — GOOGLE DRIVE LINK LIBRARY
+   =========================================================
+   IMPORTANT:
+   - Add/change/delete lesson folders ONLY in LESSON_MATERIAL_LINKS below.
+   - Leave the url as '' until you are ready to paste your Google Drive link.
+   - Teachers do not get Create Folder, Add File, Rename, or Delete controls.
+   - Only someone with access to this GitHub code can change the lesson list.
+========================================================= */
 
-/* V64: Start the Lesson Materials area fresh/empty once.
-   This removes the previous trial data only; it does not affect
-   students, appointments, evaluations, payments, contracts, or other records. */
-(function resetLessonMaterialsForV64(){
-  try{
-    if(localStorage.getItem(LESSON_MATERIALS_RESET_V64_KEY)!=='done'){
-      localStorage.removeItem(LESSON_MATERIALS_ROOT_KEY);
-      localStorage.removeItem(LESSON_MATERIALS_KEY);
-      localStorage.setItem(LESSON_MATERIALS_RESET_V64_KEY,'done');
-    }
-  }catch(e){}
-})();
-
-function getLessonMaterialTree(){
-  try{
-    const raw=localStorage.getItem(LESSON_MATERIALS_ROOT_KEY);
-    if(raw){
-      const parsed=JSON.parse(raw);
-      if(Array.isArray(parsed)) return parsed;
-    }
-  }catch(e){}
-  try{
-    const legacy=JSON.parse(localStorage.getItem(LESSON_MATERIALS_KEY)||'[]');
-    if(Array.isArray(legacy)&&legacy.length){
-      return legacy.map(item=>({
-        id:item.id||('LM-'+Date.now()+'-'+Math.random().toString(36).slice(2,9)),
-        type:'file',name:item.name||'Untitled',size:item.size||0,mime:item.type||'application/octet-stream',data:item.data||'',addedAt:item.addedAt||new Date().toISOString()
-      }));
-    }
-  }catch(e){}
-  return [];
-}
-
-function saveLessonMaterialTree(tree){
-  localStorage.setItem(LESSON_MATERIALS_ROOT_KEY,JSON.stringify(tree));
-}
-
-function lessonMaterialId(prefix){
-  return prefix+'-'+Date.now()+'-'+Math.random().toString(36).slice(2,9);
-}
-
-function getLessonFolderChildren(){
-  let list=getLessonMaterialTree();
-  for(const id of lessonMaterialCurrentPath){
-    const folder=list.find(x=>x.id===id&&x.type==='folder');
-    if(!folder){lessonMaterialCurrentPath=[]; return getLessonMaterialTree();}
-    list=Array.isArray(folder.children)?folder.children:[];
+const LESSON_MATERIAL_LINKS = [
+  {
+    name: '51Talk Lesson',
+    description: 'Google Drive lesson folder',
+    url: 'https://drive.google.com/drive/folders/1w4c6I9kh8AUg2nRYawBCIWWwgf8Ybclr?usp=sharing'
   }
-  return list;
+  // ADD MORE FOLDERS HERE, for example:
+  // ,{
+  //   name: 'Level 1 Lesson',
+  //   description: 'Google Drive lesson folder',
+  //   url: ''
+  // }
+];
+
+function lessonMaterialEscape(value){
+  return String(value ?? '').replace(/[&<>"']/g,ch=>({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
 }
 
-function getLessonFolderByPath(){
-  let list=getLessonMaterialTree();
-  let folder=null;
-  for(const id of lessonMaterialCurrentPath){
-    folder=list.find(x=>x.id===id&&x.type==='folder');
-    if(!folder)return null;
-    list=Array.isArray(folder.children)?folder.children:[];
-  }
-  return folder;
+function getLessonMaterialLinks(){
+  return Array.isArray(LESSON_MATERIAL_LINKS) ? LESSON_MATERIAL_LINKS : [];
 }
 
-function updateLessonMaterialChildren(children){
-  const tree=getLessonMaterialTree();
-  if(!lessonMaterialCurrentPath.length){
-    saveLessonMaterialTree(children);
+function openLessonMaterialLink(index){
+  const item=getLessonMaterialLinks()[index];
+  if(!item || !item.url){
+    alert('The Google Drive link has not been added yet.');
     return;
   }
-  let list=tree;
-  for(let i=0;i<lessonMaterialCurrentPath.length;i++){
-    const folder=list.find(x=>x.id===lessonMaterialCurrentPath[i]&&x.type==='folder');
-    if(!folder)return;
-    if(i===lessonMaterialCurrentPath.length-1){folder.children=children;}
-    else list=folder.children||[];
-  }
-  saveLessonMaterialTree(tree);
+  window.open(item.url,'_blank','noopener,noreferrer');
 }
 
-function getLessonMaterials(){
-  return getLessonMaterialTree();
-}
-
-function saveLessonMaterials(list){
-  saveLessonMaterialTree(list);
-}
-
-function openLessonMaterialPicker(){
-  const input=document.getElementById('lessonMaterialFileInput');
-  if(input){input.value='';input.click();}
-}
-
-function createLessonMaterialFolder(){
-  const modal=document.getElementById('createLessonFolderModal');
-  const input=document.getElementById('newLessonFolderName');
-  const error=document.getElementById('newLessonFolderError');
-  if(!modal||!input)return;
-  input.value='';
-  if(error)error.textContent='';
-  modal.classList.add('show');
-  setTimeout(()=>input.focus(),50);
-}
-
-function closeCreateLessonFolderModal(){
-  const modal=document.getElementById('createLessonFolderModal');
-  if(modal)modal.classList.remove('show');
-}
-
-function saveNewLessonFolder(){
-  const input=document.getElementById('newLessonFolderName');
-  const error=document.getElementById('newLessonFolderError');
-  if(!input)return;
-
-  const clean=input.value.trim();
-
-  if(!clean){
-    if(error)error.textContent='Please enter a folder name.';
-    input.focus();
+async function copyLessonMaterialLink(index){
+  const item=getLessonMaterialLinks()[index];
+  if(!item || !item.url){
+    alert('The Google Drive link has not been added yet.');
     return;
   }
-
-  const children=getLessonFolderChildren();
-
-  if(children.some(x=>x.type==='folder'&&x.name.toLowerCase()===clean.toLowerCase())){
-    if(error)error.textContent='A folder with this name already exists here.';
-    input.focus();
-    input.select();
-    return;
-  }
-
-  children.push({
-    id:lessonMaterialId('LMF'),
-    type:'folder',
-    name:clean,
-    children:[],
-    createdAt:new Date().toISOString()
-  });
-
-  updateLessonMaterialChildren(children);
-  closeCreateLessonFolderModal();
-  renderLessonMaterials();
-}
-
-document.addEventListener('keydown',e=>{
-  const modal=document.getElementById('createLessonFolderModal');
-  if(!modal || !modal.classList.contains('show'))return;
-  if(e.key==='Escape'){
-    closeCreateLessonFolderModal();
-  }else if(e.key==='Enter' && document.activeElement?.id==='newLessonFolderName'){
-    e.preventDefault();
-    saveNewLessonFolder();
-  }
-});
-
-function openLessonMaterialFolder(id){
-  const folder=getLessonFolderChildren().find(x=>x.id===id&&x.type==='folder');
-  if(!folder)return;
-  lessonMaterialCurrentPath.push(id);
-  renderLessonMaterials();
-}
-
-function goLessonMaterialPath(index){
-  if(index<0){lessonMaterialCurrentPath=[];}
-  else lessonMaterialCurrentPath=lessonMaterialCurrentPath.slice(0,index+1);
-  renderLessonMaterials();
-}
-
-function formatLessonMaterialSize(bytes){
-  if(bytes<1024)return bytes+' B';
-  if(bytes<1024*1024)return (bytes/1024).toFixed(1)+' KB';
-  return (bytes/(1024*1024)).toFixed(1)+' MB';
-}
-
-const LESSON_MATERIAL_DB='TeacherDanyealLessonMaterialFiles';
-const LESSON_MATERIAL_STORE='files';
-
-function openLessonMaterialDB(){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(LESSON_MATERIAL_DB,1);
-    req.onupgradeneeded=()=>{
-      const db=req.result;
-      if(!db.objectStoreNames.contains(LESSON_MATERIAL_STORE)){
-        db.createObjectStore(LESSON_MATERIAL_STORE,{keyPath:'id'});
-      }
-    };
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error||new Error('IndexedDB failed'));
-  });
-}
-
-async function saveLessonMaterialBlob(id,file){
-  const db=await openLessonMaterialDB();
-  await new Promise((resolve,reject)=>{
-    const tx=db.transaction(LESSON_MATERIAL_STORE,'readwrite');
-    tx.objectStore(LESSON_MATERIAL_STORE).put({id,blob:file});
-    tx.oncomplete=resolve;
-    tx.onerror=()=>reject(tx.error||new Error('File save failed'));
-  });
-  db.close();
-}
-
-async function getLessonMaterialBlob(id){
-  const db=await openLessonMaterialDB();
-  const result=await new Promise((resolve,reject)=>{
-    const tx=db.transaction(LESSON_MATERIAL_STORE,'readonly');
-    const req=tx.objectStore(LESSON_MATERIAL_STORE).get(id);
-    req.onsuccess=()=>resolve(req.result);
-    req.onerror=()=>reject(req.error||new Error('File read failed'));
-  });
-  db.close();
-  return result?.blob||null;
-}
-
-async function deleteLessonMaterialBlob(id){
   try{
-    const db=await openLessonMaterialDB();
-    await new Promise((resolve,reject)=>{
-      const tx=db.transaction(LESSON_MATERIAL_STORE,'readwrite');
-      tx.objectStore(LESSON_MATERIAL_STORE).delete(id);
-      tx.oncomplete=resolve;
-      tx.onerror=()=>reject(tx.error);
-    });
-    db.close();
-  }catch(e){}
-}
-
-async function handleLessonMaterialFiles(fileList){
-  const files=Array.from(fileList||[]);
-  if(!files.length)return;
-  const children=getLessonFolderChildren();
-  const added=[];
-  try{
-    for(const file of files){
-      const id=lessonMaterialId('LM');
-      await saveLessonMaterialBlob(id,file);
-      added.push({
-        id,type:'file',name:file.name,size:file.size,mime:file.type||'application/octet-stream',addedAt:new Date().toISOString()
-      });
-    }
-    updateLessonMaterialChildren(children.concat(added));
-    renderLessonMaterials();
-  }catch(err){
-    for(const item of added)await deleteLessonMaterialBlob(item.id);
-    alert('The file could not be uploaded to the website storage. Please try again.');
-  }finally{
-    const input=document.getElementById('lessonMaterialFileInput');
-    if(input)input.value='';
-  }
-}
-
-async function saveBlobToFileExplorer(blob,fileName){
-  if(!blob)throw new Error('The file is not available.');
-  if(window.showSaveFilePicker){
-    try{
-      const handle=await window.showSaveFilePicker({suggestedName:fileName});
-      const writable=await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      return true;
-    }catch(err){
-      if(err && err.name==='AbortError')return false;
-      throw err;
-    }
-  }
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=fileName;
-  a.style.display='none';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-  return true;
-}
-
-async function downloadLessonMaterial(id){
-  const item=getLessonFolderChildren().find(x=>x.id===id&&x.type==='file');
-  if(!item)return;
-  try{
-    const blob=await getLessonMaterialBlob(id);
-    if(!blob){alert('This file is not available in this browser storage.');return;}
-    await saveBlobToFileExplorer(blob,item.name);
+    await navigator.clipboard.writeText(item.url);
+    alert('Google Drive link copied.');
   }catch(e){
-    alert('Unable to save this file to File Explorer. Please try again.');
+    const temp=document.createElement('textarea');
+    temp.value=item.url;
+    temp.style.position='fixed';
+    temp.style.opacity='0';
+    document.body.appendChild(temp);
+    temp.select();
+    try{document.execCommand('copy');alert('Google Drive link copied.');}
+    catch(err){alert('Unable to copy the link.');}
+    temp.remove();
   }
 }
-
-function deleteLessonMaterial(id){
-  const item=getLessonFolderChildren().find(x=>x.id===id);
-  if(!item)return;
-  const message=item.type==='folder'?'Delete this folder and everything inside it?':'Delete this lesson material?';
-  if(!confirm(message))return;
-  if(item.type==='file')deleteLessonMaterialBlob(item.id);
-  if(item.type==='folder')deleteLessonMaterialFilesInFolder(item);
-  updateLessonMaterialChildren(getLessonFolderChildren().filter(x=>x.id!==id));
-  renderLessonMaterials();
-}
-
-async function deleteLessonMaterialFilesInFolder(folder){
-  for(const child of (folder.children||[])){
-    if(child.type==='file')await deleteLessonMaterialBlob(child.id);
-    else if(child.type==='folder')await deleteLessonMaterialFilesInFolder(child);
-  }
-}
-
-function renderLessonMaterialBreadcrumb(){
-  const box=document.getElementById('lessonMaterialsBreadcrumb');
-  if(!box)return;
-  const tree=getLessonMaterialTree();
-  const parts=[{id:null,name:'LESSON MATERIALS'}];
-  let list=tree;
-  for(const id of lessonMaterialCurrentPath){
-    const folder=list.find(x=>x.id===id&&x.type==='folder');
-    if(!folder)break;
-    parts.push({id:folder.id,name:folder.name});
-    list=folder.children||[];
-  }
-  box.innerHTML=parts.map((part,i)=>{
-    if(i===parts.length-1)return `<span>📂 ${escapeHtml(part.name)}</span>`;
-    return `<button type="button" onclick="goLessonMaterialPath(${i-1})">${i===0?'📚 ':'📁 '}${escapeHtml(part.name)}</button><span>›</span>`;
-  }).join('');
-}
-
-let lessonMaterialSelectMode=false;
-let lessonMaterialSelectedIds=new Set();
-let lessonMaterialRenameMode=false;
-
-function startLessonMaterialRenameMode(){
-  lessonMaterialRenameMode=true;
-  lessonMaterialSelectMode=false;
-  lessonMaterialSelectedIds=new Set();
-  const menu=document.getElementById('lessonMaterialMoreMenu');
-  if(menu)menu.classList.remove('show');
-  updateLessonMaterialRenameUI();
-  renderLessonMaterials();
-}
-
-function cancelLessonMaterialRenameMode(){
-  lessonMaterialRenameMode=false;
-  lessonMaterialSelectedIds=new Set();
-  updateLessonMaterialRenameUI();
-  renderLessonMaterials();
-}
-
-function updateLessonMaterialRenameUI(){
-  const bar=document.getElementById('lessonMaterialRenameActions');
-  const count=document.getElementById('lessonMaterialRenameSelectedCount');
-  if(bar)bar.classList.toggle('show',lessonMaterialRenameMode);
-  if(count){
-    const n=lessonMaterialSelectedIds.size;
-    count.textContent=n+(n===1?' selected':' selected');
-  }
-}
-
-function handleLessonMaterialRenameCardClick(id){
-  if(!lessonMaterialRenameMode)return;
-  if(lessonMaterialSelectedIds.has(id)){
-    lessonMaterialSelectedIds.delete(id);
-  }else{
-    lessonMaterialSelectedIds=new Set([id]);
-  }
-  updateLessonMaterialRenameUI();
-  renderLessonMaterials();
-}
-
-function renameSelectedLessonMaterial(){
-  const ids=Array.from(lessonMaterialSelectedIds);
-  if(ids.length!==1){
-    alert('Please select one folder or file to rename.');
-    return;
-  }
-  const list=getLessonFolderChildren();
-  const item=list.find(x=>x.id===ids[0]);
-  if(!item)return;
-  openLessonRenameModal(item);
-}
-
-function openLessonRenameModal(item){
-  const modal=document.getElementById('lessonRenameModal');
-  const input=document.getElementById('lessonRenameInput');
-  const error=document.getElementById('lessonRenameError');
-  const idInput=document.getElementById('lessonRenameItemId');
-  if(!modal||!input||!idInput)return;
-  idInput.value=item.id;
-  input.value=item.name;
-  if(error)error.textContent='';
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
-  setTimeout(()=>{input.focus();input.select();},50);
-}
-
-function closeLessonRenameModal(){
-  const modal=document.getElementById('lessonRenameModal');
-  if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
-  const input=document.getElementById('lessonRenameInput');
-  const error=document.getElementById('lessonRenameError');
-  if(input)input.value='';
-  if(error)error.textContent='';
-}
-
-function saveLessonRename(){
-  const id=document.getElementById('lessonRenameItemId')?.value;
-  const input=document.getElementById('lessonRenameInput');
-  const error=document.getElementById('lessonRenameError');
-  const list=getLessonFolderChildren();
-  const item=list.find(x=>x.id===id);
-  if(!item||!input)return;
-  const trimmed=input.value.trim();
-  if(!trimmed){if(error)error.textContent='Name cannot be blank.';input.focus();return;}
-  const duplicate=list.some(x=>x.id!==item.id && x.name.trim().toLowerCase()===trimmed.toLowerCase());
-  if(duplicate){if(error)error.textContent='A folder or file with this name already exists here.';input.focus();return;}
-  item.name=trimmed;
-  updateLessonMaterialChildren(list);
-  closeLessonRenameModal();
-  lessonMaterialSelectedIds=new Set();
-  lessonMaterialRenameMode=false;
-  updateLessonMaterialRenameUI();
-  renderLessonMaterials();
-}
-
-
-function toggleLessonMaterialMoreMenu(event){
-  if(event)event.stopPropagation();
-  const menu=document.getElementById('lessonMaterialMoreMenu');
-  if(menu)menu.classList.toggle('show');
-}
-
-document.addEventListener('click',e=>{
-  const menu=document.getElementById('lessonMaterialMoreMenu');
-  const wrap=e.target?.closest?.('.lesson-material-more');
-  if(menu && !wrap)menu.classList.remove('show');
-});
-
-function startLessonMaterialSelectMode(){
-  lessonMaterialRenameMode=false;
-  updateLessonMaterialRenameUI();
-  lessonMaterialSelectMode=true;
-  lessonMaterialSelectedIds=new Set();
-  const menu=document.getElementById('lessonMaterialMoreMenu');
-  if(menu)menu.classList.remove('show');
-  updateLessonMaterialSelectUI();
-  renderLessonMaterials();
-}
-
-function cancelLessonMaterialSelectMode(){
-  lessonMaterialSelectMode=false;
-  lessonMaterialRenameMode=false;
-  updateLessonMaterialRenameUI();
-  lessonMaterialSelectedIds=new Set();
-  updateLessonMaterialSelectUI();
-  renderLessonMaterials();
-}
-
-function handleLessonMaterialFolderCardClick(id){
-  if(lessonMaterialRenameMode){
-    handleLessonMaterialRenameCardClick(id);
-  }else if(lessonMaterialSelectMode){
-    toggleLessonMaterialSelected(id,!lessonMaterialSelectedIds.has(id));
-    renderLessonMaterials();
-  }else{
-    openLessonMaterialFolder(id);
-  }
-}
-
-function toggleLessonMaterialSelected(id,checked){
-  if(checked)lessonMaterialSelectedIds.add(id);
-  else lessonMaterialSelectedIds.delete(id);
-  updateLessonMaterialSelectUI();
-}
-
-function updateLessonMaterialSelectUI(){
-  const bar=document.getElementById('lessonMaterialSelectActions');
-  const count=document.getElementById('lessonMaterialSelectedCount');
-  if(bar)bar.classList.toggle('show',lessonMaterialSelectMode);
-  if(count){
-    const n=lessonMaterialSelectedIds.size;
-    count.textContent=n+(n===1?' selected':' selected');
-  }
-}
-
-let lessonDeletePendingIds=[];
-
-function deleteSelectedLessonMaterials(){
-  const ids=Array.from(lessonMaterialSelectedIds);
-  if(!ids.length){alert('Please select at least one file or folder to delete.');return;}
-  const list=getLessonFolderChildren();
-  const selected=list.filter(x=>ids.includes(x.id));
-  if(!selected.length){
-    lessonMaterialSelectedIds=new Set();
-    updateLessonMaterialSelectUI();
-    renderLessonMaterials();
-    return;
-  }
-  lessonDeletePendingIds=selected.map(x=>x.id);
-  const title=document.getElementById('lessonDeleteConfirmTitle');
-  const text=document.getElementById('lessonDeleteConfirmText');
-  if(title){
-    title.textContent=selected.length===1
-      ? 'Are you sure you want to delete this folder/file?'
-      : 'Are you sure you want to delete these folder/files?';
-  }
-  if(text){
-    text.textContent=selected.length===1
-      ? `Delete "${selected[0].name}"? This action cannot be undone.`
-      : `Delete ${selected.length} selected items? This action cannot be undone.`;
-  }
-  const modal=document.getElementById('lessonDeleteConfirmModal');
-  if(modal){modal.classList.add('show');modal.setAttribute('aria-hidden','false');}
-}
-
-function closeLessonDeleteConfirm(){
-  lessonDeletePendingIds=[];
-  const modal=document.getElementById('lessonDeleteConfirmModal');
-  if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
-}
-
-async function confirmLessonDeleteSelected(){
-  const ids=Array.from(lessonDeletePendingIds);
-  if(!ids.length){closeLessonDeleteConfirm();return;}
-  const list=getLessonFolderChildren();
-  const selected=list.filter(x=>ids.includes(x.id));
-  try{
-    for(const item of selected){
-      if(item.type==='file') await deleteLessonMaterialBlob(item.id);
-      else await deleteLessonMaterialFilesInFolder(item);
-    }
-    updateLessonMaterialChildren(list.filter(x=>!ids.includes(x.id)));
-    lessonMaterialSelectedIds=new Set();
-    lessonMaterialSelectMode=false;
-    lessonDeletePendingIds=[];
-    closeLessonDeleteConfirm();
-    updateLessonMaterialSelectUI();
-    renderLessonMaterials();
-  }catch(err){
-    closeLessonDeleteConfirm();
-    alert('The selected item(s) could not be deleted. Please try again.');
-  }
-}
-
-document.addEventListener('keydown',e=>{
-  const modal=document.getElementById('lessonDeleteConfirmModal');
-  if(modal && modal.classList.contains('show') && e.key==='Escape'){
-    closeLessonDeleteConfirm();
-  }
-});
-
-document.addEventListener('keydown',e=>{
-  const modal=document.getElementById('lessonRenameModal');
-  if(modal && modal.classList.contains('show')){
-    if(e.key==='Escape'){closeLessonRenameModal();}
-    else if(e.key==='Enter'){e.preventDefault();saveLessonRename();}
-  }
-});
 
 function renderLessonMaterials(){
   const box=document.getElementById('lessonMaterialsList');
   if(!box)return;
-  renderLessonMaterialBreadcrumb();
-  updateLessonMaterialSelectUI();
-  updateLessonMaterialRenameUI();
-  const list=getLessonFolderChildren();
-  if(!list.length){
-    box.innerHTML='<div class="lesson-material-empty">This folder is empty.<br><strong>Click ＋ CREATE NEW FOLDER or ＋ ADD FILE</strong> to add materials.</div>';
+
+  const items=getLessonMaterialLinks();
+  if(!items.length){
+    box.innerHTML='<div class="lesson-material-empty">No lesson folders have been added yet.</div>';
     return;
   }
-  const naturalLessonMaterialSort=new Intl.Collator(undefined,{numeric:true,sensitivity:'base'});
-  const folders=list.filter(x=>x.type==='folder').sort((a,b)=>naturalLessonMaterialSort.compare(String(a.name||''),String(b.name||'')));
-  const files=list.filter(x=>x.type==='file').sort((a,b)=>naturalLessonMaterialSort.compare(String(a.name||''),String(b.name||'')));
-  box.innerHTML=folders.map(item=>{
-    const count=(item.children||[]).length;
-    const checked=lessonMaterialSelectedIds.has(item.id)?' checked':'';
-    return `<div class="lesson-material-folder-card ${(lessonMaterialSelectMode||lessonMaterialRenameMode)?'select-mode':''}" onclick="handleLessonMaterialFolderCardClick('${item.id}')">`+
-      `${(lessonMaterialSelectMode||lessonMaterialRenameMode)?`<input class="lesson-material-select-box" type="checkbox"${checked} onclick="event.stopPropagation();${lessonMaterialRenameMode?`handleLessonMaterialRenameCardClick('${item.id}')`: `toggleLessonMaterialSelected('${item.id}',this.checked)`}" onchange="event.stopPropagation()">`:''}`+
-      `<div class="lesson-material-folder-main"><div class="lesson-material-folder-icon">📁</div><div class="lesson-material-info"><div class="lesson-material-folder-name">${escapeHtml(item.name)}</div><div class="lesson-material-folder-meta">${count} ${count===1?'item':'items'}</div></div></div></div>`;
-  }).join('')+files.map(item=>{
-    const date=item.addedAt?new Date(item.addedAt).toLocaleDateString():'';
-    const checked=lessonMaterialSelectedIds.has(item.id)?' checked':'';
-    return `<div class="lesson-material-card ${(lessonMaterialSelectMode||lessonMaterialRenameMode)?'select-mode':''}" onclick="${lessonMaterialRenameMode?`handleLessonMaterialRenameCardClick(\'${item.id}\')`:''}">`+
-      `${(lessonMaterialSelectMode||lessonMaterialRenameMode)?`<input class="lesson-material-select-box" type="checkbox"${checked} onclick="${lessonMaterialRenameMode?`handleLessonMaterialRenameCardClick('${item.id}')`: `toggleLessonMaterialSelected('${item.id}',this.checked)`};event.stopPropagation()">`:''}`+
-      `<div class="lesson-material-info"><div class="lesson-material-name">📄 ${escapeHtml(item.name)}</div><div class="lesson-material-meta">${escapeHtml(formatLessonMaterialSize(item.size||0))}${date?' · Added '+escapeHtml(date):''}</div></div>`+
-      `${lessonMaterialSelectMode?'':`<div class="lesson-material-actions"><button type="button" class="download" onclick="downloadLessonMaterial('${item.id}')">⬇ DOWNLOAD</button></div>`}`+
-      `</div>`;
+
+  box.innerHTML=items.map((item,index)=>{
+    const name=lessonMaterialEscape(item.name||'Untitled Lesson');
+    const description=lessonMaterialEscape(item.description||'Google Drive lesson folder');
+    const url=String(item.url||'').trim();
+    const hasUrl=!!url;
+    return `<div class="lesson-material-link-card">
+      <div class="lesson-material-link-main">
+        <div class="lesson-material-link-icon">📁</div>
+        <div class="lesson-material-link-info">
+          <div class="lesson-material-link-name">${name}</div>
+          <div class="lesson-material-link-meta">${description}</div>
+          <input class="lesson-material-link-box" type="text" value="${lessonMaterialEscape(url)}" placeholder="Google Drive link will appear here" readonly aria-label="Google Drive link for ${name}">
+        </div>
+      </div>
+      <div class="lesson-material-link-actions">
+        <button type="button" onclick="copyLessonMaterialLink(${index})" ${hasUrl?'':'disabled'}>COPY LINK</button>
+        <button type="button" class="open" onclick="openLessonMaterialLink(${index})" ${hasUrl?'':'disabled'}>OPEN LINK</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -15617,44 +15048,5 @@ closeStudentContractPreview = function(){
 
 
 
-<!-- LESSON MATERIALS: CREATE FOLDER MODAL -->
-<div id="createLessonFolderModal" class="modal-backdrop" onclick="if(event.target===this) closeCreateLessonFolderModal()">
-  <div class="modal lesson-folder-modal">
-    <h3>CREATE NEW FOLDER</h3>
-    <p>Enter a name for your new folder.</p>
-    <label for="newLessonFolderName">Folder Name</label>
-    <input id="newLessonFolderName" type="text" placeholder="Type folder name..." autocomplete="off">
-    <div id="newLessonFolderError" class="lesson-folder-error"></div>
-    <div class="modal-actions">
-      <button type="button" class="modal-cancel" onclick="closeCreateLessonFolderModal()">CANCEL</button>
-      <button type="button" class="primary" onclick="saveNewLessonFolder()">SAVE</button>
-    </div>
-  </div>
-</div>
-
-<div id="lessonRenameModal" class="lesson-rename-confirm-overlay" aria-hidden="true" onclick="if(event.target===this) closeLessonRenameModal()">
-  <div class="lesson-rename-confirm-box" role="dialog" aria-modal="true" aria-labelledby="lessonRenameTitle">
-    <div id="lessonRenameTitle" class="lesson-rename-confirm-title">RENAME FOLDER / FILE</div>
-    <div class="lesson-rename-confirm-text">Edit the old name below, then save your changes.</div>
-    <input type="hidden" id="lessonRenameItemId">
-    <input id="lessonRenameInput" class="lesson-rename-input" type="text" autocomplete="off">
-    <div id="lessonRenameError" class="lesson-rename-error"></div>
-    <div class="lesson-rename-confirm-actions">
-      <button type="button" onclick="closeLessonRenameModal()">CANCEL</button>
-      <button type="button" class="save" onclick="saveLessonRename()">SAVE</button>
-    </div>
-  </div>
-</div>
-
-<div id="lessonDeleteConfirmModal" class="lesson-delete-confirm-overlay" aria-hidden="true">
-  <div class="lesson-delete-confirm-box" role="dialog" aria-modal="true" aria-labelledby="lessonDeleteConfirmTitle">
-    <div id="lessonDeleteConfirmTitle" class="lesson-delete-confirm-title">Are you sure you want to delete this folder/file?</div>
-    <div id="lessonDeleteConfirmText" class="lesson-delete-confirm-text">This action cannot be undone.</div>
-    <div class="lesson-delete-confirm-actions">
-      <button type="button" onclick="closeLessonDeleteConfirm()">CANCEL</button>
-      <button type="button" class="danger" onclick="confirmLessonDeleteSelected()">DELETE</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
