@@ -142,6 +142,27 @@ body{
 .lesson-material-link-actions button:disabled{opacity:.55;cursor:not-allowed;}
 .lesson-material-empty{padding:30px 15px;text-align:center;color:#777;border:1px dashed #bbb;border-radius:12px;background:#fafafa;}
 .lesson-material-note{margin:0 0 18px;padding:12px 14px;border-radius:10px;background:#f7f7f7;color:#666;font-size:13px;line-height:1.5;}
+
+.lesson-material-search-wrap{
+  width:100%;
+  margin:0 0 18px;
+}
+
+.lesson-material-search{
+  width:100%;
+  box-sizing:border-box;
+  padding:12px 15px;
+  border:1px solid #d5dbe5;
+  border-radius:10px;
+  font-size:15px;
+  outline:none;
+  background:#fff;
+}
+
+.lesson-material-search:focus{
+  border-color:#4f46e5;
+  box-shadow:0 0 0 3px rgba(79,70,229,.10);
+}
 @media(max-width:760px){.lesson-material-link-card{align-items:flex-start;flex-direction:column;}.lesson-material-link-main{width:100%;}.lesson-material-link-actions{width:100%;}.lesson-material-link-actions button{flex:1;}}
 
 /* Dashboard overview */
@@ -5198,6 +5219,16 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 
 <p class="lesson-material-note">Select a lesson folder below to open its Google Drive. Teachers can only view/open the links. The lesson folders and links are managed by Teacher Danyeal in the website code.</p>
 
+<div class="lesson-material-search-wrap">
+  <input
+    type="text"
+    id="lessonMaterialSearch"
+    class="lesson-material-search"
+    placeholder="Search lesson materials..."
+    oninput="filterLessonMaterials()"
+  >
+</div>
+  
 <div id="lessonMaterialsList" class="lesson-materials-list"></div>
 </div>
 </div>
@@ -7866,12 +7897,24 @@ function renderLessonMaterials(){
   if(!box)return;
 
   const items=getLessonMaterialLinks();
-  if(!items.length){
-    box.innerHTML='<div class="lesson-material-empty">No lesson folders have been added yet.</div>';
+  const searchInput=document.getElementById('lessonMaterialSearch');
+  const search=String(searchInput?.value||'').trim().toLowerCase();
+
+  const filteredItems=items
+    .map((item,index)=>({item,index}))
+    .filter(({item})=>{
+      if(!search)return true;
+      const name=String(item.name||'').toLowerCase();
+      const description=String(item.description||'').toLowerCase();
+      return name.includes(search)||description.includes(search);
+    });
+
+  if(!filteredItems.length){
+    box.innerHTML='<div class="lesson-material-empty">No lesson materials found.</div>';
     return;
   }
 
-  box.innerHTML=items.map((item,index)=>{
+  box.innerHTML=filteredItems.map(({item,index})=>{
     const name=lessonMaterialEscape(item.name||'Untitled Lesson');
     const description=lessonMaterialEscape(item.description||'Google Drive lesson folder');
     const url=String(item.url||'').trim();
@@ -7891,6 +7934,10 @@ function renderLessonMaterials(){
       </div>
     </div>`;
   }).join('');
+}
+
+function filterLessonMaterials(){
+  renderLessonMaterials();
 }
 
 /* =========================================================
