@@ -325,14 +325,21 @@ body{
 }
 
 #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
-  grid-column:1 / -1;
-  width:50%;
-  justify-self:center;
+  grid-column:auto;
+  width:auto;
+  justify-self:stretch;
+}
+
+#dashboardPage .dashboard-menu-btn.subscription-management-dashboard-btn{
+  grid-column:auto;
+  width:auto;
+  justify-self:stretch;
 }
 
 @media(max-width:700px){
-  #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
-    width:100%;
+  #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn,
+  #dashboardPage .dashboard-menu-btn.subscription-management-dashboard-btn{
+    width:auto;
   }
 }
 
@@ -3701,7 +3708,11 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-page-header{display:none!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-info-bullets{display:none!important}
 </style>
-<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style></head>
+<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style><style id="teacher-danyeal-subscription-management-css">
+.subscription-admin-wrap{max-width:1200px;margin:0 auto}.subscription-admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.subscription-admin-title{margin:0;font-size:clamp(26px,4vw,38px);font-weight:900}.subscription-admin-subtitle{margin:7px 0 0;color:#666;font-size:14px}.subscription-summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:20px}.subscription-summary-card{background:#fff;border:1px solid #d7d7d7;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.subscription-summary-card span{display:block;color:#666;font-size:13px;font-weight:700;margin-bottom:8px}.subscription-summary-card strong{display:block;font-size:30px;font-weight:900}.subscription-toolbar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}.subscription-search{flex:1;min-width:240px;height:45px;border:1px solid #ccc;border-radius:10px;padding:0 14px;font-size:14px;background:#fff}.subscription-status-filter{height:45px;border:1px solid #ccc;border-radius:10px;padding:0 14px;font-size:14px;background:#fff;min-width:170px}.subscription-table-wrap{background:#fff;border:1px solid #d5d5d5;border-radius:14px;overflow:auto;box-shadow:0 2px 8px rgba(0,0,0,.05)}.subscription-table{width:100%;border-collapse:collapse;min-width:900px}.subscription-table th{background:#f5f5f5;text-align:left;padding:14px;font-size:12px;font-weight:900;border-bottom:1px solid #ddd}.subscription-table td{padding:14px;border-bottom:1px solid #eee;font-size:13px;vertical-align:middle}.subscription-table tr:last-child td{border-bottom:none}.subscription-badge{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}.subscription-badge.pending{background:#fff3cd;color:#856404}.subscription-badge.active{background:#d4edda;color:#155724}.subscription-badge.expired{background:#f8d7da;color:#721c24}.subscription-badge.blocked{background:#343a40;color:#fff}.subscription-badge.verified{background:#d4edda;color:#155724}.subscription-badge.rejected{background:#f8d7da;color:#721c24}.subscription-action-wrap{position:relative;display:inline-block}.subscription-three-dot{width:36px;height:36px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:20px;line-height:1}.subscription-three-dot:hover{background:#f1f1f1}.subscription-action-menu{position:absolute;right:0;top:42px;z-index:9999;min-width:190px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,.16);padding:6px;display:none}.subscription-action-menu.show{display:block}.subscription-action-menu button{width:100%;border:none;background:#fff;padding:10px 12px;text-align:left;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}.subscription-action-menu button:hover{background:#f2f2f2}.subscription-action-menu button.danger{color:#c62828}.subscription-empty-state{padding:40px;text-align:center;color:#777;font-size:14px}.subscription-modal-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px}.subscription-modal-overlay.show{display:flex}.subscription-modal{position:relative;width:min(600px,95vw);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.3)}.subscription-modal h3{margin:0 0 20px;font-size:22px;font-weight:900}.subscription-modal-close{position:absolute;right:15px;top:12px;width:36px;height:36px;border:none;background:transparent;cursor:pointer;font-size:28px;color:#555}.subscription-account-details{display:flex;flex-direction:column;gap:1px;border:1px solid #ddd;border-radius:12px;overflow:hidden}.subscription-detail-row{display:flex;justify-content:space-between;gap:20px;padding:12px 14px;background:#fafafa;border-bottom:1px solid #eee}.subscription-detail-row:last-child{border-bottom:none}.subscription-detail-row span{color:#666;font-size:13px}.subscription-detail-row strong{text-align:right;font-size:13px}.subscription-modal-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.subscription-modal-actions button{border:1px solid #ccc;border-radius:9px;padding:10px 15px;cursor:pointer;background:#f5f5f5;font-weight:800}.subscription-modal-actions button.primary{background:#87CEEB;border-color:#70bddd}.subscription-modal-actions button.danger{background:#ffe1e1;color:#a00000;border-color:#e0aaaa}@media(max-width:900px){.subscription-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.subscription-summary-grid{grid-template-columns:1fr}.subscription-admin-title{font-size:26px}.subscription-detail-row{flex-direction:column;gap:4px}.subscription-detail-row strong{text-align:left}}
+</style>
+
+</head>
 
 <body>
 
@@ -4285,7 +4296,18 @@ Dashboard
 <button type="button" class="dashboard-menu-btn lesson-materials-dashboard-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
+
+<button
+type="button"
+id="subscriptionManagementButton"
+class="dashboard-menu-btn subscription-management-dashboard-btn"
+onclick="showPage('subscriptionManagement')"
+style="display:none;"
+>
+<span class="dashboard-menu-label">SUBSCRIPTION MANAGEMENT</span>
+</button>
 </div>
+
 
 <div class="dashboard-grid">
 
@@ -5233,6 +5255,90 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 </div>
 </div>
 
+<!-- =========================================================
+     SUBSCRIPTION MANAGEMENT
+========================================================= -->
+
+<div id="subscriptionManagementPage" class="page">
+
+<div class="subscription-admin-wrap">
+
+<div class="page-back-wrap" style="margin-bottom:12px;">
+<button type="button" class="page-back-btn" onclick="showPage('dashboard')">← Back to Dashboard</button>
+</div>
+
+<div class="subscription-admin-header">
+<div>
+<h2 class="subscription-admin-title">SUBSCRIPTION MANAGEMENT</h2>
+<p class="subscription-admin-subtitle">Manage teacher accounts, payments, access and subscriptions.</p>
+</div>
+</div>
+
+<div class="subscription-summary-grid">
+<div class="subscription-summary-card"><span>Total Accounts</span><strong id="subscriptionTotalAccounts">0</strong></div>
+<div class="subscription-summary-card"><span>Active</span><strong id="subscriptionActiveAccounts">0</strong></div>
+<div class="subscription-summary-card"><span>Pending</span><strong id="subscriptionPendingAccounts">0</strong></div>
+<div class="subscription-summary-card"><span>Expired</span><strong id="subscriptionExpiredAccounts">0</strong></div>
+<div class="subscription-summary-card"><span>Blocked</span><strong id="subscriptionBlockedAccounts">0</strong></div>
+</div>
+
+<div class="subscription-toolbar">
+<input type="text" id="subscriptionSearch" class="subscription-search" placeholder="Search Gmail or teacher name..." oninput="filterSubscriptionAccounts()">
+<select id="subscriptionStatusFilter" class="subscription-status-filter" onchange="filterSubscriptionAccounts()">
+<option value="ALL">All Accounts</option>
+<option value="PENDING">Pending</option>
+<option value="ACTIVE">Active</option>
+<option value="EXPIRED">Expired</option>
+<option value="BLOCKED">Blocked</option>
+</select>
+</div>
+
+<div class="subscription-table-wrap">
+<table class="subscription-table">
+<thead>
+<tr>
+<th>Teacher</th>
+<th>Gmail</th>
+<th>Access</th>
+<th>Subscription</th>
+<th>Expires</th>
+<th>Payment</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="subscriptionAccountsTable"></tbody>
+</table>
+<div id="subscriptionEmptyState" class="subscription-empty-state" style="display:none;">No teacher accounts found.</div>
+</div>
+
+</div>
+</div>
+
+<!-- =========================================================
+     ACCOUNT DETAILS MODAL
+========================================================= -->
+
+<div id="subscriptionAccountModal" class="subscription-modal-overlay">
+<div class="subscription-modal">
+<button type="button" class="subscription-modal-close" onclick="closeSubscriptionAccountModal()">×</button>
+<h3>ACCOUNT DETAILS</h3>
+
+<div class="subscription-account-details">
+<div class="subscription-detail-row"><span>Teacher Name</span><strong id="modalTeacherName">—</strong></div>
+<div class="subscription-detail-row"><span>Gmail</span><strong id="modalTeacherEmail">—</strong></div>
+<div class="subscription-detail-row"><span>Account Created</span><strong id="modalAccountCreated">—</strong></div>
+<div class="subscription-detail-row"><span>Access Status</span><strong id="modalAccessStatus">—</strong></div>
+<div class="subscription-detail-row"><span>Plan</span><strong id="modalPlan">—</strong></div>
+<div class="subscription-detail-row"><span>Price</span><strong id="modalPrice">—</strong></div>
+<div class="subscription-detail-row"><span>Subscription Start</span><strong id="modalStartDate">—</strong></div>
+<div class="subscription-detail-row"><span>Subscription Expiry</span><strong id="modalExpiryDate">—</strong></div>
+<div class="subscription-detail-row"><span>Payment Status</span><strong id="modalPaymentStatus">—</strong></div>
+</div>
+
+<div id="subscriptionModalActions" class="subscription-modal-actions"></div>
+</div>
+</div>
+
 <div id="recordsPage" class="page">
 
 <div class="page-back-wrap">
@@ -5941,6 +6047,8 @@ const SUPABASE_PUBLISHABLE_KEY=
 
 const SUPABASE_REDIRECT_URL=
 'https://td-2026000.github.io/TD-PH-Teacher-Management-Portal/';
+
+/* SUBSCRIPTION ADMIN EMAIL IS SET IN THE SUBSCRIPTION SCRIPT NEAR THE END OF THIS FILE. */
 
 const supabaseClient=
 window.supabase.createClient(
@@ -7286,6 +7394,31 @@ async function handleSignedIn(user){
 
 currentUser=user;
 
+/* ADMIN ACCOUNT BYPASS
+   The admin account must never be blocked by the teacher subscription check. */
+const signedInEmail=String(user?.email||'').trim().toLowerCase();
+const adminEmail=String(SUBSCRIPTION_ADMIN_EMAIL||'').trim().toLowerCase();
+
+if(signedInEmail!==adminEmail){
+
+const subscriptionAllowed=await checkTeacherSubscriptionAccess(user);
+
+if(!subscriptionAllowed){
+
+currentUser=null;
+
+document.getElementById('appShell').classList.add('hidden');
+document.getElementById('authScreen').classList.remove('hidden');
+showAuthPanel('login');
+
+return;
+
+}
+
+}
+
+updateSubscriptionAdminButton();
+
 /* One-time appointment reset requested for the current portal version.
    This clears the old appointment/test data so the dashboard starts at 0.
    Student records and evaluations are not affected. */
@@ -7788,6 +7921,9 @@ renderAppointments();
 
 if(page==='lessonMaterials')
 renderLessonMaterials();
+
+if(page==='subscriptionManagement')
+openSubscriptionManagement();
 
 if(page==='payment'){
   setPaymentReceiptDefaults();
@@ -12854,6 +12990,410 @@ document.getElementById('editStudentDuration')?.addEventListener(
 ()=>{updateAllScheduleEndTimes('edit');refreshSchedulePickerAvailability('edit',document.getElementById('editOriginalId')?.value||'');}
 );
 
+
+/* =========================================================
+   TEACHER DANYEAL SUBSCRIPTION MANAGEMENT
+   ₱199 INITIAL ACCESS + ₱99 MONTHLY
+
+   IMPORTANT:
+   Change SUBSCRIPTION_ADMIN_EMAIL to your admin Gmail.
+   Use the same Gmail in the Supabase SQL policy/function.
+========================================================= */
+
+const SUBSCRIPTION_ADMIN_EMAIL='teacherdanyeal@gmail.com';
+
+let subscriptionAccounts=[];
+let subscriptionCurrentAccount=null;
+
+function isSubscriptionAdmin(){
+  if(!currentUser)return false;
+  return String(currentUser.email||'').toLowerCase()===SUBSCRIPTION_ADMIN_EMAIL.toLowerCase();
+}
+
+function updateSubscriptionAdminButton(){
+  const button=document.getElementById('subscriptionManagementButton');
+  if(!button)return;
+  button.style.display=isSubscriptionAdmin()?'block':'none';
+}
+
+async function loadSubscriptionAccounts(){
+  if(!isSubscriptionAdmin())return;
+
+  const {data:profiles,error:profileError}=await supabaseClient
+    .from('profiles')
+    .select('*')
+    .order('created_at',{ascending:false});
+
+  if(profileError){
+    console.error(profileError);
+    alert('Unable to load teacher accounts. Please check the Supabase profiles table and RLS policies.');
+    return;
+  }
+
+  const {data:subscriptions,error:subscriptionError}=await supabaseClient
+    .from('subscriptions')
+    .select('*');
+
+  if(subscriptionError)console.error(subscriptionError);
+
+  const {data:payments,error:paymentError}=await supabaseClient
+    .from('payments')
+    .select('*')
+    .order('created_at',{ascending:false});
+
+  if(paymentError)console.error(paymentError);
+
+  subscriptionAccounts=(profiles||[]).map(profile=>{
+    const userSubscription=(subscriptions||[])
+      .filter(item=>item.user_id===profile.id)
+      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0]||null;
+
+    const userPayment=(payments||[])
+      .filter(item=>item.user_id===profile.id)
+      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0]||null;
+
+    return {profile,subscription:userSubscription,payment:userPayment};
+  });
+
+  await updateExpiredSubscriptionStatuses();
+  renderSubscriptionAccounts();
+}
+
+async function updateExpiredSubscriptionStatuses(){
+  if(!isSubscriptionAdmin())return;
+  const now=new Date();
+
+  for(const account of subscriptionAccounts){
+    const subscription=account.subscription;
+    if(!subscription)continue;
+
+    if(subscription.status==='ACTIVE'&&subscription.expiry_date&&new Date(subscription.expiry_date)<now){
+      const {error:subError}=await supabaseClient
+        .from('subscriptions')
+        .update({status:'EXPIRED',updated_at:new Date().toISOString()})
+        .eq('id',subscription.id);
+
+      if(subError){
+        console.error(subError);
+        continue;
+      }
+
+      await supabaseClient
+        .from('profiles')
+        .update({access_status:'EXPIRED',updated_at:new Date().toISOString()})
+        .eq('id',account.profile.id);
+
+      account.subscription.status='EXPIRED';
+      account.profile.access_status='EXPIRED';
+    }
+  }
+}
+
+function renderSubscriptionAccounts(){
+  const table=document.getElementById('subscriptionAccountsTable');
+  const empty=document.getElementById('subscriptionEmptyState');
+  if(!table)return;
+
+  table.innerHTML='';
+
+  const search=String(document.getElementById('subscriptionSearch')?.value||'').toLowerCase().trim();
+  const filter=document.getElementById('subscriptionStatusFilter')?.value||'ALL';
+
+  const filtered=subscriptionAccounts.filter(account=>{
+    const profile=account.profile||{};
+    const name=String(profile.full_name||'').toLowerCase();
+    const email=String(profile.email||'').toLowerCase();
+    const status=String(profile.access_status||'PENDING').toUpperCase();
+    return (!search||name.includes(search)||email.includes(search))&&(filter==='ALL'||status===filter);
+  });
+
+  empty.style.display=filtered.length?'none':'block';
+  filtered.forEach(account=>table.appendChild(createSubscriptionRow(account)));
+  updateSubscriptionSummary();
+}
+
+function createSubscriptionRow(account){
+  const profile=account.profile||{};
+  const subscription=account.subscription;
+  const payment=account.payment;
+  const tr=document.createElement('tr');
+  const name=escapeSubscriptionHtml(profile.full_name||'Teacher');
+  const email=escapeSubscriptionHtml(profile.email||'—');
+  const status=String(profile.access_status||'PENDING').toUpperCase();
+  const expiry=subscription?.expiry_date?formatSubscriptionDate(subscription.expiry_date):'—';
+  const paymentStatus=payment?.status||'—';
+
+  tr.innerHTML=`
+    <td><strong>${name}</strong></td>
+    <td>${email}</td>
+    <td><span class="subscription-badge ${getSubscriptionBadgeClass(status)}">${status}</span></td>
+    <td>${subscription?escapeSubscriptionHtml(subscription.plan_name||'Monthly'):'—'}${subscription?`<br><small>₱${Number(subscription.price||0).toFixed(2)}</small>`:''}</td>
+    <td>${expiry}</td>
+    <td><span class="subscription-badge ${getPaymentBadgeClass(paymentStatus)}">${escapeSubscriptionHtml(paymentStatus)}</span></td>
+    <td>
+      <div class="subscription-action-wrap">
+        <button type="button" class="subscription-three-dot" onclick="toggleSubscriptionActionMenu(this)">⋮</button>
+        <div class="subscription-action-menu">
+          <button type="button" onclick="viewSubscriptionAccount('${profile.id}')">View Account</button>
+          ${status==='PENDING'?`
+            <button type="button" onclick="approveSubscriptionAccount('${profile.id}')">Approve Account</button>
+            <button type="button" onclick="rejectSubscriptionAccount('${profile.id}')">Reject Account</button>
+          `:''}
+          ${status==='ACTIVE'?`
+            <button type="button" onclick="extendSubscriptionAccount('${profile.id}')">Extend / Renew</button>
+            <button type="button" class="danger" onclick="blockSubscriptionAccount('${profile.id}')">Block Account</button>
+          `:''}
+          ${status==='EXPIRED'?`
+            <button type="button" onclick="extendSubscriptionAccount('${profile.id}')">Renew Subscription</button>
+            <button type="button" class="danger" onclick="blockSubscriptionAccount('${profile.id}')">Block Account</button>
+          `:''}
+          ${status==='BLOCKED'?`
+            <button type="button" onclick="unblockSubscriptionAccount('${profile.id}')">Unblock Account</button>
+          `:''}
+        </div>
+      </div>
+    </td>`;
+  return tr;
+}
+
+function escapeSubscriptionHtml(value){
+  return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function getSubscriptionBadgeClass(status){
+  status=String(status).toUpperCase();
+  if(status==='ACTIVE')return 'active';
+  if(status==='EXPIRED')return 'expired';
+  if(status==='BLOCKED')return 'blocked';
+  return 'pending';
+}
+
+function getPaymentBadgeClass(status){
+  status=String(status).toUpperCase();
+  if(status==='VERIFIED')return 'verified';
+  if(status==='REJECTED')return 'rejected';
+  return 'pending';
+}
+
+function formatSubscriptionDate(date){
+  if(!date)return '—';
+  const d=new Date(date);
+  if(Number.isNaN(d.getTime()))return '—';
+  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+}
+
+function updateSubscriptionSummary(){
+  const total=subscriptionAccounts.length;
+  const active=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='ACTIVE').length;
+  const pending=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='PENDING').length;
+  const expired=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='EXPIRED').length;
+  const blocked=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='BLOCKED').length;
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set('subscriptionTotalAccounts',total);
+  set('subscriptionActiveAccounts',active);
+  set('subscriptionPendingAccounts',pending);
+  set('subscriptionExpiredAccounts',expired);
+  set('subscriptionBlockedAccounts',blocked);
+}
+
+function filterSubscriptionAccounts(){renderSubscriptionAccounts();}
+
+function toggleSubscriptionActionMenu(button){
+  document.querySelectorAll('.subscription-action-menu').forEach(menu=>{
+    if(menu!==button.parentElement.querySelector('.subscription-action-menu'))menu.classList.remove('show');
+  });
+  const menu=button.parentElement.querySelector('.subscription-action-menu');
+  if(menu)menu.classList.toggle('show');
+}
+
+async function viewSubscriptionAccount(userId){
+  document.querySelectorAll('.subscription-action-menu').forEach(menu=>menu.classList.remove('show'));
+  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
+  if(!account)return;
+  subscriptionCurrentAccount=account;
+  const profile=account.profile||{};
+  const subscription=account.subscription;
+  const payment=account.payment;
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+  set('modalTeacherName',profile.full_name||'Teacher');
+  set('modalTeacherEmail',profile.email||'—');
+  set('modalAccountCreated',formatSubscriptionDate(profile.created_at));
+  set('modalAccessStatus',profile.access_status||'PENDING');
+  set('modalPlan',subscription?.plan_name||'No subscription');
+  set('modalPrice',subscription?`₱${Number(subscription.price||0).toFixed(2)}`:'—');
+  set('modalStartDate',formatSubscriptionDate(subscription?.start_date));
+  set('modalExpiryDate',formatSubscriptionDate(subscription?.expiry_date));
+  set('modalPaymentStatus',payment?.status||'No payment');
+  renderSubscriptionModalActions();
+  document.getElementById('subscriptionAccountModal')?.classList.add('show');
+}
+
+function renderSubscriptionModalActions(){
+  const box=document.getElementById('subscriptionModalActions');
+  if(!box)return;
+  box.innerHTML='';
+  const account=subscriptionCurrentAccount;
+  if(!account)return;
+  const id=account.profile.id;
+  const status=String(account.profile?.access_status||'PENDING').toUpperCase();
+
+  if(status==='PENDING'){
+    box.innerHTML+=`<button type="button" class="primary" onclick="approveSubscriptionAccount('${id}')">Approve Account</button><button type="button" class="danger" onclick="rejectSubscriptionAccount('${id}')">Reject Account</button>`;
+  }
+  if(status==='ACTIVE'||status==='EXPIRED'){
+    box.innerHTML+=`<button type="button" class="primary" onclick="extendSubscriptionAccount('${id}')">${status==='EXPIRED'?'Renew Subscription':'Extend Subscription'}</button>`;
+  }
+  if(status!=='BLOCKED'){
+    box.innerHTML+=`<button type="button" class="danger" onclick="blockSubscriptionAccount('${id}')">Block Account</button>`;
+  }else{
+    box.innerHTML+=`<button type="button" class="primary" onclick="unblockSubscriptionAccount('${id}')">Unblock Account</button>`;
+  }
+}
+
+function closeSubscriptionAccountModal(){
+  document.getElementById('subscriptionAccountModal')?.classList.remove('show');
+  subscriptionCurrentAccount=null;
+}
+
+async function approveSubscriptionAccount(userId){
+  if(!isSubscriptionAdmin())return;
+  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
+  if(!account)return;
+  if(!confirm('Approve this teacher account?'))return;
+
+  const now=new Date();
+  const expiry=new Date(now);
+  expiry.setMonth(expiry.getMonth()+1);
+
+  const {error:profileError}=await supabaseClient.from('profiles').update({access_status:'ACTIVE',updated_at:now.toISOString()}).eq('id',userId);
+  if(profileError){alert(profileError.message);return;}
+
+  const {error:subscriptionError}=await supabaseClient.from('subscriptions').insert({user_id:userId,plan_name:'Monthly',price:99,start_date:now.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE'});
+  if(subscriptionError){alert(subscriptionError.message);return;}
+
+  alert('Teacher account approved successfully.');
+  closeSubscriptionAccountModal();
+  await loadSubscriptionAccounts();
+}
+
+async function rejectSubscriptionAccount(userId){
+  if(!isSubscriptionAdmin())return;
+  if(!confirm('Reject this teacher account?'))return;
+  const {error}=await supabaseClient.from('profiles').update({access_status:'BLOCKED',updated_at:new Date().toISOString()}).eq('id',userId);
+  if(error){alert(error.message);return;}
+  alert('Teacher account rejected and blocked.');
+  closeSubscriptionAccountModal();
+  await loadSubscriptionAccounts();
+}
+
+async function blockSubscriptionAccount(userId){
+  if(!isSubscriptionAdmin())return;
+  if(!confirm('Block this teacher account? They will no longer be allowed to access the portal.'))return;
+  const {error}=await supabaseClient.from('profiles').update({access_status:'BLOCKED',updated_at:new Date().toISOString()}).eq('id',userId);
+  if(error){alert(error.message);return;}
+  await supabaseClient.from('subscriptions').update({status:'BLOCKED',updated_at:new Date().toISOString()}).eq('user_id',userId).eq('status','ACTIVE');
+  alert('Teacher account blocked.');
+  closeSubscriptionAccountModal();
+  await loadSubscriptionAccounts();
+}
+
+async function unblockSubscriptionAccount(userId){
+  if(!isSubscriptionAdmin())return;
+  if(!confirm('Unblock this teacher account?'))return;
+  const {error}=await supabaseClient.from('profiles').update({access_status:'PENDING',updated_at:new Date().toISOString()}).eq('id',userId);
+  if(error){alert(error.message);return;}
+  await supabaseClient.from('subscriptions').update({status:'PENDING',updated_at:new Date().toISOString()}).eq('user_id',userId).eq('status','BLOCKED');
+  alert('Teacher account has been unblocked and returned to PENDING.');
+  closeSubscriptionAccountModal();
+  await loadSubscriptionAccounts();
+}
+
+async function extendSubscriptionAccount(userId){
+  if(!isSubscriptionAdmin())return;
+  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
+  if(!account)return;
+  if(!confirm('Add 1 month to this teacher subscription for ₱99?'))return;
+
+  const now=new Date();
+  let start=now;
+  if(account.subscription?.expiry_date&&new Date(account.subscription.expiry_date)>now)start=new Date(account.subscription.expiry_date);
+  const expiry=new Date(start);
+  expiry.setMonth(expiry.getMonth()+1);
+
+  if(account.subscription?.id){
+    const {error}=await supabaseClient.from('subscriptions').update({plan_name:'Monthly',price:99,start_date:start.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE',updated_at:now.toISOString()}).eq('id',account.subscription.id);
+    if(error){alert(error.message);return;}
+  }else{
+    const {error}=await supabaseClient.from('subscriptions').insert({user_id:userId,plan_name:'Monthly',price:99,start_date:start.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE'});
+    if(error){alert(error.message);return;}
+  }
+
+  const {error:profileError}=await supabaseClient.from('profiles').update({access_status:'ACTIVE',updated_at:now.toISOString()}).eq('id',userId);
+  if(profileError){alert(profileError.message);return;}
+
+  alert('Subscription extended for 1 month.');
+  closeSubscriptionAccountModal();
+  await loadSubscriptionAccounts();
+}
+
+async function openSubscriptionManagement(){
+  if(!isSubscriptionAdmin()){
+    alert('Administrator access only.');
+    showPage('dashboard');
+    return;
+  }
+  await loadSubscriptionAccounts();
+}
+
+async function checkTeacherSubscriptionAccess(user){
+  if(!user)return false;
+
+  if(String(user.email||'').trim().toLowerCase()===String(SUBSCRIPTION_ADMIN_EMAIL||'').trim().toLowerCase())return true;
+
+  const {data:profile,error}=await supabaseClient.from('profiles').select('access_status').eq('id',user.id).maybeSingle();
+
+  if(error){
+    console.error(error);
+    try{await supabaseClient.auth.signOut();}catch(e){}
+    alert('Unable to verify your account access.');
+    return false;
+  }
+
+  if(!profile){
+    try{await supabaseClient.auth.signOut();}catch(e){}
+    alert('Your account is not yet approved. Please complete the ₱199 initial access process.');
+    return false;
+  }
+
+  const status=String(profile.access_status||'PENDING').toUpperCase();
+  if(status!=='ACTIVE'){
+    try{await supabaseClient.auth.signOut();}catch(e){}
+    if(status==='PENDING')alert('Your account is waiting for approval. Please complete the ₱199 initial access payment.');
+    else if(status==='EXPIRED')alert('Your subscription has expired. Please renew your ₱99 monthly subscription.');
+    else if(status==='BLOCKED')alert('This account has been blocked. Please contact Teacher Danyeal.');
+    else alert('Your account does not currently have portal access.');
+    return false;
+  }
+
+  return true;
+}
+
+document.addEventListener('click',function(event){
+  if(!event.target.closest('.subscription-action-wrap')){
+    document.querySelectorAll('.subscription-action-menu').forEach(menu=>menu.classList.remove('show'));
+  }
+});
+
+document.addEventListener('click',function(event){
+  const modal=document.getElementById('subscriptionAccountModal');
+  if(modal&&event.target===modal)closeSubscriptionAccountModal();
+});
+
+setTimeout(updateSubscriptionAdminButton,500);
+
+
+
+
 initAuth();
 
 
@@ -15121,6 +15661,8 @@ closeStudentContractPreview = function(){
   try{originalCloseStudentContractPreview();}catch(e){}
 };
 </script>
+
+
 
 
 
