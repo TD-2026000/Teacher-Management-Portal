@@ -305,7 +305,7 @@ body{
 
 #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
   grid-column:1 / -1;
-  width:calc(50% - 8px);
+  width:50%;
   justify-self:center;
 }
 
@@ -7790,12 +7790,7 @@ const LESSON_MATERIAL_LINKS = [
   {
     name: '51Talk Lesson',
     description: 'Google Drive lesson folder',
-    url: 'https://drive.google.com/drive/folders/1w4c6I9kh8AUg2nRYawBCIWWwgf8Ybclr?usp=sharing'
-  }
-  {
-    name: '200 Words You Must Know',
-    description: 'Google Drive lesson folder',
-    url: 'https://drive.google.com/drive/folders/1WjHqayB7hBQr_cHD-j4kq5gTnMnxzTep?usp=sharing'
+    url: ''
   }
   // ADD MORE FOLDERS HERE, for example:
   // ,{
@@ -8179,6 +8174,7 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
+const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
@@ -8214,7 +8210,6 @@ schedule,
 duration
 );
 
-const status='Active';
 const initialClassesCount=getPackageClassCount(packageName);
 const initialPackageId=`pkg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
 const initialClasses={
