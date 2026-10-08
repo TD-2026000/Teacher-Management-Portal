@@ -2459,6 +2459,21 @@ button.secondary,
   font-size:12pt !important;
   line-height:1.45 !important;
 }
+.preview-contract-agreement-signatures-note{
+  text-align:left !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  padding-left:0 !important;
+  padding-right:0 !important;
+}
+.preview-contract-agreement-signatures-note h3{
+  text-align:left !important;
+  font-weight:800 !important;
+}
+.preview-contract-agreement-signatures-note p{
+  text-align:justify !important;
+  font-weight:400 !important;
+}
 
 
 /* Match Agreement & Signatures font size to the Contract Agreement / Terms text */
@@ -3669,10 +3684,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-legal-portrait-page .pdf-signatures{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important;margin-top:7px!important;font-size:11px!important}
 @media(max-width:900px){.contract-pdf-page.contract-legal-portrait-page{width:calc(100vw - 40px)!important;max-width:680px!important;padding:22px 28px!important}.contract-preview-modal .modal-body{overflow:auto!important}}
 </style>
-<style id="td-contract-signature-preview-fix">
-/* Manual signature lines for Student Contract preview — no signature file uploads. */
-.pdf-manual-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;margin-top:18px}.pdf-manual-signature-card{padding-top:18px}.pdf-manual-signature-line{height:42px;border-bottom:1.5px solid #111;margin-bottom:7px}.pdf-manual-signature-label{font-size:12px;font-weight:800;color:#111}.pdf-manual-signature-name{font-size:11px;color:#667085;margin-top:3px}@media(max-width:700px){.pdf-manual-signature-grid{grid-template-columns:1fr;gap:24px}}
-.pdf-signed-signatures{margin-top:12px}.pdf-signed-signatures h3{font-size:12px!important;margin:0 0 6px!important;padding-bottom:4px;border-bottom:1px solid #d9dee7}.pdf-signed-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pdf-signed-signature-card{border:1px solid #e4e7ec;border-radius:10px;padding:7px;background:#fff;min-height:64px}.pdf-signed-signature-label{font-weight:700;font-size:10px;margin-bottom:4px}.pdf-signed-signature-image{display:block;max-width:100%;height:55px;object-fit:contain;object-position:left center}.pdf-signed-signature-note{font-size:9px;color:#667085;line-height:1.3}@media(max-width:700px){.pdf-signed-signature-grid{grid-template-columns:1fr}}</style>
+
 <style id="td-contract-teacher-custom-agreement">
 .contract-master-agreement{margin-top:18px!important}
 .contract-master-agreement h3{color:var(--global-accent-dark,#00bcbc)!important}
@@ -5334,7 +5346,7 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
     <div class="subscription-header-card">
       <div>
         <h2 class="subscription-title">SUBSCRIPTION</h2>
-        <p class="subscription-subtitle">Keep your Teacher Danyeal Portal access active.</p>
+        <p class="subscription-subtitle">Keep your Teacher Management Portal access active.</p>
       </div>
       <div class="subscription-price-badge">₱99 <span>/ month</span></div>
     </div>
@@ -13737,7 +13749,7 @@ async function previewStudentContract(){
   const infoPx=info ? Math.max(1,infoCount)*24+10 : 0;
   const firstContentLimit=pageHeightPx-pagePaddingPx-headerPx-infoPx;
   const otherContentLimit=pageHeightPx-pagePaddingPx;
-  const finalReserve=255;
+  const finalReserve=95;
 
   function makeMeasure(){
     const m=document.createElement('div');
@@ -13793,27 +13805,7 @@ async function previewStudentContract(){
     if(index===chunks.length-1){
       const ack=document.createElement('div'); ack.className='preview-contract-agreement-signatures-note';
       ack.innerHTML='<h3>AGREEMENT &amp; SIGNATURES</h3><p>By signing this contract, the parent/student confirms that they have read, understood, and agreed to the teacher\'s Private English Class agreement written above.</p>'; page.appendChild(ack);
-      page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
-      const manualSignatures=document.createElement('div');
-      manualSignatures.className='pdf-signed-signatures';
-      const teacherName=getTeacherContractDisplayName()||'Teacher';
-      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
-      const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
-      manualSignatures.innerHTML=`
-        <h3>MANUAL SIGNATURES</h3>
-        <div class="pdf-manual-signature-grid">
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Parent / Guardian Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(parentName)}</div>
-          </div>
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Teacher's Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(teacherName)}</div>
-          </div>
-        </div>`;
-      page.appendChild(manualSignatures);
+      /* Agreement & Signatures is text-only. Manual signature lines are intentionally removed. */
     }
     pages.appendChild(page);
   });
