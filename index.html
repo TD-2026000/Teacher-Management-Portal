@@ -3664,7 +3664,10 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-legal-portrait-page .pdf-signatures{display:grid!important;grid-template-columns:1fr 1fr!important;gap:16px!important;margin-top:7px!important;font-size:11px!important}
 @media(max-width:900px){.contract-pdf-page.contract-legal-portrait-page{width:calc(100vw - 40px)!important;max-width:680px!important;padding:22px 28px!important}.contract-preview-modal .modal-body{overflow:auto!important}}
 </style>
-<style id="td-contract-signature-preview-fix">.pdf-signed-signatures{margin-top:12px}.pdf-signed-signatures h3{font-size:12px!important;margin:0 0 6px!important;padding-bottom:4px;border-bottom:1px solid #d9dee7}.pdf-signed-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pdf-signed-signature-card{border:1px solid #e4e7ec;border-radius:10px;padding:7px;background:#fff;min-height:64px}.pdf-signed-signature-label{font-weight:700;font-size:10px;margin-bottom:4px}.pdf-signed-signature-image{display:block;max-width:100%;height:55px;object-fit:contain;object-position:left center}.pdf-signed-signature-note{font-size:9px;color:#667085;line-height:1.3}@media(max-width:700px){.pdf-signed-signature-grid{grid-template-columns:1fr}}</style>
+<style id="td-contract-signature-preview-fix">
+/* Manual signature lines for Student Contract preview — no signature file uploads. */
+.pdf-manual-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:42px;margin-top:18px}.pdf-manual-signature-card{padding-top:18px}.pdf-manual-signature-line{height:42px;border-bottom:1.5px solid #111;margin-bottom:7px}.pdf-manual-signature-label{font-size:12px;font-weight:800;color:#111}.pdf-manual-signature-name{font-size:11px;color:#667085;margin-top:3px}@media(max-width:700px){.pdf-manual-signature-grid{grid-template-columns:1fr;gap:24px}}
+.pdf-signed-signatures{margin-top:12px}.pdf-signed-signatures h3{font-size:12px!important;margin:0 0 6px!important;padding-bottom:4px;border-bottom:1px solid #d9dee7}.pdf-signed-signature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.pdf-signed-signature-card{border:1px solid #e4e7ec;border-radius:10px;padding:7px;background:#fff;min-height:64px}.pdf-signed-signature-label{font-weight:700;font-size:10px;margin-bottom:4px}.pdf-signed-signature-image{display:block;max-width:100%;height:55px;object-fit:contain;object-position:left center}.pdf-signed-signature-note{font-size:9px;color:#667085;line-height:1.3}@media(max-width:700px){.pdf-signed-signature-grid{grid-template-columns:1fr}}</style>
 <style id="td-contract-teacher-custom-agreement">
 .contract-master-agreement{margin-top:18px!important}
 .contract-master-agreement h3{color:var(--global-accent-dark,#00bcbc)!important}
@@ -4474,7 +4477,6 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div><label>Birthday</label><input id="newStudentBirthday" type="date"></div>
 <div><label>Age</label><input id="newStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
-<div><label>Gender</label><select id="newStudentGender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></div>
 <div><label>Country</label><input id="newStudentCountry" placeholder="Country"></div>
 
 <div><label>Parent/Guardian Name</label><input id="newStudentParentName" placeholder="Parent/Guardian name"></div>
@@ -4583,33 +4585,17 @@ onclick="if(event.target===this) closeAddStudent()"
     </div>
 
     <div class="contract-upload-panel">
-      <h3>SIGNED CONTRACT FILES</h3>
-      <p class="small">Upload the two signed copies separately: your signed copy and the parent's signed copy.</p>
-
-      <div class="contract-sign-upload">
-        <h4>1. Teacher's Signed Contract</h4>
-        <input id="teacherContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'teacher')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
-        <div id="teacherContractFileName" class="contract-sign-file"></div>
-        <div id="teacherContractPreview" class="contract-sign-preview"></div>
-      </div>
-
-      <div class="contract-sign-upload">
-        <h4>2. Parent's Signed Contract</h4>
-        <input id="parentContractFileInput" type="file" accept="image/*,.pdf" onchange="handleContractFile(event,'parent')"><div class="small signature-upload-note">If uploading a signature image, use a clear signature on a white background. The system will automatically make the white background transparent when possible.</div>
-        <div id="parentContractFileName" class="contract-sign-file"></div>
-        <div id="parentContractPreview" class="contract-sign-preview"></div>
-      </div>
+      <h3>CONTRACT ACTIONS</h3>
+      <p class="small">Teacher and parent signatures are completed manually on the printed contract. No signature-file upload is required.</p>
 
       <div class="contract-actions">
-        <button type="button" class="modal-cancel" onclick="removeContractFile('teacher')">Remove Teacher File</button>
-        <button type="button" class="modal-cancel" onclick="removeContractFile('parent')">Remove Parent File</button>
         <button type="button" class="modal-cancel" onclick="cancelStudentContract()">CANCEL</button>
         <button id="saveStudentContractBtn" type="button" class="modal-save" onclick="saveStudentContract()">SAVE CONTRACT</button>
-        <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()" disabled>DOWNLOAD IMAGE</button>
-        <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()" disabled>PREVIEW CONTRACT</button>
+        <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()">DOWNLOAD IMAGE</button>
+        <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()">PREVIEW CONTRACT</button>
       </div>
       <div id="contractError" class="modal-error"></div>
-      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image and Preview Contract stay disabled until the contract is saved. Preview Contract shows the parent-facing image format.</div>
+      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image downloads the current parent-facing contract image directly, and Preview Contract can be opened anytime after selecting a student.</div>
     </div>
   </div>
 </div>
@@ -5709,7 +5695,6 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>Student ID</label><input id="editStudentId" placeholder="Student ID"></div>
       <div class="edit-student-field"><label>Birthday</label><input id="editStudentBirthday" type="date"></div>
       <div class="edit-student-field"><label>Age</label><input id="editStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
-      <div class="edit-student-field"><label>Gender</label><select id="editStudentGender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></div>
       <div class="edit-student-field"><label>Country</label><input id="editStudentCountry" placeholder="Country"></div>
       <div class="edit-student-field"><label>Parent/Guardian Name</label><input id="editStudentParentName" placeholder="Parent/Guardian name"></div>
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
@@ -8489,7 +8474,6 @@ function addStudent(){
 const name=document.getElementById('newStudentName').value.trim();
 const nickname=document.getElementById('newStudentNickname').value.trim();
 const birthday=document.getElementById('newStudentBirthday').value;
-const gender=document.getElementById('newStudentGender').value;
 const country=document.getElementById('newStudentCountry').value.trim();
 const email=document.getElementById('newStudentEmail').value.trim();
 const id=document.getElementById('newStudentId').value.trim();
@@ -8528,8 +8512,8 @@ for(const day of schedule){
 
 const students=getStudents();
 
-if(students.some(s=>s.id.toLowerCase()===id.toLowerCase()))
-return showStudentStatus('That Student ID already exists.',false);
+if(students.some(s=>String(s.id||'').trim().toLowerCase()===id.trim().toLowerCase()))
+return showStudentStatus('That Student ID already exists. Please use a unique Student ID.',false);
 
 const classTime=scheduleDataToText(
 scheduleDetails,
@@ -8553,7 +8537,6 @@ students.push({
   name,
   nickname,
   birthday,
-  gender,
   country,
   email,
   age,
@@ -8576,7 +8559,6 @@ saveStudents(students);
 'newStudentName',
 'newStudentNickname',
 'newStudentBirthday',
-'newStudentGender',
 'newStudentCountry',
 'newStudentEmail',
 'newStudentId',
@@ -8688,7 +8670,6 @@ document.getElementById('editStudentEmail').value=student.email||'';
 document.getElementById('editStudentId').value=student.id||'';
 document.getElementById('editStudentBirthday').value=student.birthday||'';
 document.getElementById('editStudentAge').value=student.age||'';
-document.getElementById('editStudentGender').value=student.gender||'';
 document.getElementById('editStudentCountry').value=student.country||'';
 document.getElementById('editStudentParentName').value=student.parentName||'';
 document.getElementById('editStudentLevel').value=student.level||'';
@@ -8758,8 +8739,8 @@ for(const day of scheduleData.selected){
 }
 
 const students=getStudents();
-if(students.some(s=>s.id.toLowerCase()===id.toLowerCase()&&s.id!==originalId))
-return fail('That Student ID already exists.');
+if(students.some(s=>String(s.id||'').trim().toLowerCase()===id.trim().toLowerCase() && String(s.id||'').trim().toLowerCase()!==String(originalId||'').trim().toLowerCase()))
+return fail('That Student ID already exists. Please use a unique Student ID.');
 
 const index=students.findIndex(s=>s.id===originalId);
 if(index<0)return fail('Student record could not be found.');
@@ -8774,7 +8755,6 @@ nickname:document.getElementById('editStudentNickname').value.trim(),
 email,id,
 birthday:document.getElementById('editStudentBirthday').value,
 age:document.getElementById('editStudentAge').value.trim(),
-gender:document.getElementById('editStudentGender').value,
 country:document.getElementById('editStudentCountry').value.trim(),
 parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
@@ -8900,19 +8880,29 @@ return;
 
 }
 
-saveStudents(
-getStudents().filter(
-s=>s.id!==target
-)
-);
+const students=getStudents();
+const deletedStudent=students.find(s=>String(s.id)===String(target));
+const remainingStudents=students.filter(s=>String(s.id)!==String(target));
+
+/* Delete the student's appointments together with the student record.
+   This includes Scheduled, Completed, and Cancelled appointment records
+   belonging only to this student. */
+const appointments=getAppointments();
+const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(target));
+
+saveStudents(remainingStudents);
+saveAppointments(remainingAppointments);
 
 closeDeleteStudent();
 
 renderDashboard();
-
+renderAppointments();
 populateStudentSelect();
-
 renderRecords();
+renderStudents();
+try{renderContractStudentLists();}catch(e){}
+
+showStudentStatus(`${deletedStudent?.nickname||deletedStudent?.name||'Student'} and all of the student's appointments were deleted successfully.`,true);
 
 showStudentStatus(
 'Student deleted successfully. Existing evaluation history was kept.',
@@ -9743,6 +9733,9 @@ refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id
 }
 
 function aptFilterMatch(item){
+/* Cancelled bookings are kept in storage for history and do NOT reduce the
+   student's class balance, but they are hidden from the calendar. */
+if(String(item.status||'Scheduled').toLowerCase()==='cancelled')return false;
 const search=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
 const status=document.getElementById('appointmentStatusFilter')?.value||'all';
 const text=`${item.studentName||''} ${item.studentId||''}`.toLowerCase();
@@ -9779,7 +9772,7 @@ const inMonth=cursor.getMonth()===appointmentMonthDate.getMonth();
 const today=dateString===getLocalDateString(new Date());
 const selected=dateString===selectedAppointmentDate;
 const dayItems=items.filter(a=>a.date===dateString).sort((a,b)=>String(a.time).localeCompare(String(b.time)));
-const hasBookings=getAppointments().some(a=>a.date===dateString);
+const hasBookings=dayItems.length>0;
 const bookingCount=dayItems.length;
 const bookingLabel=bookingCount===1?'1 booking':`${bookingCount} bookings`;
 const bookingMarkup=bookingCount
@@ -9825,8 +9818,7 @@ const timeline=slots.map(slot=>{
       const attendance=item.attendance?` · ${escapeHtml(String(item.attendance).toUpperCase())}`:'';
       let actionButtons='';
       if(status==='Scheduled'){
-        actionButtons=`<button type="button" class="appointment-time-action open" onclick="event.stopPropagation();openAppointmentModal('${safeId}')">Open</button>
-          <button type="button" class="appointment-time-action view" onclick="event.stopPropagation();viewAppointmentDetails('${safeId}')">View</button>`;
+        actionButtons=`<button type="button" class="appointment-time-action view" onclick="event.stopPropagation();viewAppointmentDetails('${safeId}')">View</button>`;
       }else if(status==='Completed'){
         actionButtons=`<button type="button" class="appointment-time-action completed" disabled>Completed</button>`;
         if(!item.attendance){
@@ -10430,7 +10422,7 @@ content.innerHTML=`
 
   <div class="student-profile-section">
    <h4>STUDENT CONTRACT</h4>
-   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">VIEW CONTRACT IMAGE</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD / PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
+   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">VIEW CONTRACT IMAGE</button><button type="button" class="primary-action" onclick="closeStudentProfile();openStudentContract('${escapeAttr(student.id)}')">EDIT CONTRACT</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD / PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
   </div>
 
   <div class="student-profile-section">
@@ -13188,7 +13180,7 @@ function openCompletedContractsModal(){
    document.body.appendChild(modal);
  }
  const list=document.getElementById('completedContractsList');
- if(list)list.innerHTML=completed.length?completed.map(s=>`<div class="contract-student-card completed"><div class="contract-student-meta"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}</span><span class="contract-badge completed">Contract Submitted</span></div><div class="contract-list-actions"><button type="button" class="secondary-action" onclick="closeCompletedContractsModal();openStudentContract('${escapeAttr(s.id)}')">VIEW CONTRACT</button></div></div>`).join(''):`<div class="contract-list-empty">No completed Student Contracts yet.</div>`;
+ if(list)list.innerHTML=completed.length?completed.map(s=>`<div class="contract-student-card completed"><div class="contract-student-meta"><strong>${escapeHtml(s.name||'Unnamed Student')}</strong><span>Student ID: ${escapeHtml(s.id||'—')}</span><span class="contract-badge completed">Contract Submitted</span></div><div class="contract-list-actions"><button type="button" class="secondary-action" onclick="closeCompletedContractsModal();openStudentContract('${escapeAttr(s.id)}')">VIEW / EDIT CONTRACT</button></div></div>`).join(''):`<div class="contract-list-empty">No completed Student Contracts yet.</div>`;
  modal.classList.add('show');
 }
 function closeCompletedContractsModal(){const m=document.getElementById('completedContractsModal');if(m)m.classList.remove('show');}
@@ -13226,16 +13218,11 @@ function loadStudentContractDetails(id, options={}){
  const custom=savedContract?.customSections||{};
  const agreementEl=document.getElementById('contractAgreementText');
  if(agreementEl) agreementEl.value=custom.agreementText || [custom.classArrangement,custom.lessonMaterials,custom.packagePayment].filter(Boolean).join('\n\n') || ''; const agreementEditor=document.getElementById('contractAgreementEditor'); if(agreementEditor) agreementEditor.innerHTML=custom.agreementHtml || (agreementEl?.value ? escapeHtml(agreementEl.value).replace(/\n/g,'<br>') : '');
- if(savedContract?.teacherFileData && savedContract?.teacherFileName) contractFileData.teacher={name:savedContract.teacherFileName,type:savedContract.teacherFileType||'',data:savedContract.teacherFileData};
- if(savedContract?.parentFileData && savedContract?.parentFileName) contractFileData.parent={name:savedContract.parentFileName,type:savedContract.parentFileType||'',data:savedContract.parentFileData};
- ['teacher','parent'].forEach(role=>{const f=contractFileData[role];if(!f)return;const nm=document.getElementById(role+'ContractFileName');if(nm)nm.textContent=f.name||'';const pv=document.getElementById(role+'ContractPreview');if(pv&&String(f.type||'').startsWith('image/'))pv.innerHTML=`<img src="${f.data}" alt="${role} signed contract" style="max-width:100%;max-height:180px;border-radius:10px">`;});
  if(status)status.textContent=(student.name||'Selected');
  if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const pn=document.getElementById('contractParentName');if(pn)pn.textContent=student.parentName||'____________________________';const record=getStudentContracts()[id];
  contractSavedForStudentId=record?.submittedAt?id:''; setStudentContractActionState(!!contractSavedForStudentId); contractPreviewDataUrl='';
  if(status&&record?.submittedAt)status.textContent=`${student.name} — Submitted`;
- if(record?.teacherFileData){contractFileData.teacher={name:record.teacherFileName||'Teacher Signed Contract',type:record.teacherFileType||'',data:record.teacherFileData};renderContractPreview(contractFileData.teacher,'teacher');}
- if(record?.parentFileData){contractFileData.parent={name:record.parentFileName||'Parent Signed Contract',type:record.parentFileType||'',data:record.parentFileData};renderContractPreview(contractFileData.parent,'parent');}
 }
 function handleContractFile(event,role){const file=event.target.files?.[0];if(!file)return;if(file.size>8*1024*1024){showContractError('Please upload a file smaller than 8 MB.');event.target.value='';return;}const r=new FileReader();r.onload=async()=>{let data=r.result,type=file.type;if(type.startsWith('image/')){try{const cleaned=await removeWhiteSignatureBackground(data);data=cleaned.data;type='image/png';}catch(e){}}contractFileData[role]={name:file.name,type,data};const n=document.getElementById(role+'ContractFileName');if(n)n.textContent=`Selected: ${file.name}`;renderContractPreview(contractFileData[role],role);};r.readAsDataURL(file);}
 async function removeWhiteSignatureBackground(dataUrl){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,c.width,c.height),a=d.data;for(let i=0;i<a.length;i+=4){const r=a[i],g=a[i+1],b=a[i+2];if(r>235&&g>235&&b>235)a[i+3]=0;else if(r>210&&g>210&&b>210){const whiteness=(r+g+b)/3;a[i+3]=Math.max(0,Math.min(255,Math.round((255-whiteness)*6)));}}resolve({data:c.toDataURL('image/png')});};img.onerror=reject;img.src=dataUrl;});}
@@ -13256,10 +13243,11 @@ function cancelStudentContract(){
   renderContractStudentLists();
 }
 async function setStudentContractActionState(saved){
+ const hasStudent=!!String(contractSelectedStudentId||'');
  const b=document.getElementById('downloadStudentContractBtn');
  const p=document.getElementById('previewStudentContractBtn');
- if(b)b.disabled=!saved;
- if(p)p.disabled=!saved;
+ if(b)b.disabled=!hasStudent;
+ if(p)p.disabled=!hasStudent;
 }
 
 async function buildStudentContractImage(){
@@ -13477,16 +13465,26 @@ async function previewStudentContract(){
       const ack=document.createElement('div'); ack.className='preview-contract-agreement-signatures-note';
       ack.innerHTML='<h3>AGREEMENT &amp; SIGNATURES</h3><p>By signing this contract, the parent/student confirms that they have read, understood, and agreed to the teacher\'s Private English Class agreement written above.</p>'; page.appendChild(ack);
       page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
-      const signedFiles=document.createElement('div'); signedFiles.className='pdf-signed-signatures'; signedFiles.innerHTML='<h3>Signatures</h3><div class="pdf-signed-signature-grid"></div>';
-      const signedGrid=signedFiles.querySelector('.pdf-signed-signature-grid'); const teacherName=getTeacherContractDisplayName()||'Teacher';
-      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null; const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
-      [['teacher',`Teacher: ${teacherName}`],['parent',`Parent / Guardian: ${parentName}`]].forEach(([role,label])=>{
-        const savedFile=role==='teacher'?savedContract?.teacherFileData:savedContract?.parentFileData; const savedType=role==='teacher'?savedContract?.teacherFileType:savedContract?.parentFileType; const file=contractFileData[role]||(savedFile?{data:savedFile,type:savedType||''}:null);
-        const card=document.createElement('div');card.className='pdf-signed-signature-card'; const title=document.createElement('div');title.className='pdf-signed-signature-label';title.textContent=label;card.appendChild(title);
-        if(file?.data&&String(file.type||'').startsWith('image/')){const img=document.createElement('img');img.src=file.data;img.alt=label;img.className='pdf-signed-signature-image';card.appendChild(img);} else if(file?.data&&file.type==='application/pdf'){const note=document.createElement('div');note.className='pdf-signed-signature-note';note.textContent='Signed PDF uploaded.';card.appendChild(note);} else {const note=document.createElement('div');note.className='pdf-signed-signature-note';note.textContent='Signature not uploaded.';card.appendChild(note);}
-        signedGrid.appendChild(card);
-      });
-      page.appendChild(signedFiles);
+      const manualSignatures=document.createElement('div');
+      manualSignatures.className='pdf-signed-signatures';
+      const teacherName=getTeacherContractDisplayName()||'Teacher';
+      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
+      const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
+      manualSignatures.innerHTML=`
+        <h3>MANUAL SIGNATURES</h3>
+        <div class="pdf-manual-signature-grid">
+          <div class="pdf-manual-signature-card">
+            <div class="pdf-manual-signature-line"></div>
+            <div class="pdf-manual-signature-label">Parent / Guardian Signature</div>
+            <div class="pdf-manual-signature-name">${escapeHtml(parentName)}</div>
+          </div>
+          <div class="pdf-manual-signature-card">
+            <div class="pdf-manual-signature-line"></div>
+            <div class="pdf-manual-signature-label">Teacher's Signature</div>
+            <div class="pdf-manual-signature-name">${escapeHtml(teacherName)}</div>
+          </div>
+        </div>`;
+      page.appendChild(manualSignatures);
     }
     pages.appendChild(page);
   });
@@ -13497,9 +13495,7 @@ function closeStudentContractPreview(){const m=document.getElementById('studentC
 
 async function downloadStudentContractPDF(){
  const selectedId=String(contractSelectedStudentId||'');
- const savedRecord=selectedId ? (getStudentContracts()?.[selectedId] || null) : null;
- if(!selectedId || !savedRecord?.submittedAt){showContractError('Please save the Student Contract first before downloading.');return;}
- contractSavedForStudentId=selectedId;
+ if(!selectedId){showContractError('Please select a student first.');return;}
  try{
   if(typeof html2canvas!=='function')throw new Error('Contract image renderer is not available right now.');
 
@@ -13535,19 +13531,14 @@ async function downloadStudentContractPDF(){
   const safeName=String(student?.name||'Student Contract').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'')||'Student-Contract';
   const filename=`${safeName}-Student-Contract.png`;
 
-  if(window.showSaveFilePicker){
-    const handle=await window.showSaveFilePicker({
-      suggestedName:filename,
-      types:[{description:'PNG Image',accept:{'image/png':['.png']}}]
-    });
-    const writable=await handle.createWritable();
-    await writable.write(blob);
-    await writable.close();
-  }else{
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
  }catch(err){
   if(err?.name==='AbortError')return;
   showContractError(err.message||'Unable to download the Student Contract image.');
@@ -13572,11 +13563,11 @@ function saveStudentContract(){
  const e=document.getElementById('contractError');if(e){e.textContent='';e.style.padding='';}
  const student=getStudents().find(s=>s.id===contractSelectedStudentId);
  if(!student)return showContractError('Please select a student first.');
- /* SAVE CONTRACT must save the filled contract itself. Signed-file uploads are optional and must not block saving. */
+ /* SAVE CONTRACT saves the filled contract itself. Signatures are completed manually on the printed contract. */
  const contracts=getStudentContracts();
  const savedAt=new Date().toISOString();
  const previous=contracts[student.id]||null;
- const record={studentId:student.id,studentName:student.name,parentEmail:student.email,teacherFileName:contractFileData.teacher?.name||'',teacherFileType:contractFileData.teacher?.type||'',teacherFileData:contractFileData.teacher?.data||'',customSections:getContractCustomSectionValues(),parentFileName:contractFileData.parent?.name||'',parentFileType:contractFileData.parent?.type||'',parentFileData:contractFileData.parent?.data||'',submittedAt:savedAt,savedAt,status:'Completed',packageId:getCurrentStudentPackage(student)?.id||student.currentPackageId||'',packageName:student.packageName||''};
+ const record={studentId:student.id,studentName:student.name,parentEmail:student.email,customSections:getContractCustomSectionValues(),submittedAt:savedAt,savedAt,status:'Completed',packageId:getCurrentStudentPackage(student)?.id||student.currentPackageId||'',packageName:student.packageName||''};
  contracts[student.id]=record;
  saveStudentContracts(contracts);
  const students=getStudents();
@@ -13591,6 +13582,7 @@ function saveStudentContract(){
  try{renderContractStudentLists();}catch(e){console.warn('Contract list refresh warning:',e);}
  try{if(typeof renderStudents==='function')renderStudents();}catch(e){console.warn('Student list refresh warning:',e);}
  try{if(typeof renderDashboard==='function')renderDashboard();}catch(e){console.warn('Dashboard refresh warning:',e);}
+ try{if(typeof renderStudents==='function')renderStudents();}catch(e){console.warn('Student record refresh warning:',e);}
  const st=document.getElementById('contractStatusText');if(st)st.textContent=`${student.name} — Completed`;
  const completedBox=document.getElementById('contractCompletedList');
  if(completedBox){ completedBox.scrollIntoView({behavior:'smooth',block:'start'}); }
