@@ -8093,24 +8093,52 @@ return;
 
 }
 
-localStorage.removeItem(
-userStorageKey(STUDENTS_BASE_KEY)
-);
+/*
+   CLEAR ALL RECORDS = clear every student-related teaching record
+   for the currently signed-in teacher. This includes:
+   - Students
+   - Evaluations / records
+   - Student payments / receipts
+   - Student contracts
+   - Appointments / calendar bookings
+   - Appointment reset marker so the calendar is completely empty
 
-localStorage.removeItem(
-userStorageKey(EVALUATIONS_BASE_KEY)
-);
+   Teacher profile, login account, subscription, and Lesson Materials
+   are intentionally NOT deleted.
+*/
+const uid=String(currentUser.id||'');
+
+const keysToRemove=[
+  userStorageKey(STUDENTS_BASE_KEY),
+  userStorageKey(EVALUATIONS_BASE_KEY),
+  userStorageKey(PAYMENT_RECEIPTS_BASE_KEY),
+  userStorageKey(STUDENT_CONTRACTS_BASE_KEY),
+  `teacherDanyealAppointments_${uid}`,
+  `teacherDanyealAppointmentsReset_20261001_${uid}`
+];
+
+keysToRemove.forEach(key=>{
+  if(key)localStorage.removeItem(key);
+});
 
 closeClearAllRecords();
 
+/* Re-render every affected part immediately. */
 renderDashboard();
-
 populateStudentSelect();
-
 renderRecords();
 
+/* Refresh appointment/calendar views if their containers are present. */
+try{
+  if(typeof renderAppointments==='function') renderAppointments();
+}catch(e){ console.warn('Appointment refresh skipped:',e); }
+
+try{
+  if(typeof renderCalendar==='function') renderCalendar();
+}catch(e){ console.warn('Calendar refresh skipped:',e); }
+
 showStudentStatus(
-'All student and evaluation records have been cleared successfully.',
+'All student records, evaluations, contracts, payments, appointments, and calendar bookings have been cleared successfully.',
 true
 );
 
