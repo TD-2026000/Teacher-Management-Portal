@@ -3777,12 +3777,24 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .subscription-method-card small{margin-top:4px;color:#667085;}
 .subscription-method-card.selected{border-color:var(--portal-accent-dark,#267aa0);box-shadow:0 0 0 3px rgba(38,122,160,.12);background:var(--global-accent-soft,#f5faff);}
 .subscription-payment-instructions{min-height:70px;border:1px dashed #b9c2c9;border-radius:12px;padding:18px;margin-bottom:18px;background:#fafcfd;line-height:1.5;}
-.subscription-open-payment-wrap{display:flex;justify-content:center;margin:8px 0 14px;}
-.subscription-open-payment-btn{display:inline-flex;align-items:center;justify-content:center;min-width:360px;padding:16px 28px;border-radius:10px;background:#00d9d9;color:#000000;text-decoration:none;font-weight:900;font-size:16px;border:0;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);}
-.subscription-open-payment-btn:hover{background:#00c8c8;}
-.subscription-payment-note{margin:0 auto 22px;padding:12px 16px;max-width:900px;color:#d00000;font-size:12px;line-height:1.55;text-align:center;}
+.subscription-payment-logo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:8px 0 18px;}
+.subscription-payment-logo-card{min-height:92px;display:flex;align-items:center;gap:14px;padding:16px 18px;border:2px solid #d8dde3;border-radius:14px;background:#fff;color:#111;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;}
+.subscription-payment-logo-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.12);border-color:#00c8c8;}
+.subscription-payment-logo-card .subscription-logo-mark{width:82px;height:52px;min-width:82px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;background:#eef2f6;color:#111;letter-spacing:-.6px;text-align:center;padding:5px 7px;}
+.subscription-payment-logo-card strong{display:block;font-size:17px;font-weight:900;}
+.subscription-payment-logo-card small{display:block;margin-top:4px;color:#667085;font-size:11px;font-weight:700;}
+.subscription-payment-logo-card.gcash .subscription-logo-mark{background:#0072ce;color:#fff;}
+.subscription-payment-logo-card.paypal .subscription-logo-mark{background:#0070ba;color:#fff;}
+.subscription-payment-logo-card.bpi .subscription-logo-mark{background:#e31837;color:#fff;font-size:17px;}
+.subscription-payment-logo-card.landbank .subscription-logo-mark{background:#00843d;color:#fff;font-size:13px;}
+.subscription-payment-logo-card.cimb .subscription-logo-mark{background:#d71920;color:#fff;font-size:17px;}
+.subscription-payment-logo-card.unionbank .subscription-logo-mark{background:#f58220;color:#fff;font-size:13px;}
+.subscription-payment-logo-card.aub .subscription-logo-mark{background:linear-gradient(135deg,#e31b23 0%,#e31b23 55%,#ffd200 55%,#ffd200 100%);color:#fff;font-size:17px;}
+.subscription-payment-logo-card.aub .subscription-logo-mark span{background:rgba(255,255,255,.92);color:#e31b23;border-radius:6px;padding:3px 6px;font-weight:900;}
+.subscription-payment-note{margin:0 auto 22px;padding:12px 16px;max-width:1000px;color:#d00000;font-size:12px;line-height:1.55;text-align:center;}
 .subscription-payment-note strong{font-size:11px;}
-@media(max-width:700px){.subscription-open-payment-btn{width:100%;min-width:0;}}
+@media(max-width:1000px){.subscription-payment-logo-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:700px){.subscription-payment-logo-grid{grid-template-columns:1fr;}.subscription-payment-logo-card{min-height:82px;}}
 .subscription-payment-instructions img{display:block;max-width:240px;max-height:240px;width:auto;height:auto;margin:12px auto;border-radius:10px;border:1px solid #ddd;background:#fff;}
 .subscription-payment-instructions .subscription-card-link{display:inline-block;margin-top:10px;padding:11px 16px;border-radius:9px;background:var(--portal-accent,#87CEEB);color:#111;text-decoration:none;font-weight:900;}
 .subscription-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px;}
@@ -5354,13 +5366,33 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 
       <div class="subscription-section-title">1. PAYMENT METHOD</div>
 
-      <div class="subscription-open-payment-wrap">
-        <a class="subscription-open-payment-btn" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer">OPEN PAYMENT METHOD</a>
+      <div class="subscription-payment-logo-grid">
+        <a class="subscription-payment-logo-card gcash" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - GCash">
+          <div class="subscription-logo-mark">GCash</div><div><strong>GCash</strong><small>E-Wallet</small></div>
+        </a>
+        <a class="subscription-payment-logo-card paypal" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - PayPal">
+          <div class="subscription-logo-mark">PayPal</div><div><strong>PayPal</strong><small>Online Payment</small></div>
+        </a>
+        <a class="subscription-payment-logo-card bpi" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - BPI">
+          <div class="subscription-logo-mark">BPI</div><div><strong>BPI</strong><small>Bank / InstaPay</small></div>
+        </a>
+        <a class="subscription-payment-logo-card landbank" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - LANDBANK">
+          <div class="subscription-logo-mark">LANDBANK</div><div><strong>LANDBANK</strong><small>Bank / InstaPay</small></div>
+        </a>
+        <a class="subscription-payment-logo-card cimb" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - CIMB">
+          <div class="subscription-logo-mark">CIMB</div><div><strong>CIMB</strong><small>Bank / InstaPay</small></div>
+        </a>
+        <a class="subscription-payment-logo-card unionbank" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - UnionBank">
+          <div class="subscription-logo-mark">UnionBank</div><div><strong>UnionBank</strong><small>Bank / InstaPay</small></div>
+        </a>
+        <a class="subscription-payment-logo-card aub" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - AUB">
+          <div class="subscription-logo-mark"><span>AUB</span></div><div><strong>AUB</strong><small>Bank / InstaPay</small></div>
+        </a>
       </div>
 
       <div class="subscription-payment-note">
         <strong>Note:</strong><br>
-        Please select your payment method on the Payment Methods website. After payment, return here and indicate which payment method you used in the field below.
+        Click your preferred payment method above to open the Payment Methods website. After payment, return here and indicate which payment method you used below.
       </div>
 
       <div class="subscription-form-grid subscription-method-selection-grid">
