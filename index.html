@@ -4474,6 +4474,7 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div><label>Birthday</label><input id="newStudentBirthday" type="date"></div>
 <div><label>Age</label><input id="newStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
+<div><label>Gender</label><select id="newStudentGender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></div>
 <div><label>Country</label><input id="newStudentCountry" placeholder="Country"></div>
 
 <div><label>Parent/Guardian Name</label><input id="newStudentParentName" placeholder="Parent/Guardian name"></div>
@@ -5708,6 +5709,7 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>Student ID</label><input id="editStudentId" placeholder="Student ID"></div>
       <div class="edit-student-field"><label>Birthday</label><input id="editStudentBirthday" type="date"></div>
       <div class="edit-student-field"><label>Age</label><input id="editStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
+      <div class="edit-student-field"><label>Gender</label><select id="editStudentGender"><option value="">Select gender</option><option>Male</option><option>Female</option></select></div>
       <div class="edit-student-field"><label>Country</label><input id="editStudentCountry" placeholder="Country"></div>
       <div class="edit-student-field"><label>Parent/Guardian Name</label><input id="editStudentParentName" placeholder="Parent/Guardian name"></div>
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
@@ -8487,6 +8489,7 @@ function addStudent(){
 const name=document.getElementById('newStudentName').value.trim();
 const nickname=document.getElementById('newStudentNickname').value.trim();
 const birthday=document.getElementById('newStudentBirthday').value;
+const gender=document.getElementById('newStudentGender').value;
 const country=document.getElementById('newStudentCountry').value.trim();
 const email=document.getElementById('newStudentEmail').value.trim();
 const id=document.getElementById('newStudentId').value.trim();
@@ -8550,6 +8553,7 @@ students.push({
   name,
   nickname,
   birthday,
+  gender,
   country,
   email,
   age,
@@ -8572,6 +8576,7 @@ saveStudents(students);
 'newStudentName',
 'newStudentNickname',
 'newStudentBirthday',
+'newStudentGender',
 'newStudentCountry',
 'newStudentEmail',
 'newStudentId',
@@ -8683,6 +8688,7 @@ document.getElementById('editStudentEmail').value=student.email||'';
 document.getElementById('editStudentId').value=student.id||'';
 document.getElementById('editStudentBirthday').value=student.birthday||'';
 document.getElementById('editStudentAge').value=student.age||'';
+document.getElementById('editStudentGender').value=student.gender||'';
 document.getElementById('editStudentCountry').value=student.country||'';
 document.getElementById('editStudentParentName').value=student.parentName||'';
 document.getElementById('editStudentLevel').value=student.level||'';
@@ -8768,6 +8774,7 @@ nickname:document.getElementById('editStudentNickname').value.trim(),
 email,id,
 birthday:document.getElementById('editStudentBirthday').value,
 age:document.getElementById('editStudentAge').value.trim(),
+gender:document.getElementById('editStudentGender').value,
 country:document.getElementById('editStudentCountry').value.trim(),
 parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
