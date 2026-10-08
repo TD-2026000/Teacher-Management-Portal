@@ -3794,6 +3794,72 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 }
 @media(max-width:450px){.subscription-method-grid{grid-template-columns:1fr;}}
 </style>
+
+<style id="td-delete-account-feature">
+.profile-more-menu .profile-delete-account-option{
+  color:#b00020;
+}
+.profile-more-menu .profile-delete-account-option:hover{
+  background:#fff0f0;
+}
+.delete-account-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.58);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:12000;
+  padding:18px;
+}
+.delete-account-backdrop.show{display:flex}
+.delete-account-modal{
+  width:min(500px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:15px;
+  box-shadow:0 20px 70px rgba(0,0,0,.35);
+  padding:20px;
+}
+.delete-account-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  border-bottom:1px solid #ddd;
+  padding-bottom:12px;
+}
+.delete-account-header h3{margin:0;color:#b00020;font-size:19px}
+.delete-account-header p{margin:5px 0 0;color:#666;font-size:12px;line-height:1.4}
+.delete-account-close{
+  border:0;background:#eee;border-radius:8px;width:34px;height:34px;
+  font-size:20px;cursor:pointer;font-weight:700;
+}
+.delete-account-step{
+  margin-top:15px;border:1px solid #ddd;border-radius:10px;padding:12px;background:#fafafa;
+}
+.delete-account-step h4{margin:0 0 8px;font-size:14px}
+.delete-account-step p{margin:0 0 9px;font-size:12px;color:#666;line-height:1.5}
+.delete-account-captcha-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.delete-account-captcha-box{
+  background:#f0f0f0;border:1px solid #ccc;border-radius:7px;padding:8px 12px;font-weight:800;letter-spacing:1px;
+}
+.delete-account-captcha-input{width:90px;padding:8px;border:1px solid #bbb;border-radius:7px}
+.delete-account-email{font-weight:800;word-break:break-all;color:#333}
+.delete-account-code-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.delete-account-code-row input{flex:1;min-width:150px;padding:9px;border:1px solid #bbb;border-radius:7px;letter-spacing:2px}
+.delete-account-btn{width:100%;border:0;border-radius:8px;padding:10px;font-weight:800;cursor:pointer;margin-top:9px}
+.delete-account-send{background:#eee;color:#222}
+.delete-account-confirm{background:#b00020;color:#fff}
+.delete-account-confirm:disabled,.delete-account-send:disabled{opacity:.55;cursor:not-allowed}
+.delete-account-danger-note{margin-top:12px;padding:10px;border-radius:8px;background:#fff1f1;color:#8a0000;font-size:12px;line-height:1.5}
+.delete-account-status{display:none;margin-top:10px;padding:9px;border-radius:8px;font-size:12px;line-height:1.5}
+.delete-account-status.show{display:block}
+.delete-account-status.ok{background:#e4f7e8;color:#236c35}
+.delete-account-status.error{background:#ffe2e2;color:#8a0000}
+</style>
+
 </head>
 
 <body>
@@ -5622,6 +5688,14 @@ onclick="toggleProfileMoreMenu(event)"
 id="profileMoreMenu"
 class="profile-more-menu"
 >
+
+<button
+type="button"
+class="profile-delete-account-option"
+onclick="openDeleteAccountModal(event)"
+>
+Delete Account
+</button>
 
 <button
 type="button"
@@ -15586,6 +15660,214 @@ async function submitSubscriptionPayment(){
 </script>
 
 
+
+
+
+<!-- DELETE ACCOUNT CONFIRMATION -->
+<div id="deleteAccountBackdrop" class="delete-account-backdrop" onclick="if(event.target===this)closeDeleteAccountModal()">
+  <div class="delete-account-modal" role="dialog" aria-modal="true" aria-labelledby="deleteAccountTitle">
+    <div class="delete-account-header">
+      <div>
+        <h3 id="deleteAccountTitle">Delete Account</h3>
+        <p>This permanently deletes your teacher account and its portal records.</p>
+      </div>
+      <button type="button" class="delete-account-close" onclick="closeDeleteAccountModal()">×</button>
+    </div>
+
+    <div class="delete-account-step">
+      <h4>1. CAPTCHA Verification</h4>
+      <p>Complete the CAPTCHA before requesting the Gmail confirmation code.</p>
+      <div class="delete-account-captcha-row">
+        <div id="deleteAccountCaptchaQuestion" class="delete-account-captcha-box">—</div>
+        <input id="deleteAccountCaptchaInput" class="delete-account-captcha-input" type="text" inputmode="numeric" autocomplete="off" placeholder="Answer">
+        <button type="button" class="delete-account-send" onclick="verifyDeleteAccountCaptcha()">Verify</button>
+      </div>
+    </div>
+
+    <div class="delete-account-step">
+      <h4>2. Confirm Through Gmail</h4>
+      <p>A verification code will be sent to:</p>
+      <div id="deleteAccountEmail" class="delete-account-email">—</div>
+      <button id="deleteAccountSendCodeBtn" type="button" class="delete-account-btn delete-account-send" onclick="sendDeleteAccountEmailCode()" disabled>Send Gmail Confirmation Code</button>
+      <div class="delete-account-code-row" style="margin-top:9px">
+        <input id="deleteAccountEmailCode" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Enter 6-digit code">
+      </div>
+    </div>
+
+    <div class="delete-account-danger-note">
+      <b>Warning:</b> Account deletion is permanent. Your teacher profile, students, appointments, contracts, evaluations, payments and subscription records associated with this account will be removed according to the database cascade rules.
+    </div>
+
+    <div id="deleteAccountStatus" class="delete-account-status"></div>
+
+    <button id="deleteAccountConfirmBtn" type="button" class="delete-account-btn delete-account-confirm" onclick="confirmDeleteTeacherAccount()" disabled>Delete My Account Permanently</button>
+    <button type="button" class="delete-account-btn" style="background:#eee;color:#222" onclick="closeDeleteAccountModal()">Cancel</button>
+  </div>
+</div>
+
+
+
+<script id="td-delete-account-feature-js">
+/* =========================================================
+   DELETE TEACHER ACCOUNT
+   CAPTCHA + Supabase Gmail reauthentication + secure RPC
+========================================================= */
+let deleteAccountCaptchaAnswer = null;
+let deleteAccountCaptchaVerified = false;
+let deleteAccountEmailVerified = false;
+
+function setDeleteAccountStatus(message, type='error'){
+  const el=document.getElementById('deleteAccountStatus');
+  if(!el)return;
+  el.textContent=message||'';
+  el.className='delete-account-status show '+(type==='ok'?'ok':'error');
+}
+
+function createDeleteAccountCaptcha(){
+  const a=Math.floor(Math.random()*8)+2;
+  const b=Math.floor(Math.random()*8)+1;
+  deleteAccountCaptchaAnswer=a+b;
+  deleteAccountCaptchaVerified=false;
+  deleteAccountEmailVerified=false;
+  const q=document.getElementById('deleteAccountCaptchaQuestion');
+  const input=document.getElementById('deleteAccountCaptchaInput');
+  const send=document.getElementById('deleteAccountSendCodeBtn');
+  const confirm=document.getElementById('deleteAccountConfirmBtn');
+  if(q)q.textContent=`${a} + ${b} = ?`;
+  if(input){input.value='';input.disabled=false;}
+  if(send)send.disabled=true;
+  if(confirm)confirm.disabled=true;
+  const code=document.getElementById('deleteAccountEmailCode');
+  if(code)code.value='';
+  const email=document.getElementById('deleteAccountEmail');
+  if(email)email.textContent=currentUser?.email||'—';
+  setDeleteAccountStatus('', 'error');
+  const status=document.getElementById('deleteAccountStatus');
+  if(status)status.className='delete-account-status';
+}
+
+function openDeleteAccountModal(event){
+  if(event)event.stopPropagation();
+  closeProfileMoreMenu();
+  if(!currentUser){alert('Please log in first.');return;}
+  createDeleteAccountCaptcha();
+  document.getElementById('deleteAccountBackdrop')?.classList.add('show');
+}
+
+function closeDeleteAccountModal(){
+  document.getElementById('deleteAccountBackdrop')?.classList.remove('show');
+}
+
+function verifyDeleteAccountCaptcha(){
+  const input=document.getElementById('deleteAccountCaptchaInput');
+  const value=Number(String(input?.value||'').trim());
+  if(!Number.isFinite(value) || value!==deleteAccountCaptchaAnswer){
+    deleteAccountCaptchaVerified=false;
+    deleteAccountEmailVerified=false;
+    const send=document.getElementById('deleteAccountSendCodeBtn');
+    const confirm=document.getElementById('deleteAccountConfirmBtn');
+    if(send)send.disabled=true;
+    if(confirm)confirm.disabled=true;
+    setDeleteAccountStatus('Incorrect CAPTCHA. Please try again.', 'error');
+    createDeleteAccountCaptcha();
+    return;
+  }
+  deleteAccountCaptchaVerified=true;
+  const send=document.getElementById('deleteAccountSendCodeBtn');
+  if(send)send.disabled=false;
+  setDeleteAccountStatus('CAPTCHA verified. You can now request the Gmail confirmation code.', 'ok');
+}
+
+async function sendDeleteAccountEmailCode(){
+  if(!deleteAccountCaptchaVerified){
+    setDeleteAccountStatus('Please verify the CAPTCHA first.','error');
+    return;
+  }
+  if(!currentUser?.email){
+    setDeleteAccountStatus('No Gmail account is currently signed in.','error');
+    return;
+  }
+  const btn=document.getElementById('deleteAccountSendCodeBtn');
+  if(btn){btn.disabled=true;btn.textContent='Sending...';}
+  try{
+    const {error}=await supabaseClient.auth.reauthenticate();
+    if(error)throw error;
+    setDeleteAccountStatus('Confirmation code sent to your Gmail. Check your inbox and spam folder, then enter the 6-digit code.','ok');
+  }catch(error){
+    console.error('Delete account Gmail confirmation error:',error);
+    setDeleteAccountStatus('Unable to send the Gmail confirmation code. Make sure Supabase email/SMTP is configured, then try again.','error');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Resend Gmail Confirmation Code';}
+  }
+}
+
+async function confirmDeleteTeacherAccount(){
+  if(!deleteAccountCaptchaVerified){
+    setDeleteAccountStatus('Please complete the CAPTCHA first.','error');
+    return;
+  }
+  if(!currentUser?.email){
+    setDeleteAccountStatus('No signed-in account found.','error');
+    return;
+  }
+  const code=String(document.getElementById('deleteAccountEmailCode')?.value||'').trim();
+  if(!/^\d{6}$/.test(code)){
+    setDeleteAccountStatus('Enter the 6-digit code sent to your Gmail.','error');
+    return;
+  }
+
+  const confirmBtn=document.getElementById('deleteAccountConfirmBtn');
+  if(confirmBtn){confirmBtn.disabled=true;confirmBtn.textContent='Verifying...';}
+
+  try{
+    const email=currentUser.email;
+    const {data:verifiedData,error:verifyError}=await supabaseClient.auth.verifyOtp({
+      email,
+      token:code,
+      type:'reauthentication'
+    });
+    if(verifyError)throw verifyError;
+    deleteAccountEmailVerified=true;
+
+    if(confirmBtn)confirmBtn.textContent='Deleting Account...';
+
+    const {error:deleteError}=await supabaseClient.rpc('delete_my_account');
+    if(deleteError)throw deleteError;
+
+    const deletedUserId=currentUser.id;
+    clearTeacherLocalDataBeforeAccountDeletion(deletedUserId);
+    currentUser=null;
+    closeDeleteAccountModal();
+
+    try{await supabaseClient.auth.signOut();}catch(e){}
+
+    alert('Your teacher account has been permanently deleted.');
+    document.getElementById('appShell')?.classList.add('hidden');
+    document.getElementById('authScreen')?.classList.remove('hidden');
+    if(typeof showAuthPanel==='function')showAuthPanel('login');
+  }catch(error){
+    console.error('Delete teacher account error:',error);
+    deleteAccountEmailVerified=false;
+    setDeleteAccountStatus('Account deletion was not completed. Check the Gmail code and make sure the delete_my_account Supabase function is installed.','error');
+  }finally{
+    if(confirmBtn){confirmBtn.disabled=false;confirmBtn.textContent='Delete My Account Permanently';}
+  }
+}
+
+function clearTeacherLocalDataBeforeAccountDeletion(userId){
+  if(!userId)return;
+  const exactKeys=[
+    `teacherDanyealStudents_v2_${userId}`,
+    `teacherDanyealEvaluations_v2_${userId}`,
+    `teacherDanyealProfile_${userId}`,
+    `teacherDanyealAppointments_${userId}`,
+    `teacherDanyealStudentContracts_v1_${userId}`,
+    `teacherDanyealPaymentReceipts_v1_${userId}`,
+    `teacherDanyealSubscriptions_v1_${userId}`
+  ];
+  exactKeys.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});
+}
+</script>
 
 </body>
 </html>
