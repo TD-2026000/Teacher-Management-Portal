@@ -325,21 +325,14 @@ body{
 }
 
 #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
-  grid-column:auto;
-  width:auto;
-  justify-self:stretch;
-}
-
-#dashboardPage .dashboard-menu-btn.subscription-management-dashboard-btn{
-  grid-column:auto;
-  width:auto;
-  justify-self:stretch;
+  grid-column:1 / -1;
+  width:50%;
+  justify-self:center;
 }
 
 @media(max-width:700px){
-  #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn,
-  #dashboardPage .dashboard-menu-btn.subscription-management-dashboard-btn{
-    width:auto;
+  #dashboardPage .dashboard-menu-btn.lesson-materials-dashboard-btn{
+    width:100%;
   }
 }
 
@@ -2215,14 +2208,23 @@ button.secondary,
 .schedule-check{display:flex;align-items:center;gap:5px;border:1px solid #ccc;border-radius:7px;padding:7px 9px;background:#fafafa;font-size:12px;font-weight:700}
 .schedule-check input{width:auto}
 .schedule-picker{display:grid;gap:8px;margin-top:7px}
-.schedule-row{display:grid;grid-template-columns:120px minmax(150px,1fr) minmax(130px,1fr);gap:8px;align-items:center;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa}
-.schedule-day-toggle{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12px}
+.schedule-row{display:grid;grid-template-columns:120px minmax(220px,1fr) 34px;gap:8px;align-items:start;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa}
+.schedule-day-toggle{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12px;padding-top:9px}
 .schedule-day-toggle input{width:auto}
+.schedule-times-list{display:grid;gap:7px;min-width:0}
+.schedule-time-item{display:grid;grid-template-columns:minmax(130px,1fr) minmax(105px,auto);gap:8px;align-items:center}
 .schedule-time-select{width:100%}
 .schedule-time-select option:disabled{background:#555!important;color:#fff!important;font-weight:800}
-.schedule-end-time{font-size:12px;color:#666}
+.schedule-end-time{font-size:12px;color:#666;white-space:nowrap}
 .schedule-end-time strong{color:#111}
-@media(max-width:650px){.schedule-row{grid-template-columns:1fr}.schedule-end-time{padding-left:24px}}
+.schedule-add-time-btn{width:34px;height:34px;border:1px solid #cfcfcf;border-radius:8px;background:#fff;font-size:21px;font-weight:900;line-height:1;cursor:pointer}
+.schedule-add-time-btn:hover{background:#f1f1f1}
+.schedule-time-menu{position:relative}
+.schedule-time-menu-panel{display:none;position:absolute;right:0;top:39px;z-index:30;min-width:120px;background:#fff;border:1px solid #d5d5d5;border-radius:9px;box-shadow:0 7px 20px rgba(0,0,0,.12);padding:5px}
+.schedule-time-menu-panel.show{display:block}
+.schedule-time-menu-panel button{display:block;width:100%;border:0;background:#fff;padding:8px 10px;text-align:left;border-radius:6px;cursor:pointer;font-weight:700}
+.schedule-time-menu-panel button:hover{background:#f3f3f3}
+@media(max-width:650px){.schedule-row{grid-template-columns:1fr 34px}.schedule-day-toggle{grid-column:1/-1;padding-top:0}.schedule-times-list{grid-column:1}.schedule-time-item{grid-template-columns:1fr}.schedule-end-time{white-space:normal}.schedule-time-menu{grid-column:2;grid-row:2;align-self:start}}
 .student-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 .student-detail-box{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa}
 .student-detail-box.full{grid-column:1/-1}
@@ -3708,10 +3710,87 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-page-header{display:none!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-info-bullets{display:none!important}
 </style>
-<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style><style id="teacher-danyeal-subscription-management-css">
-.subscription-admin-wrap{max-width:1200px;margin:0 auto}.subscription-admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.subscription-admin-title{margin:0;font-size:clamp(26px,4vw,38px);font-weight:900}.subscription-admin-subtitle{margin:7px 0 0;color:#666;font-size:14px}.subscription-summary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:20px}.subscription-summary-card{background:#fff;border:1px solid #d7d7d7;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06)}.subscription-summary-card span{display:block;color:#666;font-size:13px;font-weight:700;margin-bottom:8px}.subscription-summary-card strong{display:block;font-size:30px;font-weight:900}.subscription-toolbar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}.subscription-search{flex:1;min-width:240px;height:45px;border:1px solid #ccc;border-radius:10px;padding:0 14px;font-size:14px;background:#fff}.subscription-status-filter{height:45px;border:1px solid #ccc;border-radius:10px;padding:0 14px;font-size:14px;background:#fff;min-width:170px}.subscription-table-wrap{background:#fff;border:1px solid #d5d5d5;border-radius:14px;overflow:auto;box-shadow:0 2px 8px rgba(0,0,0,.05)}.subscription-table{width:100%;border-collapse:collapse;min-width:900px}.subscription-table th{background:#f5f5f5;text-align:left;padding:14px;font-size:12px;font-weight:900;border-bottom:1px solid #ddd}.subscription-table td{padding:14px;border-bottom:1px solid #eee;font-size:13px;vertical-align:middle}.subscription-table tr:last-child td{border-bottom:none}.subscription-badge{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}.subscription-badge.pending{background:#fff3cd;color:#856404}.subscription-badge.active{background:#d4edda;color:#155724}.subscription-badge.expired{background:#f8d7da;color:#721c24}.subscription-badge.blocked{background:#343a40;color:#fff}.subscription-badge.verified{background:#d4edda;color:#155724}.subscription-badge.rejected{background:#f8d7da;color:#721c24}.subscription-action-wrap{position:relative;display:inline-block}.subscription-three-dot{width:36px;height:36px;border:1px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:20px;line-height:1}.subscription-three-dot:hover{background:#f1f1f1}.subscription-action-menu{position:absolute;right:0;top:42px;z-index:9999;min-width:190px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 8px 25px rgba(0,0,0,.16);padding:6px;display:none}.subscription-action-menu.show{display:block}.subscription-action-menu button{width:100%;border:none;background:#fff;padding:10px 12px;text-align:left;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}.subscription-action-menu button:hover{background:#f2f2f2}.subscription-action-menu button.danger{color:#c62828}.subscription-empty-state{padding:40px;text-align:center;color:#777;font-size:14px}.subscription-modal-overlay{position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px}.subscription-modal-overlay.show{display:flex}.subscription-modal{position:relative;width:min(600px,95vw);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,.3)}.subscription-modal h3{margin:0 0 20px;font-size:22px;font-weight:900}.subscription-modal-close{position:absolute;right:15px;top:12px;width:36px;height:36px;border:none;background:transparent;cursor:pointer;font-size:28px;color:#555}.subscription-account-details{display:flex;flex-direction:column;gap:1px;border:1px solid #ddd;border-radius:12px;overflow:hidden}.subscription-detail-row{display:flex;justify-content:space-between;gap:20px;padding:12px 14px;background:#fafafa;border-bottom:1px solid #eee}.subscription-detail-row:last-child{border-bottom:none}.subscription-detail-row span{color:#666;font-size:13px}.subscription-detail-row strong{text-align:right;font-size:13px}.subscription-modal-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.subscription-modal-actions button{border:1px solid #ccc;border-radius:9px;padding:10px 15px;cursor:pointer;background:#f5f5f5;font-weight:800}.subscription-modal-actions button.primary{background:#87CEEB;border-color:#70bddd}.subscription-modal-actions button.danger{background:#ffe1e1;color:#a00000;border-color:#e0aaaa}@media(max-width:900px){.subscription-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.subscription-summary-grid{grid-template-columns:1fr}.subscription-admin-title{font-size:26px}.subscription-detail-row{flex-direction:column;gap:4px}.subscription-detail-row strong{text-align:left}}
-</style>
+<style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style><style id="teacher-danyeal-subscription-css">
+/* Dashboard bottom buttons */
+#dashboardPage .dashboard-bottom-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:16px;
+  margin-top:18px;
+  width:100%;
+}
+#dashboardPage .dashboard-bottom-btn{
+  min-height:105px;
+  border:1px solid #b8b8b8;
+  border-radius:12px;
+  background:var(--portal-accent,#87CEEB);
+  color:#111;
+  padding:20px;
+  font-size:20px;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 2px 7px rgba(0,0,0,.06);
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
+}
+#dashboardPage .dashboard-bottom-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 5px 14px rgba(0,0,0,.12);
+  background:var(--portal-accent-dark,#70c5e8);
+}
+#dashboardPage .dashboard-bottom-label{display:block;text-align:center;line-height:1.25;}
+@media(max-width:700px){
+  #dashboardPage .dashboard-bottom-actions{grid-template-columns:1fr;}
+  #dashboardPage .dashboard-bottom-btn{min-height:90px;}
+}
 
+/* Subscription page */
+.subscription-page-wrap{max-width:1000px;margin:0 auto;}
+.subscription-header-card{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px;border:1px solid var(--global-border,#d5d5d5);border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px;}
+.subscription-title{margin:0;font-size:clamp(26px,4vw,38px);font-weight:900;}
+.subscription-subtitle{margin:7px 0 0;color:#667085;}
+.subscription-price-badge{font-size:28px;font-weight:900;white-space:nowrap;}
+.subscription-price-badge span{font-size:14px;font-weight:700;color:#667085;}
+.subscription-status-card{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:14px;margin-bottom:16px;}
+.subscription-status-card>div{padding:16px;border:1px solid var(--global-border,#d5d5d5);border-radius:13px;background:var(--global-accent-soft,#f5faff);}
+.subscription-small-label{font-size:11px;font-weight:900;letter-spacing:.08em;color:#667085;margin-bottom:6px;}
+.subscription-account-email{font-weight:800;word-break:break-all;}
+.subscription-status-pill{display:inline-block;font-weight:900;padding:6px 10px;border-radius:999px;background:#eef2f6;}
+.subscription-expiry{font-weight:800;}
+.subscription-panel,.subscription-history-panel{padding:22px;border:1px solid var(--global-border,#d5d5d5);border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05);margin-bottom:16px;}
+.subscription-panel-title{font-size:18px;font-weight:900;margin-bottom:15px;}
+.subscription-plan-box{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px;border:1px solid #d9dee3;border-radius:12px;background:#f8fafb;margin-bottom:22px;}
+.subscription-plan-box strong,.subscription-plan-box span{display:block;}
+.subscription-plan-box span{margin-top:4px;color:#667085;font-size:13px;}
+.subscription-plan-price{font-size:26px;font-weight:900;white-space:nowrap;}
+.subscription-section-title{font-size:12px;font-weight:900;letter-spacing:.08em;margin:18px 0 10px;}
+.subscription-method-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+.subscription-method-card{padding:15px;border:2px solid #d7dde2;border-radius:12px;background:#fff;cursor:pointer;text-align:left;}
+.subscription-method-card strong,.subscription-method-card small{display:block;}
+.subscription-method-card small{margin-top:4px;color:#667085;}
+.subscription-method-card.selected{border-color:var(--portal-accent-dark,#267aa0);box-shadow:0 0 0 3px rgba(38,122,160,.12);background:var(--global-accent-soft,#f5faff);}
+.subscription-payment-instructions{min-height:100px;border:1px dashed #b9c2c9;border-radius:12px;padding:18px;margin-bottom:18px;background:#fafcfd;line-height:1.5;}
+.subscription-payment-instructions img{display:block;max-width:240px;max-height:240px;width:auto;height:auto;margin:12px auto;border-radius:10px;border:1px solid #ddd;background:#fff;}
+.subscription-payment-instructions .subscription-card-link{display:inline-block;margin-top:10px;padding:11px 16px;border-radius:9px;background:var(--portal-accent,#87CEEB);color:#111;text-decoration:none;font-weight:900;}
+.subscription-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.subscription-panel label{display:block;font-size:12px;font-weight:900;margin-bottom:6px;}
+.subscription-panel input,.subscription-panel textarea{width:100%;box-sizing:border-box;border:1px solid #cbd2d8;border-radius:9px;padding:11px 12px;background:#fff;font:inherit;}
+.subscription-field-note{display:block;margin-top:5px;color:#667085;font-size:11px;}
+.subscription-submit-btn{width:100%;margin-top:15px;border:0;border-radius:10px;padding:14px 18px;background:var(--portal-accent,#87CEEB);color:#111;font-weight:900;font-size:15px;cursor:pointer;}
+.subscription-submit-btn:hover{background:var(--portal-accent-dark,#70c5e8);}
+.subscription-submit-message{margin-top:10px;font-weight:800;min-height:20px;}
+.subscription-history-list{display:flex;flex-direction:column;gap:10px;}
+.subscription-history-item{padding:13px;border:1px solid #dce1e5;border-radius:10px;background:#fafafa;display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+.subscription-history-item strong{display:block;}
+.subscription-history-item small{color:#667085;line-height:1.45;}
+.subscription-history-status{font-weight:900;white-space:nowrap;}
+@media(max-width:760px){
+  .subscription-header-card{align-items:flex-start;flex-direction:column;}
+  .subscription-status-card{grid-template-columns:1fr;}
+  .subscription-method-grid{grid-template-columns:1fr 1fr;}
+  .subscription-form-grid{grid-template-columns:1fr;}
+}
+@media(max-width:450px){.subscription-method-grid{grid-template-columns:1fr;}}
+</style>
 </head>
 
 <body>
@@ -4293,21 +4372,15 @@ Dashboard
 <span class="dashboard-menu-label">RECORD OF EVALUATION</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn lesson-materials-dashboard-btn" onclick="showPage('lessonMaterials')">
+<button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 
-<button
-type="button"
-id="subscriptionManagementButton"
-class="dashboard-menu-btn subscription-management-dashboard-btn"
-onclick="showPage('subscriptionManagement')"
-style="display:none;"
->
-<span class="dashboard-menu-label">SUBSCRIPTION MANAGEMENT</span>
+<button type="button" class="dashboard-menu-btn" onclick="showPage('subscription')">
+<span class="dashboard-menu-label">SUBSCRIPTION</span>
 </button>
-</div>
 
+</div>
 
 <div class="dashboard-grid">
 
@@ -4395,9 +4468,13 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div class="student-add-grid">
 
-<div><label>Student Name</label><input id="newStudentName" placeholder="Student name"></div>
+<div><label>Full Name</label><input id="newStudentName" placeholder="Student full name"></div>
+<div><label>Nickname</label><input id="newStudentNickname" placeholder="Nickname"></div>
 <div><label>Student ID</label><input id="newStudentId" placeholder="Student ID"></div>
+
+<div><label>Birthday</label><input id="newStudentBirthday" type="date"></div>
 <div><label>Age</label><input id="newStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
+<div><label>Country</label><input id="newStudentCountry" placeholder="Country"></div>
 
 <div><label>Parent/Guardian Name</label><input id="newStudentParentName" placeholder="Parent/Guardian name"></div>
 <div><label>Parent's Email</label><input id="newStudentEmail" type="email" placeholder="parent@email.com"></div>
@@ -4802,7 +4879,7 @@ onclick="if(event.target===this) closeAddStudent()"
             </div>
           </div>
           <div><label>Payment Method</label><select id="paymentReceiptMethod" onchange="togglePaymentOtherMethod();updatePaymentReceiptPreview()">
-            <option value="Bank Transfer">Bank Transfer</option><option value="GCash">GCash</option><option value="InstaPay">InstaPay</option><option value="PayPal">PayPal</option><option value="Cash">Cash</option><option value="Other">Other</option>
+            <option value="GCash">GCash</option><option value="PayPal">PayPal</option><option value="Bank / InstaPay">Bank / InstaPay</option>
           </select></div>
           <div id="paymentReceiptOtherMethodWrap" style="display:none"><label>Specify Payment Method</label><input id="paymentReceiptOtherMethod" placeholder="e.g. Wise, Western Union, Alipay" oninput="updatePaymentReceiptPreview()"></div>
           <div><label>Payment Status</label><select id="paymentReceiptStatus" onchange="togglePaymentRemaining();updatePaymentReceiptPreview()">
@@ -5230,6 +5307,93 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
      RECORD OF EVALUATION
 ========================================================= -->
 
+<div id="subscriptionPage" class="page">
+  <div class="subscription-page-wrap">
+    <div class="page-back-wrap" style="margin-bottom:12px;">
+      <button type="button" class="page-back-btn" onclick="showPage('dashboard')">← Back to Dashboard</button>
+    </div>
+
+    <div class="subscription-header-card">
+      <div>
+        <h2 class="subscription-title">SUBSCRIPTION</h2>
+        <p class="subscription-subtitle">Keep your Teacher Danyeal Portal access active.</p>
+      </div>
+      <div class="subscription-price-badge">₱99 <span>/ month</span></div>
+    </div>
+
+    <div class="subscription-status-card">
+      <div>
+        <div class="subscription-small-label">ACCOUNT</div>
+        <div id="subscriptionAccountEmail" class="subscription-account-email">—</div>
+      </div>
+      <div>
+        <div class="subscription-small-label">STATUS</div>
+        <div id="subscriptionAccountStatus" class="subscription-status-pill">Checking...</div>
+      </div>
+      <div>
+        <div class="subscription-small-label">EXPIRY</div>
+        <div id="subscriptionAccountExpiry" class="subscription-expiry">—</div>
+      </div>
+    </div>
+
+    <div class="subscription-panel">
+      <div class="subscription-panel-title">MONTHLY SUBSCRIPTION</div>
+      <div class="subscription-plan-box">
+        <div>
+          <strong>Teacher Portal Monthly Access</strong>
+          <span>₱99 per month</span>
+        </div>
+        <div class="subscription-plan-price">₱99</div>
+      </div>
+
+      <div class="subscription-section-title">1. CHOOSE PAYMENT METHOD</div>
+      <div class="subscription-method-grid">
+        <button type="button" class="subscription-method-card" data-sub-method="GCash" onclick="selectSubscriptionMethod('GCash')">
+          <strong>GCash</strong><small>E-wallet · QR</small>
+        </button>
+        <button type="button" class="subscription-method-card" data-sub-method="PayPal" onclick="selectSubscriptionMethod('PayPal')">
+          <strong>PayPal</strong><small>Online payment</small>
+        </button>
+        <button type="button" class="subscription-method-card" data-sub-method="Bank / InstaPay" onclick="selectSubscriptionMethod('Bank / InstaPay')">
+          <strong>Bank / InstaPay</strong><small>QR or bank transfer</small>
+        </button>
+      </div>
+
+      <input type="hidden" id="subscriptionPaymentMethod" value="">
+
+      <div id="subscriptionPaymentInstructions" class="subscription-payment-instructions">
+        Please choose a payment method above.
+      </div>
+
+      <div class="subscription-section-title">2. PAYMENT DETAILS</div>
+      <div class="subscription-form-grid">
+        <div>
+          <label for="subscriptionReference">Reference Number</label>
+          <input id="subscriptionReference" type="text" placeholder="Enter your payment reference number">
+        </div>
+        <div>
+          <label for="subscriptionProof">Payment Proof</label>
+          <input id="subscriptionProof" type="file" accept="image/*,.pdf">
+          <small class="subscription-field-note">Optional, but recommended for faster verification.</small>
+        </div>
+      </div>
+
+      <div>
+        <label for="subscriptionNote">Note</label>
+        <textarea id="subscriptionNote" rows="3" placeholder="Optional message for Teacher Danyeal"></textarea>
+      </div>
+
+      <button type="button" class="subscription-submit-btn" onclick="submitSubscriptionPayment()">SUBMIT ₱99 PAYMENT</button>
+      <div id="subscriptionSubmitMessage" class="subscription-submit-message" aria-live="polite"></div>
+    </div>
+
+    <div class="subscription-history-panel">
+      <div class="subscription-panel-title">MY PAYMENT REQUESTS</div>
+      <div id="subscriptionPaymentHistory" class="subscription-history-list">No payment requests yet.</div>
+    </div>
+  </div>
+</div>
+
 <div id="lessonMaterialsPage" class="page">
 <div class="lesson-materials-wrap">
 <div class="page-back-wrap" style="margin-bottom:12px;">
@@ -5252,90 +5416,6 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 </div>
   
 <div id="lessonMaterialsList" class="lesson-materials-list"></div>
-</div>
-</div>
-
-<!-- =========================================================
-     SUBSCRIPTION MANAGEMENT
-========================================================= -->
-
-<div id="subscriptionManagementPage" class="page">
-
-<div class="subscription-admin-wrap">
-
-<div class="page-back-wrap" style="margin-bottom:12px;">
-<button type="button" class="page-back-btn" onclick="showPage('dashboard')">← Back to Dashboard</button>
-</div>
-
-<div class="subscription-admin-header">
-<div>
-<h2 class="subscription-admin-title">SUBSCRIPTION MANAGEMENT</h2>
-<p class="subscription-admin-subtitle">Manage teacher accounts, payments, access and subscriptions.</p>
-</div>
-</div>
-
-<div class="subscription-summary-grid">
-<div class="subscription-summary-card"><span>Total Accounts</span><strong id="subscriptionTotalAccounts">0</strong></div>
-<div class="subscription-summary-card"><span>Active</span><strong id="subscriptionActiveAccounts">0</strong></div>
-<div class="subscription-summary-card"><span>Pending</span><strong id="subscriptionPendingAccounts">0</strong></div>
-<div class="subscription-summary-card"><span>Expired</span><strong id="subscriptionExpiredAccounts">0</strong></div>
-<div class="subscription-summary-card"><span>Blocked</span><strong id="subscriptionBlockedAccounts">0</strong></div>
-</div>
-
-<div class="subscription-toolbar">
-<input type="text" id="subscriptionSearch" class="subscription-search" placeholder="Search Gmail or teacher name..." oninput="filterSubscriptionAccounts()">
-<select id="subscriptionStatusFilter" class="subscription-status-filter" onchange="filterSubscriptionAccounts()">
-<option value="ALL">All Accounts</option>
-<option value="PENDING">Pending</option>
-<option value="ACTIVE">Active</option>
-<option value="EXPIRED">Expired</option>
-<option value="BLOCKED">Blocked</option>
-</select>
-</div>
-
-<div class="subscription-table-wrap">
-<table class="subscription-table">
-<thead>
-<tr>
-<th>Teacher</th>
-<th>Gmail</th>
-<th>Access</th>
-<th>Subscription</th>
-<th>Expires</th>
-<th>Payment</th>
-<th>Actions</th>
-</tr>
-</thead>
-<tbody id="subscriptionAccountsTable"></tbody>
-</table>
-<div id="subscriptionEmptyState" class="subscription-empty-state" style="display:none;">No teacher accounts found.</div>
-</div>
-
-</div>
-</div>
-
-<!-- =========================================================
-     ACCOUNT DETAILS MODAL
-========================================================= -->
-
-<div id="subscriptionAccountModal" class="subscription-modal-overlay">
-<div class="subscription-modal">
-<button type="button" class="subscription-modal-close" onclick="closeSubscriptionAccountModal()">×</button>
-<h3>ACCOUNT DETAILS</h3>
-
-<div class="subscription-account-details">
-<div class="subscription-detail-row"><span>Teacher Name</span><strong id="modalTeacherName">—</strong></div>
-<div class="subscription-detail-row"><span>Gmail</span><strong id="modalTeacherEmail">—</strong></div>
-<div class="subscription-detail-row"><span>Account Created</span><strong id="modalAccountCreated">—</strong></div>
-<div class="subscription-detail-row"><span>Access Status</span><strong id="modalAccessStatus">—</strong></div>
-<div class="subscription-detail-row"><span>Plan</span><strong id="modalPlan">—</strong></div>
-<div class="subscription-detail-row"><span>Price</span><strong id="modalPrice">—</strong></div>
-<div class="subscription-detail-row"><span>Subscription Start</span><strong id="modalStartDate">—</strong></div>
-<div class="subscription-detail-row"><span>Subscription Expiry</span><strong id="modalExpiryDate">—</strong></div>
-<div class="subscription-detail-row"><span>Payment Status</span><strong id="modalPaymentStatus">—</strong></div>
-</div>
-
-<div id="subscriptionModalActions" class="subscription-modal-actions"></div>
 </div>
 </div>
 
@@ -5622,10 +5702,13 @@ onclick="if(event.target===this) closeEditStudent()"
 
   <div class="edit-student-fields">
     <div class="edit-student-fields-grid">
-      <div class="edit-student-field"><label>Student Name</label><input id="editStudentName" placeholder="Student name"></div>
+      <div class="edit-student-field"><label>Full Name</label><input id="editStudentName" placeholder="Student full name"></div>
+      <div class="edit-student-field"><label>Nickname</label><input id="editStudentNickname" placeholder="Nickname"></div>
       <div class="edit-student-field"><label>Parent's Email</label><input id="editStudentEmail" type="email" placeholder="parent@email.com"></div>
       <div class="edit-student-field"><label>Student ID</label><input id="editStudentId" placeholder="Student ID"></div>
+      <div class="edit-student-field"><label>Birthday</label><input id="editStudentBirthday" type="date"></div>
       <div class="edit-student-field"><label>Age</label><input id="editStudentAge" type="number" min="1" max="100" placeholder="Age"></div>
+      <div class="edit-student-field"><label>Country</label><input id="editStudentCountry" placeholder="Country"></div>
       <div class="edit-student-field"><label>Parent/Guardian Name</label><input id="editStudentParentName" placeholder="Parent/Guardian name"></div>
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
@@ -6047,8 +6130,6 @@ const SUPABASE_PUBLISHABLE_KEY=
 
 const SUPABASE_REDIRECT_URL=
 'https://td-2026000.github.io/TD-PH-Teacher-Management-Portal/';
-
-/* SUBSCRIPTION ADMIN EMAIL IS SET IN THE SUBSCRIPTION SCRIPT NEAR THE END OF THIS FILE. */
 
 const supabaseClient=
 window.supabase.createClient(
@@ -7394,31 +7475,6 @@ async function handleSignedIn(user){
 
 currentUser=user;
 
-/* ADMIN ACCOUNT BYPASS
-   The admin account must never be blocked by the teacher subscription check. */
-const signedInEmail=String(user?.email||'').trim().toLowerCase();
-const adminEmail=String(SUBSCRIPTION_ADMIN_EMAIL||'').trim().toLowerCase();
-
-if(signedInEmail!==adminEmail){
-
-const subscriptionAllowed=await checkTeacherSubscriptionAccess(user);
-
-if(!subscriptionAllowed){
-
-currentUser=null;
-
-document.getElementById('appShell').classList.add('hidden');
-document.getElementById('authScreen').classList.remove('hidden');
-showAuthPanel('login');
-
-return;
-
-}
-
-}
-
-updateSubscriptionAdminButton();
-
 /* One-time appointment reset requested for the current portal version.
    This clears the old appointment/test data so the dashboard starts at 0.
    Student records and evaluations are not affected. */
@@ -7922,8 +7978,8 @@ renderAppointments();
 if(page==='lessonMaterials')
 renderLessonMaterials();
 
-if(page==='subscriptionManagement')
-openSubscriptionManagement();
+if(page==='subscription')
+renderSubscriptionPage();
 
 if(page==='payment'){
   setPaymentReceiptDefaults();
@@ -8133,6 +8189,21 @@ const SCHEDULE_DAYS=[
 'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'
 ];
 
+/* Schedule data is stored as an array of start times per day.
+   Older records that stored one number per day are still supported. */
+function normalizeScheduleTimes(raw){
+  if(Array.isArray(raw)){
+    return raw.map(v=>parseInt(v,10)).filter(v=>Number.isFinite(v));
+  }
+  if(raw===undefined || raw===null || raw==='')return [];
+  const n=parseInt(raw,10);
+  return Number.isFinite(n)?[n]:[];
+}
+
+function getScheduleTimesForDay(student,day){
+  return normalizeScheduleTimes(student?.scheduleDetails?.[day]);
+}
+
 function getScheduleConflicts(excludeStudentId=''){
   const students=getStudents();
   const conflicts={};
@@ -8145,18 +8216,15 @@ function getScheduleConflicts(excludeStudentId=''){
     const details=student.scheduleDetails||{};
 
     SCHEDULE_DAYS.forEach(day=>{
-      const raw=details[day];
-      if(raw===undefined || raw===null || raw==='')return;
-
-      const start=parseInt(raw,10);
-      if(!Number.isFinite(start))return;
-      const end=start+duration;
-
-      if(!conflicts[day])conflicts[day]=[];
-      conflicts[day].push({
-        start,
-        end,
-        studentName:student.name||'Another student'
+      const starts=normalizeScheduleTimes(details[day]);
+      starts.forEach(start=>{
+        const end=start+duration;
+        if(!conflicts[day])conflicts[day]=[];
+        conflicts[day].push({
+          start,
+          end,
+          studentName:student.nickname||student.name||'Another student'
+        });
       });
     });
   });
@@ -8168,13 +8236,13 @@ function isScheduleTimeOccupied(day,startMinutes,duration,excludeStudentId=''){
   const conflicts=getScheduleConflicts(excludeStudentId)[day]||[];
   const start=Number(startMinutes);
   const end=start+durationToMinutes(duration);
-
   return conflicts.some(item=>start<item.end && end>item.start);
 }
 
-function buildTimeOptions(day='',duration='30 Minutes',excludeStudentId=''){
+function buildTimeOptions(day='',duration='30 Minutes',excludeStudentId='',ownTimes=[]){
   let html='<option value="">Select start time</option>';
   const classDuration=durationToMinutes(duration);
+  const own=normalizeScheduleTimes(ownTimes);
 
   for(let minutes=0;minutes<=23*60+30;minutes+=30){
     const h=Math.floor(minutes/60);
@@ -8182,194 +8250,244 @@ function buildTimeOptions(day='',duration='30 Minutes',excludeStudentId=''){
     const hour12=(h%12)||12;
     const ampm=h<12?'AM':'PM';
     const label=`${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
-    const occupied=day && isScheduleTimeOccupied(day,minutes,classDuration,excludeStudentId);
+    const occupiedByOthers=day && isScheduleTimeOccupied(day,minutes,classDuration,excludeStudentId);
+    const occupiedBySameStudent=own.some(v=>Number(v)===minutes);
+    const occupied=occupiedByOthers || occupiedBySameStudent;
     const endLabel=minutesToTimeLabel(minutes+classDuration);
-
     html+=`<option value="${String(minutes).padStart(4,'0')}" ${occupied?'disabled':''} ${occupied?`title="Already assigned${endLabel?` until ${endLabel}`:''}"`:''}>${label}${occupied?' — BOOKED':''}</option>`;
   }
-
   return html;
+}
+
+function getScheduleTimeSelects(prefix,day){
+  return [...document.querySelectorAll(`[id^="${prefix}Time_${day}_"]`)];
 }
 
 function refreshSchedulePickerAvailability(prefix,excludeStudentId=''){
   const duration=document.getElementById(`${prefix}StudentDuration`)?.value||'30 Minutes';
 
   SCHEDULE_DAYS.forEach(day=>{
-    const select=document.getElementById(`${prefix}Time_${day}`);
+    const selects=getScheduleTimeSelects(prefix,day);
     const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
-    if(!select)return;
+    if(!selects.length)return;
 
-    const currentValue=select.value;
-    select.innerHTML=buildTimeOptions(day,duration,excludeStudentId);
-    select.value=currentValue;
+    const currentValues=selects.map(s=>s.value);
+    selects.forEach((select,index)=>{
+      select.innerHTML=buildTimeOptions(day,duration,excludeStudentId,currentValues.filter((v,i)=>i!==index));
+      select.value=currentValues[index]||'';
+      if(select.value!==currentValues[index] && currentValues[index])select.value='';
+      select.disabled=!(checkbox&&checkbox.checked);
+    });
 
-    if(select.value!==currentValue && currentValue){
-      select.value='';
-    }
-
-    select.disabled=!(checkbox&&checkbox.checked);
-    updateScheduleEndTime(prefix,day);
+    updateAllScheduleEndTimes(prefix,day);
   });
 }
 
 function minutesToTimeLabel(totalMinutes){
-let mins=totalMinutes%(24*60);
-const h=Math.floor(mins/60);
-const m=mins%60;
-const hour12=(h%12)||12;
-const ampm=h<12?'AM':'PM';
-return `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
+  let mins=totalMinutes%(24*60);
+  if(mins<0)mins+=24*60;
+  const h=Math.floor(mins/60);
+  const m=mins%60;
+  const hour12=(h%12)||12;
+  const ampm=h<12?'AM':'PM';
+  return `${hour12}:${String(m).padStart(2,'0')} ${ampm}`;
 }
 
 function durationToMinutes(value){
-const match=String(value||'30 Minutes').match(/(\d+)/);
-return match?parseInt(match[1],10)||30:30;
+  const match=String(value||'30 Minutes').match(/(\d+)/);
+  return match?parseInt(match[1],10)||30:30;
 }
 
 function getSchedulePickerData(prefix){
-const details={};
-const selected=[];
+  const details={};
+  const selected=[];
 
-SCHEDULE_DAYS.forEach(day=>{
-const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
-const select=document.getElementById(`${prefix}Time_${day}`);
+  SCHEDULE_DAYS.forEach(day=>{
+    const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
+    const selects=getScheduleTimeSelects(prefix,day);
+    if(checkbox && checkbox.checked){
+      const times=selects.map(s=>parseInt(s.value,10)).filter(v=>Number.isFinite(v));
+      if(times.length){
+        selected.push(day);
+        details[day]=[...new Set(times)].sort((a,b)=>a-b);
+      }
+    }
+  });
 
-if(checkbox && checkbox.checked){
-selected.push(day);
-if(select && select.value){
-details[day]=parseInt(select.value,10);
-}
-}
-});
-
-return {selected,details};
-}
-
-function updateScheduleEndTime(prefix,day){
-const select=document.getElementById(`${prefix}Time_${day}`);
-const end=document.getElementById(`${prefix}End_${day}`);
-const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
-
-if(!select||!end||!checkbox)return;
-
-const hasTime=checkbox.checked && select.value;
-if(!hasTime){
-end.innerHTML='Select a start time';
-return;
+  return {selected,details};
 }
 
-const start=parseInt(select.value,10);
-const duration=durationToMinutes(
-document.getElementById(`${prefix}StudentDuration`)?.value
-);
+function updateScheduleEndTime(prefix,day,index=0){
+  const select=document.getElementById(`${prefix}Time_${day}_${index}`);
+  const end=document.getElementById(`${prefix}End_${day}_${index}`);
+  const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
+  if(!select||!end||!checkbox)return;
 
-end.innerHTML=`Ends at <strong>${minutesToTimeLabel(start+duration)}</strong>`;
+  const hasTime=checkbox.checked && select.value;
+  if(!hasTime){
+    end.innerHTML='Select a start time';
+    return;
+  }
+
+  const start=parseInt(select.value,10);
+  const duration=durationToMinutes(document.getElementById(`${prefix}StudentDuration`)?.value);
+  end.innerHTML=`Ends at <strong>${minutesToTimeLabel(start+duration)}</strong>`;
 }
 
-function updateAllScheduleEndTimes(prefix){
-SCHEDULE_DAYS.forEach(day=>updateScheduleEndTime(prefix,day));
+function updateAllScheduleEndTimes(prefix,dayOnly=''){
+  const days=dayOnly?[dayOnly]:SCHEDULE_DAYS;
+  days.forEach(day=>{
+    getScheduleTimeSelects(prefix,day).forEach((_,index)=>updateScheduleEndTime(prefix,day,index));
+  });
+}
+
+function closeScheduleTimeMenus(exceptId=''){
+  document.querySelectorAll('.schedule-time-menu-panel.show').forEach(menu=>{
+    if(menu.id!==exceptId)menu.classList.remove('show');
+  });
+}
+
+function toggleScheduleTimeMenu(prefix,day,event){
+  if(event)event.stopPropagation();
+  const menu=document.getElementById(`${prefix}TimeMenu_${day}`);
+  if(!menu)return;
+  const was=menu.classList.contains('show');
+  closeScheduleTimeMenus(menu.id);
+  menu.classList.toggle('show',!was);
+}
+
+function addScheduleTime(prefix,day){
+  const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
+  const list=document.getElementById(`${prefix}Times_${day}`);
+  if(!checkbox||!list||!checkbox.checked)return;
+
+  const index=list.querySelectorAll('.schedule-time-item').length;
+  const duration=document.getElementById(`${prefix}StudentDuration`)?.value||'30 Minutes';
+  const existing=getScheduleTimeSelects(prefix,day).map(s=>parseInt(s.value,10)).filter(v=>Number.isFinite(v));
+
+  const item=document.createElement('div');
+  item.className='schedule-time-item';
+  item.innerHTML=`
+    <select id="${prefix}Time_${day}_${index}" class="schedule-time-select" onchange="updateScheduleEndTime('${prefix}','${day}',${index})">
+      ${buildTimeOptions(day,duration,'',existing)}
+    </select>
+    <div id="${prefix}End_${day}_${index}" class="schedule-end-time">Select a start time</div>
+  `;
+  list.appendChild(item);
+  refreshSchedulePickerAvailability(prefix, prefix==='edit' ? (document.getElementById('editOriginalId')?.value||'') : '');
+  const select=document.getElementById(`${prefix}Time_${day}_${index}`);
+  if(select)select.focus();
+  closeScheduleTimeMenus();
+}
+
+function removeLastScheduleTime(prefix,day){
+  const list=document.getElementById(`${prefix}Times_${day}`);
+  if(!list)return;
+  const items=list.querySelectorAll('.schedule-time-item');
+  if(items.length<=1)return;
+  items[items.length-1].remove();
+  refreshSchedulePickerAvailability(prefix, prefix==='edit' ? (document.getElementById('editOriginalId')?.value||'') : '');
 }
 
 function buildSchedulePicker(prefix,containerId,excludeStudentId=''){
-const container=document.getElementById(containerId);
-if(!container)return;
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const duration=document.getElementById(`${prefix}StudentDuration`)?.value||'30 Minutes';
 
-const duration=document.getElementById(`${prefix}StudentDuration`)?.value||'30 Minutes';
+  container.innerHTML=SCHEDULE_DAYS.map(day=>`
+  <div class="schedule-row">
+    <label class="schedule-day-toggle">
+      <input type="checkbox" id="${prefix}Schedule_${day}" onchange="toggleScheduleDay('${prefix}','${day}')">
+      ${day}
+    </label>
 
-container.innerHTML=SCHEDULE_DAYS.map(day=>`
-<div class="schedule-row">
-  <label class="schedule-day-toggle">
-    <input
-      type="checkbox"
-      id="${prefix}Schedule_${day}"
-      onchange="toggleScheduleDay('${prefix}','${day}')"
-    >
-    ${day}
-  </label>
+    <div id="${prefix}Times_${day}" class="schedule-times-list">
+      <div class="schedule-time-item">
+        <select id="${prefix}Time_${day}_0" class="schedule-time-select" disabled onchange="updateScheduleEndTime('${prefix}','${day}',0)">
+          ${buildTimeOptions(day,duration,excludeStudentId,[])}
+        </select>
+        <div id="${prefix}End_${day}_0" class="schedule-end-time">Select a start time</div>
+      </div>
+    </div>
 
-  <select
-    id="${prefix}Time_${day}"
-    class="schedule-time-select"
-    disabled
-    onchange="updateScheduleEndTime('${prefix}','${day}')"
-  >
-    ${buildTimeOptions(day,duration,excludeStudentId)}
-  </select>
-
-  <div id="${prefix}End_${day}" class="schedule-end-time">
-    Select a start time
+    <div class="schedule-time-menu">
+      <button type="button" class="schedule-add-time-btn" aria-label="More schedule options for ${day}" title="Add another class time" onclick="toggleScheduleTimeMenu('${prefix}','${day}',event)">⋮</button>
+      <div id="${prefix}TimeMenu_${day}" class="schedule-time-menu-panel">
+        <button type="button" onclick="addScheduleTime('${prefix}','${day}')">+ Add Time</button>
+        <button type="button" onclick="removeLastScheduleTime('${prefix}','${day}')">− Remove Time</button>
+      </div>
+    </div>
   </div>
-</div>
-`).join('');
+  `).join('');
 }
 
 function toggleScheduleDay(prefix,day){
-const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
-const select=document.getElementById(`${prefix}Time_${day}`);
+  const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
+  const selects=getScheduleTimeSelects(prefix,day);
+  if(!checkbox||!selects.length)return;
 
-if(!checkbox||!select)return;
-
-select.disabled=!checkbox.checked;
-
-if(!checkbox.checked){
-select.value='';
-}
-
-updateScheduleEndTime(prefix,day);
+  selects.forEach(select=>{
+    select.disabled=!checkbox.checked;
+    if(!checkbox.checked)select.value='';
+  });
+  updateAllScheduleEndTimes(prefix,day);
+  closeScheduleTimeMenus();
 }
 
 function setSchedulePicker(prefix,scheduleDetails,preferredSchedule){
-const details=scheduleDetails||{};
-const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
+  const details=scheduleDetails||{};
+  const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
 
-SCHEDULE_DAYS.forEach(day=>{
-const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
-const select=document.getElementById(`${prefix}Time_${day}`);
+  SCHEDULE_DAYS.forEach(day=>{
+    const checkbox=document.getElementById(`${prefix}Schedule_${day}`);
+    const list=document.getElementById(`${prefix}Times_${day}`);
+    if(!checkbox||!list)return;
 
-if(!checkbox||!select)return;
+    const times=normalizeScheduleTimes(details[day]);
+    const shouldSelect=times.length>0 || preferred.includes(day);
+    checkbox.checked=shouldSelect;
 
-const rawTime=details[day];
-const selectedTime=
-rawTime!==undefined && rawTime!==null
-?String(rawTime)
-:'';
+    list.innerHTML='';
+    const values=times.length?times:[null];
+    values.forEach((timeValue,index)=>{
+      const item=document.createElement('div');
+      item.className='schedule-time-item';
+      item.innerHTML=`
+        <select id="${prefix}Time_${day}_${index}" class="schedule-time-select" onchange="updateScheduleEndTime('${prefix}','${day}',${index})">
+          ${buildTimeOptions(day,document.getElementById(`${prefix}StudentDuration`)?.value||'30 Minutes',prefix==='edit'?(document.getElementById('editOriginalId')?.value||''):'',values.filter((v,i)=>i!==index))}
+        </select>
+        <div id="${prefix}End_${day}_${index}" class="schedule-end-time">Select a start time</div>
+      `;
+      list.appendChild(item);
+      const select=item.querySelector('select');
+      if(select && timeValue!==null)select.value=String(timeValue);
+    });
 
-checkbox.checked=
-Object.prototype.hasOwnProperty.call(details,day) ||
-preferred.includes(day);
-
-select.disabled=!checkbox.checked;
-select.value=selectedTime;
-
-updateScheduleEndTime(prefix,day);
-});
+    list.querySelectorAll('select').forEach(select=>select.disabled=!checkbox.checked);
+    updateAllScheduleEndTimes(prefix,day);
+  });
 }
 
 function scheduleDataToText(scheduleDetails,preferredSchedule,duration){
-const details=scheduleDetails||{};
-const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
+  const details=scheduleDetails||{};
+  const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
+  const days=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(details[day]).length || preferred.includes(day));
+  if(!days.length)return 'Schedule not set';
 
-const days=SCHEDULE_DAYS.filter(day=>
-Object.prototype.hasOwnProperty.call(details,day) ||
-preferred.includes(day)
-);
-
-if(!days.length)return 'Schedule not set';
-
-return days.map(day=>{
-const start=details[day];
-if(start===undefined || start===null || start===''){
-return day;
+  return days.map(day=>{
+    const times=normalizeScheduleTimes(details[day]);
+    if(!times.length)return day;
+    return `${day} — ${times.map(start=>`${minutesToTimeLabel(start)}–${minutesToTimeLabel(start+durationToMinutes(duration))}`).join(' / ')}`;
+  }).join(' • ');
 }
-const startMinutes=parseInt(start,10);
-const endMinutes=startMinutes+durationToMinutes(duration);
-return `${day} — ${minutesToTimeLabel(startMinutes)}–${minutesToTimeLabel(endMinutes)}`;
-}).join(' • ');
-}
+
 
 function addStudent(){
 
 const name=document.getElementById('newStudentName').value.trim();
+const nickname=document.getElementById('newStudentNickname').value.trim();
+const birthday=document.getElementById('newStudentBirthday').value;
+const country=document.getElementById('newStudentCountry').value.trim();
 const email=document.getElementById('newStudentEmail').value.trim();
 const id=document.getElementById('newStudentId').value.trim();
 const age=document.getElementById('newStudentAge').value.trim();
@@ -8382,7 +8500,8 @@ const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
 const scheduleDetails=scheduleData.details;
 
-if(!name)return showStudentStatus('Please enter the student name.',false);
+if(!name)return showStudentStatus('Please enter the student full name.',false);
+if(!nickname)return showStudentStatus('Please enter the student nickname.',false);
 if(!email)return showStudentStatus("Please enter the parent's email.",false);
 if(!id)return showStudentStatus('Please enter the student ID.',false);
 
@@ -8390,15 +8509,17 @@ if(!schedule.length)
 return showStudentStatus('Please select at least one class day.',false);
 
 const missingTime=schedule.some(day=>
-scheduleDetails[day]===undefined
+!normalizeScheduleTimes(scheduleDetails[day]).length
 );
 
 if(missingTime)
 return showStudentStatus('Please choose a start time for every selected day.',false);
 
 for(const day of schedule){
-  if(isScheduleTimeOccupied(day,scheduleDetails[day],duration,'')){
-    return showStudentStatus(`${day} at ${minutesToTimeLabel(scheduleDetails[day])} is already assigned to another active student. Please choose another time.`,false);
+  for(const startTime of normalizeScheduleTimes(scheduleDetails[day])){
+    if(isScheduleTimeOccupied(day,startTime,duration,'')){
+      return showStudentStatus(`${day} at ${minutesToTimeLabel(startTime)} is already assigned to another active student. Please choose another time.`,false);
+    }
   }
 }
 
@@ -8427,6 +8548,9 @@ const initialClasses={
 students.push({
   id,
   name,
+  nickname,
+  birthday,
+  country,
   email,
   age,
   parentName,
@@ -8446,6 +8570,9 @@ saveStudents(students);
 
 [
 'newStudentName',
+'newStudentNickname',
+'newStudentBirthday',
+'newStudentCountry',
 'newStudentEmail',
 'newStudentId',
 'newStudentAge',
@@ -8551,9 +8678,12 @@ if(!student)return;
 
 document.getElementById('editOriginalId').value=student.id;
 document.getElementById('editStudentName').value=student.name||'';
+document.getElementById('editStudentNickname').value=student.nickname||'';
 document.getElementById('editStudentEmail').value=student.email||'';
 document.getElementById('editStudentId').value=student.id||'';
+document.getElementById('editStudentBirthday').value=student.birthday||'';
 document.getElementById('editStudentAge').value=student.age||'';
+document.getElementById('editStudentCountry').value=student.country||'';
 document.getElementById('editStudentParentName').value=student.parentName||'';
 document.getElementById('editStudentLevel').value=student.level||'';
 document.getElementById('editStudentDuration').value=
@@ -8608,14 +8738,16 @@ if(!scheduleData.selected.length)
 return fail('Please select at least one class day.');
 
 if(scheduleData.selected.some(day=>
-scheduleData.details[day]===undefined
+!normalizeScheduleTimes(scheduleData.details[day]).length
 ))
 return fail('Please choose a start time for every selected day.');
 
 const editedDuration=document.getElementById('editStudentDuration').value;
 for(const day of scheduleData.selected){
-  if(isScheduleTimeOccupied(day,scheduleData.details[day],editedDuration,originalId)){
-    return fail(`${day} at ${minutesToTimeLabel(scheduleData.details[day])} is already assigned to another active student. Please choose another time.`);
+  for(const startTime of normalizeScheduleTimes(scheduleData.details[day])){
+    if(isScheduleTimeOccupied(day,startTime,editedDuration,originalId)){
+      return fail(`${day} at ${minutesToTimeLabel(startTime)} is already assigned to another active student. Please choose another time.`);
+    }
   }
 }
 
@@ -8631,8 +8763,12 @@ if(!editedStartDate)return fail('Please select the package start date.');
 
 const editedStudent={
 ...students[index],
-name,email,id,
+name,
+nickname:document.getElementById('editStudentNickname').value.trim(),
+email,id,
+birthday:document.getElementById('editStudentBirthday').value,
 age:document.getElementById('editStudentAge').value.trim(),
+country:document.getElementById('editStudentCountry').value.trim(),
 parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
@@ -8953,11 +9089,15 @@ return SCHEDULE_DAYS[d.getDay()===0?6:d.getDay()-1];
 function getPreferredStartTime(student,dateString){
 if(!student||!dateString)return null;
 const day=appointmentDateDayName(dateString);
-const raw=student.scheduleDetails?.[day];
-if(raw===undefined||raw===null||raw==='')return null;
-const mins=parseInt(raw,10);
-if(isNaN(mins))return null;
+const mins=normalizeScheduleTimes(student.scheduleDetails?.[day])[0];
+if(!Number.isFinite(mins))return null;
 return `${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+}
+
+function getPreferredStartTimes(student,dateString){
+if(!student||!dateString)return [];
+const day=appointmentDateDayName(dateString);
+return normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`);
 }
 
 function applyPreferredTimeForDate(student,dateString,clearIfNone=false){
@@ -8999,9 +9139,9 @@ if(!box)return;
 const student=getAppointmentStudent(document.getElementById('appointmentStudent')?.value||'');
 if(!student){box.textContent='Select a student to see the saved preferred schedule and class limit.';return;}
 const packageCount=getPackageClassCount(student.packageName);
-const preferredDays=SCHEDULE_DAYS.filter(day=>Object.prototype.hasOwnProperty.call(student.scheduleDetails||{},day));
+const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
 const scheduleText=preferredDays.length
-?preferredDays.map(day=>`${day} — ${minutesToTimeLabel(parseInt(student.scheduleDetails[day],10))}`).join(' · ')
+?preferredDays.map(day=>`${day} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>minutesToTimeLabel(mins)).join(' / ')}`).join(' · ')
 :'No preferred schedule saved.';
 const existing=getStudentBookedCountForCurrentClasses(student);
 const mode=getAppointmentScheduleMode();
@@ -9027,10 +9167,7 @@ summary.innerHTML=`<strong>${escapeHtml(student?.name||'Student')}</strong> · $
 
 function getNextPreferredDate(student,baseDate){
 if(!student||!baseDate)return '';
-const preferredDays=SCHEDULE_DAYS.filter(day=>{
-const value=student.scheduleDetails?.[day];
-return value!==undefined&&value!==null&&value!==''&&!isNaN(parseInt(value,10));
-});
+const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
 if(!preferredDays.length)return '';
 let cursor=new Date(`${baseDate}T00:00:00`);
 for(let i=0;i<14;i++){
@@ -9419,38 +9556,38 @@ return getAppointments().some(a=>a.studentId===studentId&&a.date===date&&a.time=
 }
 
 function generatePreferredAppointments(student,startDate,type){
-const packageLimit=getPackageClassCount(student.packageName);
-if(!packageLimit)return {created:0,remaining:0,reason:'No class limit was found in the Classes field. Example: 30 Classes.'};
-const preferredDays=SCHEDULE_DAYS.filter(day=>student.scheduleDetails&&student.scheduleDetails[day]!==undefined&&student.scheduleDetails[day]!==null&&student.scheduleDetails[day]!=='');
-if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
-let appointments=getAppointments();
-const existingCount=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class').length;
-let remaining=Math.max(0,packageLimit-existingCount);
-if(remaining===0)return {created:0,remaining:0,reason:'The class limit has already been reached.'};
-let created=0;
-let cursor=new Date(`${startDate}T00:00:00`);
-for(let i=0;i<730&&created<remaining;i++){
-const date=getLocalDateString(cursor);
-const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
-if(preferredDays.includes(day)){
-const mins=parseInt(student.scheduleDetails[day],10);
-if(!isNaN(mins)){
-const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-const duration=durationToMinutes(student.duration||'30 Minutes');
-if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
-const now=new Date().toISOString();
-appointments.push({
-id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
-studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:student.currentPackageId||'',createdAt:now,updatedAt:now
-});
-created++;
-}
-}
-}
-cursor.setDate(cursor.getDate()+1);
-}
-saveAppointments(appointments);
-return {created,remaining:Math.max(0,remaining-created),reason:created<remaining?'Some future slots could not be booked because of schedule conflicts.':''};
+  const packageLimit=getPackageClassCount(student.packageName);
+  if(!packageLimit)return {created:0,remaining:0,reason:'No class limit was found in the Classes field. Example: 30 Classes.'};
+  const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
+  if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
+  let appointments=getAppointments();
+  const existingCount=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class').length;
+  let remaining=Math.max(0,packageLimit-existingCount);
+  if(remaining===0)return {created:0,remaining:0,reason:'The class limit has already been reached.'};
+  let created=0;
+  let cursor=new Date(`${startDate}T00:00:00`);
+  for(let i=0;i<730&&created<remaining;i++){
+    const date=getLocalDateString(cursor);
+    const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
+    const dayTimes=normalizeScheduleTimes(student.scheduleDetails?.[day]);
+    for(const mins of dayTimes){
+      if(created>=remaining)break;
+      if(!Number.isFinite(mins))continue;
+      const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+      const duration=durationToMinutes(student.duration||'30 Minutes');
+      if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
+        const now=new Date().toISOString();
+        appointments.push({
+          id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
+          studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:student.currentPackageId||'',createdAt:now,updatedAt:now
+        });
+        created++;
+      }
+    }
+    cursor.setDate(cursor.getDate()+1);
+  }
+  saveAppointments(appointments);
+  return {created,remaining:Math.max(0,remaining-created),reason:created<remaining?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
 function saveAppointment(){
@@ -10199,7 +10336,7 @@ const p=getStudentProgress(student);
 const schedule=scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration);
 const content=document.getElementById('studentProfileContent');
 const title=document.getElementById('studentProfileTitle');
-if(title)title.textContent=`${student.name||'Student'} — Profile`;
+if(title)title.textContent=`${student.nickname||student.name||'Student'} — Profile`;
 if(!content)return;
 
 const avatar=getStudentAvatarHtml(student,'student-profile-avatar');
@@ -10217,8 +10354,9 @@ content.innerHTML=`
  <div class="student-profile-side">
   ${avatar}
   <div style="min-width:0;flex:1">
-   <div class="student-profile-name">${escapeHtml(student.name||'Unnamed Student')}</div>
+   <div class="student-profile-name">${escapeHtml(student.nickname||student.name||'Unnamed Student')}</div>
    <div class="student-profile-id">Student ID: ${escapeHtml(student.id||'—')}</div>
+   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Full Name: ${escapeHtml(student.name)}</div>`:''}
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
@@ -10234,7 +10372,11 @@ content.innerHTML=`
    <h4>STUDENT INFORMATION</h4>
    <div class="student-profile-info-grid">
     <div class="student-profile-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div>
+    <div class="student-profile-info-box"><label>Full Name</label><div>${escapeHtml(student.name||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Nickname</label><div>${escapeHtml(student.nickname||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Birthday</label><div>${escapeHtml(student.birthday||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Age</label><div>${escapeHtml(student.age||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Country</label><div>${escapeHtml(student.country||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>English Level</label><div>${escapeHtml(student.level||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Status</label><div>${escapeHtml(student.status||'Active')}</div></div>
     <div class="student-profile-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'Not set')}</div></div>
@@ -10496,29 +10638,29 @@ let cursor=new Date(`${startDate}T00:00:00`);
 for(let i=0;i<1095&&created<needed;i++){
  const date=getLocalDateString(cursor);
  const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
- if(student.scheduleDetails && student.scheduleDetails[day]!==undefined && student.scheduleDetails[day]!==null && student.scheduleDetails[day]!==''){
-   const mins=parseInt(student.scheduleDetails[day],10);
-   if(!isNaN(mins)){
-     const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-     const duration=durationToMinutes(student.duration||'30 Minutes');
-     if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
-       const now=new Date().toISOString();
-       appointments.push({
-         id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
-         studentId:student.id,
-         studentName:student.name,
-         date,
-         time,
-         duration:student.duration||'30 Minutes',
-         type:'Regular Class',
-         status:'Scheduled',
-         scheduleMode:'preferred',
-         packageId:newPackageId,
-         createdAt:now,
-         updatedAt:now
-       });
-       created++;
-     }
+ const dayTimes=normalizeScheduleTimes(student.scheduleDetails?.[day]);
+ for(const mins of dayTimes){
+   if(created>=needed)break;
+   if(!Number.isFinite(mins))continue;
+   const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+   const duration=durationToMinutes(student.duration||'30 Minutes');
+   if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
+     const now=new Date().toISOString();
+     appointments.push({
+       id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
+       studentId:student.id,
+       studentName:student.name,
+       date,
+       time,
+       duration:student.duration||'30 Minutes',
+       type:'Regular Class',
+       status:'Scheduled',
+       scheduleMode:'preferred',
+       packageId:newPackageId,
+       createdAt:now,
+       updatedAt:now
+     });
+     created++;
    }
  }
  cursor.setDate(cursor.getDate()+1);
@@ -10585,6 +10727,7 @@ function setStudentSort(mode){
 }
 
 document.addEventListener('click',event=>{
+  if(!event.target.closest('.schedule-time-menu')) closeScheduleTimeMenus();
   if(!event.target.closest('.student-sort-wrap')){
     document.querySelectorAll('.student-sort-menu.show').forEach(menu=>menu.classList.remove('show'));
   }
@@ -10610,7 +10753,7 @@ function sortStudentsForDisplay(items){
     return list.sort((a,b)=>String(a.id||'').localeCompare(String(b.id||''),undefined,{numeric:true,sensitivity:'base'}));
   }
   if(studentSortMode==='za'){
-    return list.sort((a,b)=>String(b.name||'').localeCompare(String(a.name||''),undefined,{numeric:true,sensitivity:'base'}));
+    return list.sort((a,b)=>String(b.nickname||b.name||'').localeCompare(String(a.nickname||a.name||''),undefined,{numeric:true,sensitivity:'base'}));
   }
   // Latest Class: most recently completed class first.
   // Students with no completed class fall back to their enrollment date.
@@ -10621,7 +10764,7 @@ function sortStudentsForDisplay(items){
     const aEnroll=new Date(a.enrolledDate||a.enrolledAt||0).getTime()||0;
     const bEnroll=new Date(b.enrolledDate||b.enrolledAt||0).getTime()||0;
     if(aEnroll!==bEnroll)return bEnroll-aEnroll;
-    return String(a.name||'').localeCompare(String(b.name||''),undefined,{numeric:true,sensitivity:'base'});
+    return String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||''),undefined,{numeric:true,sensitivity:'base'});
   });
 }
 
@@ -10633,8 +10776,9 @@ function renderStudentCard(s){
   <div class="student-card-top">
    ${avatar}
    <div>
-    <div class="student-card-name">${escapeHtml(s.name||'Unnamed Student')}</div>
-    <div class="student-card-id">Student ID: ${escapeHtml(s.id||'—')}</div>
+    <div class="student-card-name">${escapeHtml(s.nickname||s.name||'Unnamed Student')}</div>
+    <div class="student-card-id">${s.nickname&&s.name?`Full Name: ${escapeHtml(s.name)}`:`Student ID: ${escapeHtml(s.id||'—')}`}</div>
+    ${s.nickname&&s.name?`<div class="student-card-id">Student ID: ${escapeHtml(s.id||'—')}</div>`:''}
     <span class="student-status-badge ${escapeAttr(statusClass)}">${escapeHtml(status)}</span>
    </div>
   </div>
@@ -10654,7 +10798,7 @@ function renderStudents(){
 
   const search=(document.getElementById('studentSearch')?.value||'').trim().toLowerCase();
   const filtered=students.filter(s=>{
-    const text=`${s.name||''} ${s.id||''}`.toLowerCase();
+    const text=`${s.nickname||''} ${s.name||''} ${s.id||''}`.toLowerCase();
     return !search||text.includes(search);
   });
 
@@ -12990,410 +13134,6 @@ document.getElementById('editStudentDuration')?.addEventListener(
 ()=>{updateAllScheduleEndTimes('edit');refreshSchedulePickerAvailability('edit',document.getElementById('editOriginalId')?.value||'');}
 );
 
-
-/* =========================================================
-   TEACHER DANYEAL SUBSCRIPTION MANAGEMENT
-   ₱199 INITIAL ACCESS + ₱99 MONTHLY
-
-   IMPORTANT:
-   Change SUBSCRIPTION_ADMIN_EMAIL to your admin Gmail.
-   Use the same Gmail in the Supabase SQL policy/function.
-========================================================= */
-
-const SUBSCRIPTION_ADMIN_EMAIL='teacherdanyeal@gmail.com';
-
-let subscriptionAccounts=[];
-let subscriptionCurrentAccount=null;
-
-function isSubscriptionAdmin(){
-  if(!currentUser)return false;
-  return String(currentUser.email||'').toLowerCase()===SUBSCRIPTION_ADMIN_EMAIL.toLowerCase();
-}
-
-function updateSubscriptionAdminButton(){
-  const button=document.getElementById('subscriptionManagementButton');
-  if(!button)return;
-  button.style.display=isSubscriptionAdmin()?'block':'none';
-}
-
-async function loadSubscriptionAccounts(){
-  if(!isSubscriptionAdmin())return;
-
-  const {data:profiles,error:profileError}=await supabaseClient
-    .from('profiles')
-    .select('*')
-    .order('created_at',{ascending:false});
-
-  if(profileError){
-    console.error(profileError);
-    alert('Unable to load teacher accounts. Please check the Supabase profiles table and RLS policies.');
-    return;
-  }
-
-  const {data:subscriptions,error:subscriptionError}=await supabaseClient
-    .from('subscriptions')
-    .select('*');
-
-  if(subscriptionError)console.error(subscriptionError);
-
-  const {data:payments,error:paymentError}=await supabaseClient
-    .from('payments')
-    .select('*')
-    .order('created_at',{ascending:false});
-
-  if(paymentError)console.error(paymentError);
-
-  subscriptionAccounts=(profiles||[]).map(profile=>{
-    const userSubscription=(subscriptions||[])
-      .filter(item=>item.user_id===profile.id)
-      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0]||null;
-
-    const userPayment=(payments||[])
-      .filter(item=>item.user_id===profile.id)
-      .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0))[0]||null;
-
-    return {profile,subscription:userSubscription,payment:userPayment};
-  });
-
-  await updateExpiredSubscriptionStatuses();
-  renderSubscriptionAccounts();
-}
-
-async function updateExpiredSubscriptionStatuses(){
-  if(!isSubscriptionAdmin())return;
-  const now=new Date();
-
-  for(const account of subscriptionAccounts){
-    const subscription=account.subscription;
-    if(!subscription)continue;
-
-    if(subscription.status==='ACTIVE'&&subscription.expiry_date&&new Date(subscription.expiry_date)<now){
-      const {error:subError}=await supabaseClient
-        .from('subscriptions')
-        .update({status:'EXPIRED',updated_at:new Date().toISOString()})
-        .eq('id',subscription.id);
-
-      if(subError){
-        console.error(subError);
-        continue;
-      }
-
-      await supabaseClient
-        .from('profiles')
-        .update({access_status:'EXPIRED',updated_at:new Date().toISOString()})
-        .eq('id',account.profile.id);
-
-      account.subscription.status='EXPIRED';
-      account.profile.access_status='EXPIRED';
-    }
-  }
-}
-
-function renderSubscriptionAccounts(){
-  const table=document.getElementById('subscriptionAccountsTable');
-  const empty=document.getElementById('subscriptionEmptyState');
-  if(!table)return;
-
-  table.innerHTML='';
-
-  const search=String(document.getElementById('subscriptionSearch')?.value||'').toLowerCase().trim();
-  const filter=document.getElementById('subscriptionStatusFilter')?.value||'ALL';
-
-  const filtered=subscriptionAccounts.filter(account=>{
-    const profile=account.profile||{};
-    const name=String(profile.full_name||'').toLowerCase();
-    const email=String(profile.email||'').toLowerCase();
-    const status=String(profile.access_status||'PENDING').toUpperCase();
-    return (!search||name.includes(search)||email.includes(search))&&(filter==='ALL'||status===filter);
-  });
-
-  empty.style.display=filtered.length?'none':'block';
-  filtered.forEach(account=>table.appendChild(createSubscriptionRow(account)));
-  updateSubscriptionSummary();
-}
-
-function createSubscriptionRow(account){
-  const profile=account.profile||{};
-  const subscription=account.subscription;
-  const payment=account.payment;
-  const tr=document.createElement('tr');
-  const name=escapeSubscriptionHtml(profile.full_name||'Teacher');
-  const email=escapeSubscriptionHtml(profile.email||'—');
-  const status=String(profile.access_status||'PENDING').toUpperCase();
-  const expiry=subscription?.expiry_date?formatSubscriptionDate(subscription.expiry_date):'—';
-  const paymentStatus=payment?.status||'—';
-
-  tr.innerHTML=`
-    <td><strong>${name}</strong></td>
-    <td>${email}</td>
-    <td><span class="subscription-badge ${getSubscriptionBadgeClass(status)}">${status}</span></td>
-    <td>${subscription?escapeSubscriptionHtml(subscription.plan_name||'Monthly'):'—'}${subscription?`<br><small>₱${Number(subscription.price||0).toFixed(2)}</small>`:''}</td>
-    <td>${expiry}</td>
-    <td><span class="subscription-badge ${getPaymentBadgeClass(paymentStatus)}">${escapeSubscriptionHtml(paymentStatus)}</span></td>
-    <td>
-      <div class="subscription-action-wrap">
-        <button type="button" class="subscription-three-dot" onclick="toggleSubscriptionActionMenu(this)">⋮</button>
-        <div class="subscription-action-menu">
-          <button type="button" onclick="viewSubscriptionAccount('${profile.id}')">View Account</button>
-          ${status==='PENDING'?`
-            <button type="button" onclick="approveSubscriptionAccount('${profile.id}')">Approve Account</button>
-            <button type="button" onclick="rejectSubscriptionAccount('${profile.id}')">Reject Account</button>
-          `:''}
-          ${status==='ACTIVE'?`
-            <button type="button" onclick="extendSubscriptionAccount('${profile.id}')">Extend / Renew</button>
-            <button type="button" class="danger" onclick="blockSubscriptionAccount('${profile.id}')">Block Account</button>
-          `:''}
-          ${status==='EXPIRED'?`
-            <button type="button" onclick="extendSubscriptionAccount('${profile.id}')">Renew Subscription</button>
-            <button type="button" class="danger" onclick="blockSubscriptionAccount('${profile.id}')">Block Account</button>
-          `:''}
-          ${status==='BLOCKED'?`
-            <button type="button" onclick="unblockSubscriptionAccount('${profile.id}')">Unblock Account</button>
-          `:''}
-        </div>
-      </div>
-    </td>`;
-  return tr;
-}
-
-function escapeSubscriptionHtml(value){
-  return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-}
-
-function getSubscriptionBadgeClass(status){
-  status=String(status).toUpperCase();
-  if(status==='ACTIVE')return 'active';
-  if(status==='EXPIRED')return 'expired';
-  if(status==='BLOCKED')return 'blocked';
-  return 'pending';
-}
-
-function getPaymentBadgeClass(status){
-  status=String(status).toUpperCase();
-  if(status==='VERIFIED')return 'verified';
-  if(status==='REJECTED')return 'rejected';
-  return 'pending';
-}
-
-function formatSubscriptionDate(date){
-  if(!date)return '—';
-  const d=new Date(date);
-  if(Number.isNaN(d.getTime()))return '—';
-  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
-}
-
-function updateSubscriptionSummary(){
-  const total=subscriptionAccounts.length;
-  const active=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='ACTIVE').length;
-  const pending=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='PENDING').length;
-  const expired=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='EXPIRED').length;
-  const blocked=subscriptionAccounts.filter(a=>String(a.profile?.access_status||'').toUpperCase()==='BLOCKED').length;
-  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
-  set('subscriptionTotalAccounts',total);
-  set('subscriptionActiveAccounts',active);
-  set('subscriptionPendingAccounts',pending);
-  set('subscriptionExpiredAccounts',expired);
-  set('subscriptionBlockedAccounts',blocked);
-}
-
-function filterSubscriptionAccounts(){renderSubscriptionAccounts();}
-
-function toggleSubscriptionActionMenu(button){
-  document.querySelectorAll('.subscription-action-menu').forEach(menu=>{
-    if(menu!==button.parentElement.querySelector('.subscription-action-menu'))menu.classList.remove('show');
-  });
-  const menu=button.parentElement.querySelector('.subscription-action-menu');
-  if(menu)menu.classList.toggle('show');
-}
-
-async function viewSubscriptionAccount(userId){
-  document.querySelectorAll('.subscription-action-menu').forEach(menu=>menu.classList.remove('show'));
-  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
-  if(!account)return;
-  subscriptionCurrentAccount=account;
-  const profile=account.profile||{};
-  const subscription=account.subscription;
-  const payment=account.payment;
-  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
-  set('modalTeacherName',profile.full_name||'Teacher');
-  set('modalTeacherEmail',profile.email||'—');
-  set('modalAccountCreated',formatSubscriptionDate(profile.created_at));
-  set('modalAccessStatus',profile.access_status||'PENDING');
-  set('modalPlan',subscription?.plan_name||'No subscription');
-  set('modalPrice',subscription?`₱${Number(subscription.price||0).toFixed(2)}`:'—');
-  set('modalStartDate',formatSubscriptionDate(subscription?.start_date));
-  set('modalExpiryDate',formatSubscriptionDate(subscription?.expiry_date));
-  set('modalPaymentStatus',payment?.status||'No payment');
-  renderSubscriptionModalActions();
-  document.getElementById('subscriptionAccountModal')?.classList.add('show');
-}
-
-function renderSubscriptionModalActions(){
-  const box=document.getElementById('subscriptionModalActions');
-  if(!box)return;
-  box.innerHTML='';
-  const account=subscriptionCurrentAccount;
-  if(!account)return;
-  const id=account.profile.id;
-  const status=String(account.profile?.access_status||'PENDING').toUpperCase();
-
-  if(status==='PENDING'){
-    box.innerHTML+=`<button type="button" class="primary" onclick="approveSubscriptionAccount('${id}')">Approve Account</button><button type="button" class="danger" onclick="rejectSubscriptionAccount('${id}')">Reject Account</button>`;
-  }
-  if(status==='ACTIVE'||status==='EXPIRED'){
-    box.innerHTML+=`<button type="button" class="primary" onclick="extendSubscriptionAccount('${id}')">${status==='EXPIRED'?'Renew Subscription':'Extend Subscription'}</button>`;
-  }
-  if(status!=='BLOCKED'){
-    box.innerHTML+=`<button type="button" class="danger" onclick="blockSubscriptionAccount('${id}')">Block Account</button>`;
-  }else{
-    box.innerHTML+=`<button type="button" class="primary" onclick="unblockSubscriptionAccount('${id}')">Unblock Account</button>`;
-  }
-}
-
-function closeSubscriptionAccountModal(){
-  document.getElementById('subscriptionAccountModal')?.classList.remove('show');
-  subscriptionCurrentAccount=null;
-}
-
-async function approveSubscriptionAccount(userId){
-  if(!isSubscriptionAdmin())return;
-  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
-  if(!account)return;
-  if(!confirm('Approve this teacher account?'))return;
-
-  const now=new Date();
-  const expiry=new Date(now);
-  expiry.setMonth(expiry.getMonth()+1);
-
-  const {error:profileError}=await supabaseClient.from('profiles').update({access_status:'ACTIVE',updated_at:now.toISOString()}).eq('id',userId);
-  if(profileError){alert(profileError.message);return;}
-
-  const {error:subscriptionError}=await supabaseClient.from('subscriptions').insert({user_id:userId,plan_name:'Monthly',price:99,start_date:now.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE'});
-  if(subscriptionError){alert(subscriptionError.message);return;}
-
-  alert('Teacher account approved successfully.');
-  closeSubscriptionAccountModal();
-  await loadSubscriptionAccounts();
-}
-
-async function rejectSubscriptionAccount(userId){
-  if(!isSubscriptionAdmin())return;
-  if(!confirm('Reject this teacher account?'))return;
-  const {error}=await supabaseClient.from('profiles').update({access_status:'BLOCKED',updated_at:new Date().toISOString()}).eq('id',userId);
-  if(error){alert(error.message);return;}
-  alert('Teacher account rejected and blocked.');
-  closeSubscriptionAccountModal();
-  await loadSubscriptionAccounts();
-}
-
-async function blockSubscriptionAccount(userId){
-  if(!isSubscriptionAdmin())return;
-  if(!confirm('Block this teacher account? They will no longer be allowed to access the portal.'))return;
-  const {error}=await supabaseClient.from('profiles').update({access_status:'BLOCKED',updated_at:new Date().toISOString()}).eq('id',userId);
-  if(error){alert(error.message);return;}
-  await supabaseClient.from('subscriptions').update({status:'BLOCKED',updated_at:new Date().toISOString()}).eq('user_id',userId).eq('status','ACTIVE');
-  alert('Teacher account blocked.');
-  closeSubscriptionAccountModal();
-  await loadSubscriptionAccounts();
-}
-
-async function unblockSubscriptionAccount(userId){
-  if(!isSubscriptionAdmin())return;
-  if(!confirm('Unblock this teacher account?'))return;
-  const {error}=await supabaseClient.from('profiles').update({access_status:'PENDING',updated_at:new Date().toISOString()}).eq('id',userId);
-  if(error){alert(error.message);return;}
-  await supabaseClient.from('subscriptions').update({status:'PENDING',updated_at:new Date().toISOString()}).eq('user_id',userId).eq('status','BLOCKED');
-  alert('Teacher account has been unblocked and returned to PENDING.');
-  closeSubscriptionAccountModal();
-  await loadSubscriptionAccounts();
-}
-
-async function extendSubscriptionAccount(userId){
-  if(!isSubscriptionAdmin())return;
-  const account=subscriptionAccounts.find(a=>a.profile?.id===userId);
-  if(!account)return;
-  if(!confirm('Add 1 month to this teacher subscription for ₱99?'))return;
-
-  const now=new Date();
-  let start=now;
-  if(account.subscription?.expiry_date&&new Date(account.subscription.expiry_date)>now)start=new Date(account.subscription.expiry_date);
-  const expiry=new Date(start);
-  expiry.setMonth(expiry.getMonth()+1);
-
-  if(account.subscription?.id){
-    const {error}=await supabaseClient.from('subscriptions').update({plan_name:'Monthly',price:99,start_date:start.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE',updated_at:now.toISOString()}).eq('id',account.subscription.id);
-    if(error){alert(error.message);return;}
-  }else{
-    const {error}=await supabaseClient.from('subscriptions').insert({user_id:userId,plan_name:'Monthly',price:99,start_date:start.toISOString(),expiry_date:expiry.toISOString(),status:'ACTIVE'});
-    if(error){alert(error.message);return;}
-  }
-
-  const {error:profileError}=await supabaseClient.from('profiles').update({access_status:'ACTIVE',updated_at:now.toISOString()}).eq('id',userId);
-  if(profileError){alert(profileError.message);return;}
-
-  alert('Subscription extended for 1 month.');
-  closeSubscriptionAccountModal();
-  await loadSubscriptionAccounts();
-}
-
-async function openSubscriptionManagement(){
-  if(!isSubscriptionAdmin()){
-    alert('Administrator access only.');
-    showPage('dashboard');
-    return;
-  }
-  await loadSubscriptionAccounts();
-}
-
-async function checkTeacherSubscriptionAccess(user){
-  if(!user)return false;
-
-  if(String(user.email||'').trim().toLowerCase()===String(SUBSCRIPTION_ADMIN_EMAIL||'').trim().toLowerCase())return true;
-
-  const {data:profile,error}=await supabaseClient.from('profiles').select('access_status').eq('id',user.id).maybeSingle();
-
-  if(error){
-    console.error(error);
-    try{await supabaseClient.auth.signOut();}catch(e){}
-    alert('Unable to verify your account access.');
-    return false;
-  }
-
-  if(!profile){
-    try{await supabaseClient.auth.signOut();}catch(e){}
-    alert('Your account is not yet approved. Please complete the ₱199 initial access process.');
-    return false;
-  }
-
-  const status=String(profile.access_status||'PENDING').toUpperCase();
-  if(status!=='ACTIVE'){
-    try{await supabaseClient.auth.signOut();}catch(e){}
-    if(status==='PENDING')alert('Your account is waiting for approval. Please complete the ₱199 initial access payment.');
-    else if(status==='EXPIRED')alert('Your subscription has expired. Please renew your ₱99 monthly subscription.');
-    else if(status==='BLOCKED')alert('This account has been blocked. Please contact Teacher Danyeal.');
-    else alert('Your account does not currently have portal access.');
-    return false;
-  }
-
-  return true;
-}
-
-document.addEventListener('click',function(event){
-  if(!event.target.closest('.subscription-action-wrap')){
-    document.querySelectorAll('.subscription-action-menu').forEach(menu=>menu.classList.remove('show'));
-  }
-});
-
-document.addEventListener('click',function(event){
-  const modal=document.getElementById('subscriptionAccountModal');
-  if(modal&&event.target===modal)closeSubscriptionAccountModal();
-});
-
-setTimeout(updateSubscriptionAdminButton,500);
-
-
-
-
 initAuth();
 
 
@@ -14563,7 +14303,7 @@ function clearPaymentReceipt(){
   const currencyField=document.getElementById('paymentReceiptStudentCurrency');if(currencyField)currencyField.classList.remove('payment-currency-required');
   updatePaymentAmountCurrencyPrefix();
   const currencyNote=document.getElementById('paymentCurrencyRequiredNote');if(currencyNote)currencyNote.remove();
-  const m=document.getElementById('paymentReceiptMethod');if(m)m.value='Bank Transfer';
+  const m=document.getElementById('paymentReceiptMethod');if(m)m.value='GCash';
   const st=document.getElementById('paymentReceiptStatus');if(st)st.value='';
   const wrap=document.getElementById('paymentReceiptOtherMethodWrap');if(wrap)wrap.style.display='none';
   const rw=document.getElementById('paymentReceiptRemainingWrap');if(rw)rw.style.display='none';
@@ -15660,9 +15400,191 @@ const originalCloseStudentContractPreview = closeStudentContractPreview;
 closeStudentContractPreview = function(){
   try{originalCloseStudentContractPreview();}catch(e){}
 };
+
+
+/* =========================================================
+   TEACHER SUBSCRIPTION — ₱99 MONTHLY
+   Payment records are submitted to Supabase for admin Website 2.
+   Configure the actual QR/card destinations below.
+========================================================= */
+const TEACHER_SUBSCRIPTION_PRICE = 99;
+const SUBSCRIPTION_PAYMENT_CONFIG = {
+  GCash: {
+    type:'qr',
+    qr:'',
+    text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
+  },
+  PayPal: {
+    type:'paypal',
+    url:'',
+    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
+  },
+  'Bank / InstaPay': {
+    type:'qr',
+    qr:'',
+    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
+  }
+};
+
+function subscriptionEscape(value){
+  return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+}
+
+function subscriptionLocalKey(){
+  return currentUser ? `teacherDanyealSubscriptionRequests_${currentUser.id}` : 'teacherDanyealSubscriptionRequests_guest';
+}
+
+function getLocalSubscriptionRequests(){
+  try{return JSON.parse(localStorage.getItem(subscriptionLocalKey())||'[]');}catch(e){return [];}
+}
+
+function saveLocalSubscriptionRequests(rows){
+  try{localStorage.setItem(subscriptionLocalKey(),JSON.stringify(rows));}catch(e){}
+}
+
+function selectSubscriptionMethod(method){
+  const input=document.getElementById('subscriptionPaymentMethod');
+  if(input)input.value=method;
+  document.querySelectorAll('.subscription-method-card').forEach(btn=>btn.classList.toggle('selected',btn.dataset.subMethod===method));
+  const box=document.getElementById('subscriptionPaymentInstructions');
+  if(!box)return;
+  const cfg=SUBSCRIPTION_PAYMENT_CONFIG[method]||{};
+  let html=`<strong>${subscriptionEscape(method)}</strong><br>${subscriptionEscape(cfg.text||'Please complete the ₱99 payment.')}`;
+  if(cfg.type==='qr'){
+    if(cfg.qr){
+      html+=`<img src="${subscriptionEscape(cfg.qr)}" alt="${subscriptionEscape(method)} payment QR">`;
+    }else{
+      html+=`<div style="margin-top:12px;padding:18px;border:1px solid #ddd;border-radius:10px;background:#fff;text-align:center;color:#667085;font-weight:700;">QR CODE WILL APPEAR HERE<br><small>Add your ${subscriptionEscape(method)} QR image URL in SUBSCRIPTION_PAYMENT_CONFIG.</small></div>`;
+    }
+  }else if(cfg.type==='paypal'){
+    if(cfg.url){
+      html+=`<a class="subscription-card-link" href="${subscriptionEscape(cfg.url)}" target="_blank" rel="noopener">OPEN PAYPAL PAYMENT</a>`;
+    }else{
+      html+=`<div style="margin-top:12px;padding:18px;border:1px solid #ddd;border-radius:10px;background:#fff;text-align:center;color:#667085;font-weight:700;">PAYPAL PAYMENT LINK WILL APPEAR HERE<br><small>Add your PayPal payment URL in SUBSCRIPTION_PAYMENT_CONFIG.</small></div>`;
+    }
+  }
+  box.innerHTML=html;
+}
+
+async function loadSubscriptionAccount(){
+  const emailEl=document.getElementById('subscriptionAccountEmail');
+  const statusEl=document.getElementById('subscriptionAccountStatus');
+  const expiryEl=document.getElementById('subscriptionAccountExpiry');
+  if(!emailEl)return;
+  emailEl.textContent=currentUser?.email||'Not signed in';
+  if(!currentUser){
+    statusEl.textContent='LOGIN REQUIRED';
+    expiryEl.textContent='—';
+    return;
+  }
+  statusEl.textContent='Checking...';
+  expiryEl.textContent='—';
+  try{
+    if(typeof supabaseClient==='undefined'||!supabaseClient){throw new Error('Supabase is not available.');}
+    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('access_status').eq('id',currentUser.id).maybeSingle();
+    if(profileError)throw profileError;
+    const status=String(profile?.access_status||'PENDING').toUpperCase();
+    statusEl.textContent=status;
+    const {data:sub,error:subError}=await supabaseClient.from('subscriptions').select('expiry_date,status,plan_name,price').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(!subError&&sub?.expiry_date){expiryEl.textContent=new Date(sub.expiry_date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}
+  }catch(err){
+    statusEl.textContent='PENDING';
+    expiryEl.textContent='Awaiting approval';
+    console.warn('Subscription status could not be loaded:',err);
+  }
+}
+
+async function renderSubscriptionPage(){
+  loadSubscriptionAccount();
+  renderSubscriptionHistory();
+  const input=document.getElementById('subscriptionPaymentMethod');
+  if(input && !input.value)selectSubscriptionMethod('GCash');
+}
+
+function renderSubscriptionHistory(){
+  const box=document.getElementById('subscriptionPaymentHistory');
+  if(!box)return;
+  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  if(!rows.length){box.textContent='No payment requests yet.';return;}
+  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
+}
+
+function subscriptionFileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    if(!file)return resolve('');
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(reader.error||new Error('Unable to read payment proof.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function submitSubscriptionPayment(){
+  const message=document.getElementById('subscriptionSubmitMessage');
+  const method=String(document.getElementById('subscriptionPaymentMethod')?.value||'').trim();
+  const reference=String(document.getElementById('subscriptionReference')?.value||'').trim();
+  const note=String(document.getElementById('subscriptionNote')?.value||'').trim();
+  const proofFile=document.getElementById('subscriptionProof')?.files?.[0]||null;
+  if(message)message.textContent='';
+  if(!currentUser){if(message)message.textContent='Please log in first.';return;}
+  if(!method){if(message)message.textContent='Please choose a payment method.';return;}
+  if(!reference){if(message)message.textContent='Please enter your payment reference number.';return;}
+  try{
+    let proofData='';
+    if(proofFile){
+      if(proofFile.size>2*1024*1024)throw new Error('Payment proof must be 2 MB or smaller.');
+      proofData=await subscriptionFileToDataURL(proofFile);
+    }
+    const request={
+      user_id:currentUser.id,
+      email:currentUser.email||'',
+      payment_type:'MONTHLY',
+      amount:TEACHER_SUBSCRIPTION_PRICE,
+      payment_method:method,
+      reference_number:reference,
+      payment_date:new Date().toISOString(),
+      status:'PENDING',
+      notes:note,
+      proof_name:proofFile?.name||'',
+      proof_data:proofData,
+      created_at:new Date().toISOString()
+    };
+
+    /* Save locally first so the teacher never loses the submission if the network fails. */
+    const local=getLocalSubscriptionRequests();
+    local.push(request);
+    saveLocalSubscriptionRequests(local);
+
+    let remoteSaved=false;
+    if(typeof supabaseClient!=='undefined'&&supabaseClient){
+      const {error}=await supabaseClient.from('payments').insert([{
+        user_id:currentUser.id,
+        payment_type:'MONTHLY',
+        amount:TEACHER_SUBSCRIPTION_PRICE,
+        payment_method:method,
+        reference_number:reference,
+        payment_date:new Date().toISOString(),
+        status:'PENDING',
+        notes:JSON.stringify({email:currentUser.email||'',note,proof_name:proofFile?.name||'',proof_data:proofData})
+      }]);
+      if(error)throw error;
+      remoteSaved=true;
+    }
+
+    const msg=remoteSaved
+      ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
+      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.';
+    if(message)message.textContent=msg;
+    const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
+    const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
+    const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
+    renderSubscriptionHistory();
+  }catch(err){
+    console.error('Subscription payment submission failed:',err);
+    if(message)message.textContent='Unable to submit the payment right now. Please check the payment details and try again.';
+  }
+}
 </script>
-
-
 
 
 
