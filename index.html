@@ -3752,38 +3752,44 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 }
 
 /* Subscription page */
-.subscription-page-wrap{max-width:1000px;margin:0 auto;}
-.subscription-header-card{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px;border:1px solid var(--global-border,#d5d5d5);border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:16px;}
+.subscription-page-wrap{width:90vw;max-width:none;min-height:90vh;margin:0 auto;padding:0 0 30px;}
+.subscription-header-card{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 34px;border:1px solid var(--global-border,#d5d5d5);border-radius:18px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.06);margin-bottom:18px;}
 .subscription-title{margin:0;font-size:clamp(26px,4vw,38px);font-weight:900;}
 .subscription-subtitle{margin:7px 0 0;color:#667085;}
 .subscription-price-badge{font-size:28px;font-weight:900;white-space:nowrap;}
 .subscription-price-badge span{font-size:14px;font-weight:700;color:#667085;}
-.subscription-status-card{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:14px;margin-bottom:16px;}
-.subscription-status-card>div{padding:16px;border:1px solid var(--global-border,#d5d5d5);border-radius:13px;background:var(--global-accent-soft,#f5faff);}
+.subscription-status-card{display:grid;grid-template-columns:1.5fr .75fr .75fr;gap:16px;margin-bottom:18px;}
+.subscription-status-card>div{padding:20px;border:1px solid var(--global-border,#d5d5d5);border-radius:14px;background:var(--global-accent-soft,#f5faff);min-height:86px;display:flex;flex-direction:column;justify-content:center;}
 .subscription-small-label{font-size:11px;font-weight:900;letter-spacing:.08em;color:#667085;margin-bottom:6px;}
 .subscription-account-email{font-weight:800;word-break:break-all;}
 .subscription-status-pill{display:inline-block;font-weight:900;padding:6px 10px;border-radius:999px;background:#eef2f6;}
 .subscription-expiry{font-weight:800;}
-.subscription-panel,.subscription-history-panel{padding:22px;border:1px solid var(--global-border,#d5d5d5);border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05);margin-bottom:16px;}
-.subscription-panel-title{font-size:18px;font-weight:900;margin-bottom:15px;}
-.subscription-plan-box{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px;border:1px solid #d9dee3;border-radius:12px;background:#f8fafb;margin-bottom:22px;}
+.subscription-panel,.subscription-history-panel{padding:30px 34px;border:1px solid var(--global-border,#d5d5d5);border-radius:18px;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05);margin-bottom:18px;}
+.subscription-panel-title{font-size:22px;font-weight:900;margin-bottom:18px;}
+.subscription-plan-box{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border:1px solid #d9dee3;border-radius:14px;background:#f8fafb;margin-bottom:26px;}
 .subscription-plan-box strong,.subscription-plan-box span{display:block;}
 .subscription-plan-box span{margin-top:4px;color:#667085;font-size:13px;}
 .subscription-plan-price{font-size:26px;font-weight:900;white-space:nowrap;}
-.subscription-section-title{font-size:12px;font-weight:900;letter-spacing:.08em;margin:18px 0 10px;}
+.subscription-section-title{font-size:13px;font-weight:900;letter-spacing:.08em;margin:22px 0 12px;}
 .subscription-method-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}
 .subscription-method-card{padding:15px;border:2px solid #d7dde2;border-radius:12px;background:#fff;cursor:pointer;text-align:left;}
 .subscription-method-card strong,.subscription-method-card small{display:block;}
 .subscription-method-card small{margin-top:4px;color:#667085;}
 .subscription-method-card.selected{border-color:var(--portal-accent-dark,#267aa0);box-shadow:0 0 0 3px rgba(38,122,160,.12);background:var(--global-accent-soft,#f5faff);}
-.subscription-payment-instructions{min-height:100px;border:1px dashed #b9c2c9;border-radius:12px;padding:18px;margin-bottom:18px;background:#fafcfd;line-height:1.5;}
+.subscription-payment-instructions{min-height:70px;border:1px dashed #b9c2c9;border-radius:12px;padding:18px;margin-bottom:18px;background:#fafcfd;line-height:1.5;}
+.subscription-open-payment-wrap{display:flex;justify-content:center;margin:8px 0 14px;}
+.subscription-open-payment-btn{display:inline-flex;align-items:center;justify-content:center;min-width:360px;padding:16px 28px;border-radius:10px;background:#00d9d9;color:#000;text-decoration:none;font-weight:900;font-size:16px;border:0;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08);}
+.subscription-open-payment-btn:hover{background:#00c8c8;}
+.subscription-payment-note{margin:0 auto 22px;padding:12px 16px;max-width:900px;color:#d00000;font-size:12px;line-height:1.55;text-align:center;}
+.subscription-payment-note strong{font-size:11px;}
+@media(max-width:700px){.subscription-open-payment-btn{width:100%;min-width:0;}}
 .subscription-payment-instructions img{display:block;max-width:240px;max-height:240px;width:auto;height:auto;margin:12px auto;border-radius:10px;border:1px solid #ddd;background:#fff;}
 .subscription-payment-instructions .subscription-card-link{display:inline-block;margin-top:10px;padding:11px 16px;border-radius:9px;background:var(--portal-accent,#87CEEB);color:#111;text-decoration:none;font-weight:900;}
-.subscription-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.subscription-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:16px;}
 .subscription-panel label{display:block;font-size:12px;font-weight:900;margin-bottom:6px;}
 .subscription-panel input,.subscription-panel textarea{width:100%;box-sizing:border-box;border:1px solid #cbd2d8;border-radius:9px;padding:11px 12px;background:#fff;font:inherit;}
 .subscription-field-note{display:block;margin-top:5px;color:#667085;font-size:11px;}
-.subscription-submit-btn{width:100%;margin-top:15px;border:0;border-radius:10px;padding:14px 18px;background:var(--portal-accent,#87CEEB);color:#111;font-weight:900;font-size:15px;cursor:pointer;}
+.subscription-submit-btn{width:100%;margin-top:18px;border:0;border-radius:11px;padding:16px 20px;background:var(--portal-accent,#87CEEB);color:#111;font-weight:900;font-size:16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.06);}
 .subscription-submit-btn:hover{background:var(--portal-accent-dark,#70c5e8);}
 .subscription-submit-message{margin-top:10px;font-weight:800;min-height:20px;}
 .subscription-history-list{display:flex;flex-direction:column;gap:10px;}
@@ -3791,13 +3797,21 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .subscription-history-item strong{display:block;}
 .subscription-history-item small{color:#667085;line-height:1.45;}
 .subscription-history-status{font-weight:900;white-space:nowrap;}
+@media(max-width:900px){
+  .subscription-page-wrap{width:94vw;}
+}
 @media(max-width:760px){
   .subscription-header-card{align-items:flex-start;flex-direction:column;}
   .subscription-status-card{grid-template-columns:1fr;}
   .subscription-method-grid{grid-template-columns:1fr 1fr;}
   .subscription-form-grid{grid-template-columns:1fr;}
 }
-@media(max-width:450px){.subscription-method-grid{grid-template-columns:1fr;}}
+@media(max-width:450px){
+  .subscription-method-grid{grid-template-columns:1fr;}
+  .subscription-header-card,.subscription-panel,.subscription-history-panel{padding:20px;}
+  .subscription-open-payment-btn{min-width:0;width:100%;}
+}
+
 </style>
 </head>
 
@@ -5338,24 +5352,30 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
         <div class="subscription-plan-price">₱99</div>
       </div>
 
-      <div class="subscription-section-title">1. CHOOSE PAYMENT METHOD</div>
-      <div class="subscription-method-grid">
-        <button type="button" class="subscription-method-card" data-sub-method="GCash" onclick="selectSubscriptionMethod('GCash')">
-          <strong>GCash</strong><small>E-wallet · QR</small>
-        </button>
-        <button type="button" class="subscription-method-card" data-sub-method="PayPal" onclick="selectSubscriptionMethod('PayPal')">
-          <strong>PayPal</strong><small>Online payment</small>
-        </button>
-        <button type="button" class="subscription-method-card" data-sub-method="Bank / InstaPay" onclick="selectSubscriptionMethod('Bank / InstaPay')">
-          <strong>Bank / InstaPay</strong><small>QR or bank transfer</small>
-        </button>
+      <div class="subscription-section-title">1. PAYMENT METHOD</div>
+
+      <div class="subscription-open-payment-wrap">
+        <a class="subscription-open-payment-btn" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer">OPEN PAYMENT METHOD</a>
+      </div>
+
+      <div class="subscription-payment-note">
+        <strong>Note:</strong><br>
+        Please select your payment method on the Payment Methods website. After payment, return here and indicate which payment method you used in the field below.
+      </div>
+
+      <div class="subscription-form-grid subscription-method-selection-grid">
+        <div>
+          <label for="subscriptionPaymentMethodSelect">Payment Method Used</label>
+          <select id="subscriptionPaymentMethodSelect" onchange="selectSubscriptionMethod(this.value)">
+            <option value="">Select Payment Method</option>
+            <option value="GCash">GCash</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Bank / InstaPay">Bank / InstaPay</option>
+          </select>
+        </div>
       </div>
 
       <input type="hidden" id="subscriptionPaymentMethod" value="">
-
-      <div id="subscriptionPaymentInstructions" class="subscription-payment-instructions">
-        Please choose a payment method above.
-      </div>
 
       <div class="subscription-section-title">2. PAYMENT DETAILS</div>
       <div class="subscription-form-grid">
@@ -15696,26 +15716,18 @@ const TEACHER_SUBSCRIPTION_PRICE = 99;
 const SUBSCRIPTION_PAYMENT_CONFIG = {
   GCash: {
     type:'qr',
-    qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/gcash.png',
-    label:'GCash',
+    qr:'',
     text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
   },
   PayPal: {
-    type:'qr',
-    qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/paypal.png',
-    label:'PayPal',
-    text:'Scan the PayPal QR code below, pay ₱99, then enter your payment reference number.'
+    type:'paypal',
+    url:'',
+    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
   },
   'Bank / InstaPay': {
-    type:'bank',
-    banks:[
-      {name:'BPI',qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/bpi.png'},
-      {name:'LANDBANK',qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/landbank.png'},
-      {name:'CIMB',qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/cimb.png'},
-      {name:'UnionBank',qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/unionbank.png'},
-      {name:'AUB',qr:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/aub.png'}
-    ],
-    text:'Choose your preferred bank QR code below, pay ₱99, then enter your payment reference number.'
+    type:'qr',
+    qr:'',
+    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
   }
 };
 
@@ -15735,59 +15747,14 @@ function saveLocalSubscriptionRequests(rows){
   try{localStorage.setItem(subscriptionLocalKey(),JSON.stringify(rows));}catch(e){}
 }
 
-function ensureSubscriptionQrModal(){
-  let modal=document.getElementById('subscriptionQrModal');
-  if(modal)return modal;
-  modal=document.createElement('div');
-  modal.id='subscriptionQrModal';
-  modal.style.cssText='display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
-  modal.innerHTML=`<div style="position:relative;width:min(92vw,520px);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:22px;box-sizing:border-box;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
-    <button type="button" onclick="closeSubscriptionQrModal()" aria-label="Close" style="position:absolute;right:12px;top:10px;border:0;background:transparent;font-size:28px;line-height:1;cursor:pointer;color:#344054;">×</button>
-    <div id="subscriptionQrModalTitle" style="font-size:20px;font-weight:900;margin:6px 35px 14px;">PAYMENT QR CODE</div>
-    <img id="subscriptionQrModalImage" src="" alt="Payment QR Code" style="display:block;max-width:100%;max-height:65vh;width:auto;height:auto;margin:0 auto;border:1px solid #ddd;border-radius:12px;background:#fff;object-fit:contain;">
-  </div>`;
-  modal.addEventListener('click',e=>{if(e.target===modal)closeSubscriptionQrModal();});
-  document.body.appendChild(modal);
-  return modal;
-}
-
-function viewSubscriptionQr(title,src){
-  if(!src)return;
-  const modal=ensureSubscriptionQrModal();
-  const titleEl=document.getElementById('subscriptionQrModalTitle');
-  const img=document.getElementById('subscriptionQrModalImage');
-  if(titleEl)titleEl.textContent=`${title} QR CODE`;
-  if(img){img.src=src;img.alt=`${title} payment QR code`;}
-  modal.style.display='flex';
-}
-
-function closeSubscriptionQrModal(){
-  const modal=document.getElementById('subscriptionQrModal');
-  if(modal)modal.style.display='none';
-}
+const SUBSCRIPTION_PAYMENT_METHODS_URL='https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/';
 
 function selectSubscriptionMethod(method){
+  const cleanMethod=String(method||'').trim();
   const input=document.getElementById('subscriptionPaymentMethod');
-  if(input)input.value=method;
-  document.querySelectorAll('.subscription-method-card').forEach(btn=>btn.classList.toggle('selected',btn.dataset.subMethod===method));
-  const box=document.getElementById('subscriptionPaymentInstructions');
-  if(!box)return;
-  const cfg=SUBSCRIPTION_PAYMENT_CONFIG[method]||{};
-  let html=`<strong>${subscriptionEscape(method)}</strong><br>${subscriptionEscape(cfg.text||'Please complete the ₱99 payment.')}`;
-  if(cfg.type==='qr'){
-    if(cfg.qr){
-      html+=`<div style="text-align:center;margin-top:14px;"><button type="button" class="subscription-card-link" onclick="viewSubscriptionQr('${subscriptionEscape(cfg.label||method)}','${subscriptionEscape(cfg.qr)}')">View QR Code</button></div>`;
-    }else{
-      html+=`<div style="margin-top:12px;padding:18px;border:1px solid #ddd;border-radius:10px;background:#fff;text-align:center;color:#667085;font-weight:700;">QR CODE WILL APPEAR HERE</div>`;
-    }
-  }else if(cfg.type==='bank'){
-    html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px;margin-top:14px;">`;
-    (cfg.banks||[]).forEach(bank=>{
-      html+=`<div style="border:1px solid #d9dee3;border-radius:12px;padding:12px;background:#fff;text-align:center;box-sizing:border-box;"><strong style="display:block;margin-bottom:9px;">${subscriptionEscape(bank.name)}</strong><button type="button" class="subscription-card-link" onclick="viewSubscriptionQr('${subscriptionEscape(bank.name)}','${subscriptionEscape(bank.qr)}')">View QR Code</button></div>`;
-    });
-    html+=`</div>`;
-  }
-  box.innerHTML=html;
+  if(input)input.value=cleanMethod;
+  const select=document.getElementById('subscriptionPaymentMethodSelect');
+  if(select && select.value!==cleanMethod)select.value=cleanMethod;
 }
 
 async function loadSubscriptionAccount(){
@@ -15822,7 +15789,8 @@ async function renderSubscriptionPage(){
   loadSubscriptionAccount();
   renderSubscriptionHistory();
   const input=document.getElementById('subscriptionPaymentMethod');
-  if(input && !input.value)selectSubscriptionMethod('GCash');
+  const select=document.getElementById('subscriptionPaymentMethodSelect');
+  if(select)select.value=input?.value||'';
 }
 
 function renderSubscriptionHistory(){
