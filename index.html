@@ -3659,7 +3659,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-legal-portrait-page .pdf-page-header{background:var(--global-accent-soft,#e7ffff)!important;border:2px solid var(--global-accent)!important;border-radius:20px!important;padding:22px 24px!important;margin-bottom:16px!important;min-height:92px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;box-shadow:0 5px 16px rgba(0,0,0,.08)!important}
 .contract-legal-portrait-page .pdf-page-header h1{font-size:22px!important;margin:0 0 7px!important;color:var(--global-accent-dark,#00bcbc)!important}
 .contract-legal-portrait-page .pdf-page-header h2{font-size:15px!important;margin:0!important;color:#111!important}
-.contract-legal-portrait-page .pdf-info-bullets{display:flex!important;flex-direction:column!important;gap:2px!important;margin-bottom:10px!important;font-size:12px!important}
+.contract-legal-portrait-page .pdf-info-bullets{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-template-rows:repeat(4,min-content)!important;grid-auto-flow:column!important;column-gap:26px!important;row-gap:3px!important;margin-bottom:10px!important;font-size:12px!important}.contract-legal-portrait-page .pdf-info-bullet{min-width:0!important}.contract-legal-portrait-page .pdf-info-bullet span:last-child{overflow-wrap:anywhere!important}
 .contract-legal-portrait-page .pdf-info-bullet{display:flex!important;gap:5px!important;align-items:baseline!important;line-height:1.25!important;color:#111!important}
 .contract-legal-portrait-page .pdf-info-bullet strong{white-space:nowrap!important}
 .contract-legal-portrait-page .pdf-single-column{display:block!important;width:100%!important}
@@ -4600,7 +4600,7 @@ onclick="if(event.target===this) closeAddStudent()"
         <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()">PREVIEW CONTRACT</button>
       </div>
       <div id="contractError" class="modal-error"></div>
-      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download Image downloads the current parent-facing contract image directly, and Preview Contract can be opened anytime after selecting a student.</div>
+      <div class="small" style="margin-top:10px">Save Contract automatically records the contract under the student's profile. Download PDF creates a real multi-page PDF document from the current contract, and Preview Contract can be opened anytime after selecting a student.</div>
     </div>
   </div>
 </div>
@@ -10625,7 +10625,7 @@ content.innerHTML=`
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
     <button type="button" class="primary-action" onclick="closeStudentProfile();openRenewPackage('${escapeAttr(student.id)}')">Renew Classes</button>
-    <button type="button" class="primary-action" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">Student Contract</button>
+    <button type="button" class="primary-action" onclick="openStudentContractPDFViewerForStudent('${escapeAttr(student.id)}')">Student Contract</button>
     <button type="button" class="danger-action" onclick="closeStudentProfile();openDeleteStudent('${escapeAttr(student.id)}')">Delete Student</button>
    </div>
   </div>
@@ -10687,7 +10687,7 @@ content.innerHTML=`
 
   <div class="student-profile-section">
    <h4>STUDENT CONTRACT</h4>
-   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="viewSavedStudentContract('${escapeAttr(student.id)}')">VIEW CONTRACT IMAGE</button><button type="button" class="primary-action" onclick="closeStudentProfile();openStudentContract('${escapeAttr(student.id)}')">EDIT CONTRACT</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD / PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
+   ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="openStudentContractPDFViewerForStudent('${escapeAttr(student.id)}')">VIEW CONTRACT PDF</button><button type="button" class="primary-action" onclick="closeStudentProfile();openStudentContract('${escapeAttr(student.id)}')">EDIT CONTRACT</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
   </div>
 
   <div class="student-profile-section">
@@ -13645,7 +13645,7 @@ async function previewStudentContract(){
   let modal=document.getElementById('studentContractPreviewModal');
   if(!modal){
    modal=document.createElement('div'); modal.id='studentContractPreviewModal'; modal.className='modal-backdrop';
-   modal.innerHTML=`<div class="modal contract-preview-modal"><div class="modal-header contract-preview-modal-header"><h3>STUDENT CONTRACT PREVIEW</h3><button type="button" class="student-contract-preview-download" onclick="downloadStudentContractPDF()" title="Download contract image">DOWNLOAD IMAGE</button><button type="button" class="contract-preview-close-btn" onclick="closeStudentContractPreview()" aria-label="Close preview" title="Close preview">×</button></div><div class="modal-body"><div class="small" style="margin-bottom:10px">US Legal portrait preview • automatic pages when the agreement is long • formatting preserved from the editor</div><div id="studentContractPreviewPages" class="contract-pdf-preview-pages"></div></div></div>`;
+   modal.innerHTML=`<div class="modal contract-preview-modal"><div class="modal-header contract-preview-modal-header"><h3>STUDENT CONTRACT PREVIEW</h3><button type="button" class="student-contract-preview-download" onclick="downloadStudentContractPDF()" title="Download contract PDF">DOWNLOAD PDF</button><button type="button" class="contract-preview-close-btn" onclick="closeStudentContractPreview()" aria-label="Close preview" title="Close preview">×</button></div><div class="modal-body"><div class="small" style="margin-bottom:10px">US Legal portrait preview • automatic pages when the agreement is long • PDF-ready formatting preserved from the editor</div><div id="studentContractPreviewPages" class="contract-pdf-preview-pages"></div></div></div>`;
    modal.addEventListener('click',e=>{if(e.target===modal)closeStudentContractPreview();}); document.body.appendChild(modal);
   }
   const pages=document.getElementById('studentContractPreviewPages'); if(!pages)return; pages.innerHTML='';
@@ -13770,55 +13770,92 @@ async function previewStudentContract(){
 }
 function closeStudentContractPreview(){const m=document.getElementById('studentContractPreviewModal');if(m)m.style.display='none';}
 
+async function openStudentContractPDFViewer(){
+ const selectedId=String(contractSelectedStudentId||'');
+ if(!selectedId){showContractError('Please select a student first.');return;}
+ try{
+  if(typeof html2canvas!=='function')throw new Error('Contract PDF renderer is not available right now.');
+  if(!window.jspdf || !window.jspdf.jsPDF)throw new Error('PDF generator is still loading. Please wait a moment and try again.');
+  await previewStudentContract();
+  const modal=document.getElementById('studentContractPreviewModal');
+  const pageEls=[...(modal?.querySelectorAll('.contract-legal-portrait-page-final')||[])];
+  if(!pageEls.length)throw new Error('No contract preview pages were generated.');
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'legal',compress:true});
+  for(let i=0;i<pageEls.length;i++){
+    const canvas=await html2canvas(pageEls[i],{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,imageTimeout:15000});
+    if(i>0)pdf.addPage('legal','portrait');
+    pdf.addImage(canvas.toDataURL('image/jpeg',0.94),'JPEG',0,0,215.9,355.6,undefined,'FAST');
+  }
+  const blob=pdf.output('blob');
+  const url=URL.createObjectURL(blob);
+  let viewer=document.getElementById('studentContractPdfViewerModal');
+  if(!viewer){
+    viewer=document.createElement('div');
+    viewer.id='studentContractPdfViewerModal';
+    viewer.className='modal-backdrop';
+    viewer.style.display='flex';
+    viewer.innerHTML=`<div class="modal" style="width:min(1100px,96vw);max-width:1100px;height:min(92vh,900px);display:flex;flex-direction:column"><div class="modal-header"><h3 style="margin:0">STUDENT CONTRACT PDF</h3><div style="display:flex;gap:8px;align-items:center"><button type="button" class="primary-action" id="studentContractPdfDownloadFromViewer">DOWNLOAD PDF</button><button type="button" class="contract-preview-close-btn" id="studentContractPdfViewerClose">×</button></div></div><div class="modal-body" style="padding:0;flex:1;overflow:hidden;background:#eef1f5"><iframe id="studentContractPdfViewerFrame" title="Student Contract PDF" style="width:100%;height:100%;border:0;background:#fff"></iframe></div></div>`;
+    document.body.appendChild(viewer);
+    viewer.querySelector('#studentContractPdfViewerClose').onclick=()=>{viewer.style.display='none';const f=viewer.querySelector('#studentContractPdfViewerFrame');if(f)f.src='about:blank';};
+    viewer.addEventListener('click',e=>{if(e.target===viewer)viewer.querySelector('#studentContractPdfViewerClose').click();});
+  }
+  const frame=viewer.querySelector('#studentContractPdfViewerFrame');
+  const dl=viewer.querySelector('#studentContractPdfDownloadFromViewer');
+  if(frame)frame.src=url;
+  if(dl)dl.onclick=()=>{const student=getStudents().find(st=>st.id===selectedId);const safeName=String(student?.nickname||student?.name||'Student Contract').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'')||'Student-Contract';const a=document.createElement('a');a.href=url;a.download=`${safeName}-Student-Contract.pdf`;document.body.appendChild(a);a.click();a.remove();};
+  viewer.style.display='flex';
+  if(modal)modal.style.display='none';
+  setTimeout(()=>URL.revokeObjectURL(url),10*60*1000);
+ }catch(err){showContractError(err.message||'Unable to open the Student Contract PDF.');}
+}
+async function openStudentContractPDFViewerForStudent(studentId){
+  const record=getStudentContracts()?.[studentId];
+  if(!record?.submittedAt){alert('No saved Student Contract was found for this student.');return;}
+  contractSelectedStudentId=studentId;
+  loadStudentContractDetails(studentId,{viewSaved:true});
+  await openStudentContractPDFViewer();
+}
+
 async function downloadStudentContractPDF(){
  const selectedId=String(contractSelectedStudentId||'');
  if(!selectedId){showContractError('Please select a student first.');return;}
  try{
-  if(typeof html2canvas!=='function')throw new Error('Contract image renderer is not available right now.');
+  if(typeof html2canvas!=='function')throw new Error('Contract PDF renderer is not available right now.');
+  if(!window.jspdf || !window.jspdf.jsPDF)throw new Error('PDF generator is still loading. Please wait a moment and try again.');
 
-  /* Use the exact parent-facing preview shown on screen. */
+  /* Generate the exact multi-page parent-facing preview first. */
   await previewStudentContract();
   const modal=document.getElementById('studentContractPreviewModal');
   const pageEls=[...(modal?.querySelectorAll('.contract-legal-portrait-page-final')||[])];
   if(!pageEls.length)throw new Error('No contract preview pages were generated.');
 
-  const canvases=[];
-  let totalWidth=0,totalHeight=0;
-  for(const el of pageEls){
-    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#ffffff',logging:false});
-    canvases.push(canvas);
-    totalWidth=Math.max(totalWidth,canvas.width);
-    totalHeight+=canvas.height+20;
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'legal',compress:true});
+  const pageWidth=215.9;
+  const pageHeight=355.6;
+
+  for(let i=0;i<pageEls.length;i++){
+    const canvas=await html2canvas(pageEls[i],{
+      scale:2,
+      useCORS:true,
+      backgroundColor:'#ffffff',
+      logging:false,
+      imageTimeout:15000
+    });
+    const imageData=canvas.toDataURL('image/jpeg',0.94);
+    if(i>0)pdf.addPage('legal','portrait');
+    pdf.addImage(imageData,'JPEG',0,0,pageWidth,pageHeight,undefined,'FAST');
   }
-  const combined=document.createElement('canvas');
-  combined.width=totalWidth;
-  combined.height=Math.max(1,totalHeight-20);
-  const ctx=combined.getContext('2d');
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(0,0,combined.width,combined.height);
-  let y=0;
-  canvases.forEach((canvas,index)=>{
-    ctx.drawImage(canvas,0,y);
-    y+=canvas.height;
-    if(index<canvases.length-1)y+=20;
-  });
 
-  const blob=await new Promise((resolve,reject)=>combined.toBlob(b=>b?resolve(b):reject(new Error('Unable to create the contract image.')),'image/png'));
-  const student=getStudents().find(s=>s.id===contractSelectedStudentId);
-  const safeName=String(student?.name||'Student Contract').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'')||'Student-Contract';
-  const filename=`${safeName}-Student-Contract.png`;
-
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  const student=getStudents().find(s=>s.id===selectedId);
+  const safeName=String(student?.nickname||student?.name||'Student Contract')
+    .replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'')||'Student-Contract';
+  pdf.save(`${safeName}-Student-Contract.pdf`);
  }catch(err){
   if(err?.name==='AbortError')return;
-  showContractError(err.message||'Unable to download the Student Contract image.');
+  console.error('Download Student Contract PDF error:',err);
+  showContractError(err.message||'Unable to download the Student Contract PDF.');
  }
 }
 async function downloadSavedStudentContract(studentId){
@@ -15634,42 +15671,14 @@ function viewSavedPaymentReceipt(receiptNo,studentId){
 async function viewSavedStudentContract(studentId){
   const record=getStudentContracts()?.[studentId];
   if(!record?.submittedAt){alert('No saved Student Contract was found for this student.');return;}
-  if(typeof html2canvas!=='function'){alert('The image renderer is not available right now.');return;}
-  const restorePage=getActivePageNameForRestore();
-  studentRecordImageViewRestorePage=restorePage;
-  const contractPage=document.getElementById('contractPage');
-  if(!contractPage){alert('Student Contract page is not available.');return;}
-  const oldStyle=contractPage.getAttribute('style')||'';
-  studentRecordImageViewContractContext={restorePage,page:contractPage,oldStyle};
   contractSelectedStudentId=studentId;
-  showPage('contract');
   loadStudentContractDetails(studentId,{viewSaved:true});
-  contractPage.style.position='absolute';
-  contractPage.style.left='-100000px';
-  contractPage.style.top='0';
-  contractPage.style.width='1200px';
-  contractPage.style.visibility='hidden';
-  contractPage.style.display='block';
   try{
     await previewStudentContract();
-    const previewModal=document.getElementById('studentContractPreviewModal');
-    const pages=[...(previewModal?.querySelectorAll('.contract-legal-portrait-page-final')||[])];
-    if(!pages.length)throw new Error('No saved contract pages were generated.');
-    const body=openStudentRecordImageModal('STUDENT CONTRACT — IMAGE VIEW','This is the final parent-facing contract page image. Scroll down to see additional pages.');
-    const stack=document.createElement('div');stack.className='student-record-image-stack';body.appendChild(stack);
-    for(const page of pages){
-      const canvas=await html2canvas(page,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false});
-      const img=document.createElement('img');img.src=canvas.toDataURL('image/png');img.alt='Student Contract page';img.width=canvas.width;img.height=canvas.height;stack.appendChild(img);
-    }
-    if(previewModal)previewModal.style.display='none';
   }catch(err){
-    studentRecordImageViewContractContext=null;
-    contractPage.setAttribute('style',oldStyle);
-    showPage(restorePage);
-    alert(err.message||'Unable to create the Student Contract image view.');
+    alert(err.message||'Unable to create the Student Contract PDF preview.');
   }
 }
-
 /* Override the normal contract preview close so the student-record image viewer
    always returns to the Student Profile without exposing the Contract board. */
 const originalCloseStudentContractPreview = closeStudentContractPreview;
