@@ -3802,6 +3802,17 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .subscription-payment-logo-card.aub .subscription-logo-mark span{background:rgba(255,255,255,.92);color:#e31b23;border-radius:6px;padding:3px 6px;font-weight:900;}
 .subscription-payment-note{margin:0 auto 22px;padding:12px 16px;max-width:1000px;color:#d00000;font-size:12px;line-height:1.55;text-align:center;}
 .subscription-payment-note strong{font-size:11px;}
+.subscription-method-check-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:8px 0 18px;}
+.subscription-method-check-card{position:relative;display:flex;align-items:center;gap:10px;padding:14px;border:1px solid var(--global-border);border-radius:12px;background:#fff;cursor:pointer;transition:.15s ease;}
+.subscription-method-check-card:hover{border-color:var(--global-accent);box-shadow:0 0 0 2px var(--global-accent-soft);}
+.subscription-method-check-card input{position:absolute;opacity:0;pointer-events:none;}
+.subscription-check-mark{width:24px;height:24px;border:2px solid #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;color:transparent;font-weight:900;flex:0 0 24px;background:#fff;}
+.subscription-method-check-card input:checked + .subscription-check-mark{background:var(--global-accent);border-color:var(--global-accent);color:#fff;}
+.subscription-method-check-card input:checked ~ span:last-child strong{color:var(--global-accent-dark);}
+.subscription-method-check-card strong{display:block;font-size:14px;}
+.subscription-method-check-card small{display:block;margin-top:3px;color:#6b7280;font-size:11px;line-height:1.35;}
+@media(max-width:1000px){.subscription-method-check-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:700px){.subscription-method-check-grid{grid-template-columns:1fr;}}
 @media(max-width:1000px){.subscription-payment-logo-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:700px){.subscription-payment-logo-grid{grid-template-columns:1fr;}.subscription-payment-logo-card{min-height:82px;}}
 .subscription-payment-instructions img{display:block;max-width:240px;max-height:240px;width:auto;height:auto;margin:12px auto;border-radius:10px;border:1px solid #ddd;background:#fff;}
@@ -5387,47 +5398,45 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
         <div class="subscription-plan-price">₱99</div>
       </div>
 
-      <div class="subscription-section-title">1. PAYMENT METHOD</div>
+      <div class="subscription-section-title">1. SELECT TO VIEW PAYMENT METHOD QR CODE OPTION</div>
 
-      <div class="subscription-payment-logo-grid">
-        <a class="subscription-payment-logo-card gcash" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - GCash">
-          <div class="subscription-logo-mark">GCash</div><div><strong>GCash</strong><small>E-Wallet</small></div>
-        </a>
-        <a class="subscription-payment-logo-card paypal" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - PayPal">
-          <div class="subscription-logo-mark">PayPal</div><div><strong>PayPal</strong><small>Online Payment</small></div>
-        </a>
-        <a class="subscription-payment-logo-card bpi" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - BPI">
-          <div class="subscription-logo-mark">BPI</div><div><strong>BPI</strong><small>Bank / InstaPay</small></div>
-        </a>
-        <a class="subscription-payment-logo-card landbank" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - LANDBANK">
-          <div class="subscription-logo-mark">LANDBANK</div><div><strong>LANDBANK</strong><small>Bank / InstaPay</small></div>
-        </a>
-        <a class="subscription-payment-logo-card cimb" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - CIMB">
-          <div class="subscription-logo-mark">CIMB</div><div><strong>CIMB</strong><small>Bank / InstaPay</small></div>
-        </a>
-        <a class="subscription-payment-logo-card unionbank" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - UnionBank">
-          <div class="subscription-logo-mark">UnionBank</div><div><strong>UnionBank</strong><small>Bank / InstaPay</small></div>
-        </a>
-        <a class="subscription-payment-logo-card aub" href="https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/" target="_blank" rel="noopener noreferrer" aria-label="Open payment methods - AUB">
-          <div class="subscription-logo-mark"><span>AUB</span></div><div><strong>AUB</strong><small>Bank / InstaPay</small></div>
-        </a>
-      </div>
-
-      <div class="subscription-payment-note">
-        <strong>Note:</strong><br>
-        Click your preferred payment method above to open the Payment Methods website. After payment, return here and indicate which payment method you used below.
-      </div>
-
-      <div class="subscription-form-grid subscription-method-selection-grid">
-        <div>
-          <label for="subscriptionPaymentMethodSelect">Payment Method Used</label>
-          <select id="subscriptionPaymentMethodSelect" onchange="selectSubscriptionMethod(this.value)">
-            <option value="">Select Payment Method</option>
+      <div class="subscription-form-grid">
+        <div style="grid-column:1/-1;">
+          <label for="subscriptionPaymentViewer">Payment Method / QR Code</label>
+          <select id="subscriptionPaymentViewer" onchange="openSubscriptionPaymentMethod(this.value)">
+            <option value="">SELECT TO VIEW PAYMENT METHOD QR CODE OPTION</option>
             <option value="GCash">GCash</option>
             <option value="PayPal">PayPal</option>
-            <option value="Bank / InstaPay">Bank / InstaPay</option>
+            <option value="BPI">BPI</option>
+            <option value="LANDBANK">LANDBANK</option>
+            <option value="CIMB">CIMB</option>
+            <option value="UnionBank">UnionBank</option>
+            <option value="AUB">AUB</option>
           </select>
+          <small class="subscription-field-note">Select a payment method above to open the Payment Methods website and view its QR code or payment details.</small>
         </div>
+      </div>
+
+      <div class="subscription-section-title">2. SELECT PAYMENT OPTION USED</div>
+
+      <div class="subscription-method-check-grid" role="radiogroup" aria-label="Payment option used">
+        <label class="subscription-method-check-card">
+          <input type="radio" name="subscriptionUsedMethod" value="GCash" onchange="selectSubscriptionMethod(this.value)">
+          <span class="subscription-check-mark">✓</span>
+          <span><strong>GCash</strong><small>E-Wallet</small></span>
+        </label>
+
+        <label class="subscription-method-check-card">
+          <input type="radio" name="subscriptionUsedMethod" value="PayPal" onchange="selectSubscriptionMethod(this.value)">
+          <span class="subscription-check-mark">✓</span>
+          <span><strong>PayPal</strong><small>Online Payment</small></span>
+        </label>
+
+        <label class="subscription-method-check-card">
+          <input type="radio" name="subscriptionUsedMethod" value="Bank / InstaPay" onchange="selectSubscriptionMethod(this.value)">
+          <span class="subscription-check-mark">✓</span>
+          <span><strong>Bank / InstaPay</strong><small>BPI · LANDBANK · CIMB · UnionBank · AUB</small></span>
+        </label>
       </div>
 
       <input type="hidden" id="subscriptionPaymentMethod" value="">
@@ -16366,12 +16375,22 @@ function saveLocalSubscriptionRequests(rows){
 
 const SUBSCRIPTION_PAYMENT_METHODS_URL='https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/';
 
+function openSubscriptionPaymentMethod(method){
+  const cleanMethod=String(method||'').trim();
+  if(!cleanMethod)return;
+  window.open(SUBSCRIPTION_PAYMENT_METHODS_URL,'_blank','noopener,noreferrer');
+  const viewer=document.getElementById('subscriptionPaymentViewer');
+  if(viewer)viewer.value='';
+}
+
 function selectSubscriptionMethod(method){
   const cleanMethod=String(method||'').trim();
   const input=document.getElementById('subscriptionPaymentMethod');
   if(input)input.value=cleanMethod;
-  const select=document.getElementById('subscriptionPaymentMethodSelect');
-  if(select && select.value!==cleanMethod)select.value=cleanMethod;
+
+  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
+    radio.checked=radio.value===cleanMethod;
+  });
 }
 
 async function loadSubscriptionAccount(){
@@ -16406,8 +16425,10 @@ async function renderSubscriptionPage(){
   loadSubscriptionAccount();
   renderSubscriptionHistory();
   const input=document.getElementById('subscriptionPaymentMethod');
-  const select=document.getElementById('subscriptionPaymentMethodSelect');
-  if(select)select.value=input?.value||'';
+  const method=String(input?.value||'').trim();
+  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
+    radio.checked=radio.value===method;
+  });
 }
 
 function renderSubscriptionHistory(){
