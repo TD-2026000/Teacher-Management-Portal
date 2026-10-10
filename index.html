@@ -5421,7 +5421,7 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 
       <input type="hidden" id="subscriptionPaymentMethod" value="">
 
-      <div class="subscription-section-title">2. PAYMENT DETAILS</div>
+      <div class="subscription-section-title">3. PAYMENT DETAILS</div>
       <div class="subscription-form-grid">
         <div>
           <label for="subscriptionReference">Reference Number</label>
@@ -6333,49 +6333,106 @@ JSON.stringify(data)
 }
 
 async function syncStudentToSupabase(student){
-  if(!currentUser || !student) return;
+  if(!currentUser || !student || typeof supabaseClient==='undefined' || !supabaseClient) return false;
 
   try{
-    const studentData = {
-      user_id: currentUser.id,
-      student_id: String(student.id || ''),
-      full_name: String(student.name || ''),
-      parent_email: String(student.email || ''),
-      country: String(student.country || ''),
-      age: student.age ? Number(student.age) : null,
-      enrolled_date: student.startDate || student.createdAt
-        ? String(student.startDate || student.createdAt).slice(0,10)
+    const metadata={
+      nickname:student.nickname||'',
+      birthday:student.birthday||'',
+      parentName:student.parentName||'',
+      duration:student.duration||'',
+      packageName:student.packageName||'',
+      status:student.status||'',
+      preferredSchedule:Array.isArray(student.preferredSchedule)?student.preferredSchedule:[],
+      scheduleDetails:student.scheduleDetails||{},
+      classTime:student.classTime||'',
+      picture:student.picture||'',
+      currentPackageId:student.currentPackageId||'',
+      packageHistory:Array.isArray(student.packageHistory)?student.packageHistory:[],
+      contractStatus:student.contractStatus||'',
+      contractSavedAt:student.contractSavedAt||'',
+      contractRenewalRequired:!!student.contractRenewalRequired,
+      contractRenewalRequestedAt:student.contractRenewalRequestedAt||'',
+      contractRenewalPackageId:student.contractRenewalPackageId||'',
+      contractRenewalPackageName:student.contractRenewalPackageName||'',
+      contractRenewalVersion:Number(student.contractRenewalVersion||0),
+      paymentRenewalRequired:!!student.paymentRenewalRequired,
+      paymentRenewalRequestedAt:student.paymentRenewalRequestedAt||'',
+      paymentReceiptSubmittedAt:student.paymentReceiptSubmittedAt||''
+    };
+
+    const coreData={
+      user_id:currentUser.id,
+      student_id:String(student.id||''),
+      full_name:String(student.name||''),
+      parent_email:String(student.email||''),
+      parent_facebook:String(student.parentFacebook||''),
+      parent_wechat:String(student.parentWechat||''),
+      country:String(student.country||''),
+      age:student.age!=='' && student.age!=null ? Number(student.age) : null,
+      enrolled_date:student.startDate||student.createdAt
+        ? String(student.startDate||student.createdAt).slice(0,10)
         : null,
-      level: String(student.level || '')
+      level:String(student.level||'')
     };
 
     const {data:existing,error:findError}=await supabaseClient
       .from('students')
       .select('id')
       .eq('user_id',currentUser.id)
-      .eq('student_id',studentData.student_id)
+      .eq('student_id',coreData.student_id)
       .maybeSingle();
 
     if(findError) throw findError;
 
+    const fullData={...coreData,metadata};
+    let saveError=null;
+
     if(existing?.id){
-      const {error}=await supabaseClient
+      const result=await supabaseClient
         .from('students')
-        .update(studentData)
+        .update(fullData)
         .eq('id',existing.id);
-
-      if(error) throw error;
+      saveError=result.error;
     }else{
-      const {error}=await supabaseClient
+      const result=await supabaseClient
         .from('students')
-        .insert([studentData]);
-
-      if(error) throw error;
+        .insert([fullData]);
+      saveError=result.error;
     }
+
+    /* The current table may not yet have the optional JSONB metadata column.
+       If it does not, save the core fields instead so existing functionality
+       never breaks. The rich fields will sync automatically after the column
+       is added. */
+    if(saveError && /metadata|column .* does not exist|schema cache/i.test(String(saveError.message||''))){
+      if(existing?.id){
+        const result=await supabaseClient
+          .from('students')
+          .update(coreData)
+          .eq('id',existing.id);
+        saveError=result.error;
+      }else{
+        const result=await supabaseClient
+          .from('students')
+          .insert([coreData]);
+        saveError=result.error;
+      }
+    }
+
+    if(saveError) throw saveError;
+    return true;
 
   }catch(error){
     console.error('Student Supabase sync failed:',error);
+    return false;
   }
+}
+
+
+async function syncStudentByIdToSupabase(studentId){
+  const student=getStudents().find(s=>String(s.id||'')===String(studentId||''));
+  return student ? syncStudentToSupabase(student) : false;
 }
 
 
@@ -6407,11 +6464,15 @@ async function loadStudentsFromSupabase(){
         s=>String(s.id||'')===String(row.student_id||'')
       ) || {};
 
+      const metadata=(row.metadata && typeof row.metadata==='object') ? row.metadata : {};
       return {
         ...old,
+        ...metadata,
         id:row.student_id || old.id,
         name:row.full_name || old.name || '',
         email:row.parent_email || old.email || '',
+        parentFacebook:row.parent_facebook || old.parentFacebook || '',
+        parentWechat:row.parent_wechat || old.parentWechat || '',
         country:row.country || old.country || '',
         age:row.age ?? old.age ?? '',
         level:row.level || old.level || '',
@@ -6419,23 +6480,6 @@ async function loadStudentsFromSupabase(){
         createdAt:row.created_at || old.createdAt || new Date().toISOString()
       };
     });
-
-    /* Keep any local student that has not reached Supabase yet.
-       This prevents a partially migrated browser from losing its local
-       student when another device already has remote student records. */
-    const remoteIds=new Set(
-      students.map(s=>String(s.id||'')).filter(Boolean)
-    );
-    const localOnly=existingLocal.filter(
-      s=>String(s.id||'') && !remoteIds.has(String(s.id||''))
-    );
-
-    if(localOnly.length){
-      students.push(...localOnly);
-      for(const student of localOnly){
-        await syncStudentToSupabase(student);
-      }
-    }
 
     saveStudents(students);
 
@@ -9214,7 +9258,7 @@ function scheduleDataToText(scheduleDetails,preferredSchedule,duration){
 }
 
 
-function addStudent(){
+async function addStudent(){
 
 const name=document.getElementById('newStudentName').value.trim();
 const nickname=document.getElementById('newStudentNickname').value.trim();
@@ -9299,7 +9343,7 @@ students.push({
 });
 
 saveStudents(students);
-syncStudentToSupabase(students[students.length - 1]);
+await syncStudentToSupabase(students[students.length - 1]);
   
 [
 'newStudentName',
@@ -9685,15 +9729,7 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
-
-/* Keep the existing local-first behavior, then mirror the edited student
-   to Supabase. If the Student ID itself changed, remove the old remote row
-   first so the edit does not create a duplicate student record. */
-if(String(originalId)!==String(id)){
-  await deleteStudentFromSupabase(originalId);
-}
 await syncStudentToSupabase(editedStudent);
-
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
@@ -9816,8 +9852,6 @@ const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(
 
 saveStudents(remainingStudents);
 saveAppointments(remainingAppointments);
-
-/* Remove the same student from the shared Supabase student table. */
 await deleteStudentFromSupabase(target);
 
 closeDeleteStudent();
@@ -11531,6 +11565,7 @@ students[index]={
  contractRenewalVersion:Number(students[index].contractRenewalVersion||0)
 };
 saveStudents(students);
+syncStudentToSupabase(students[index]);
 
 let appointments=getAppointments();
 
@@ -14552,7 +14587,7 @@ function saveStudentContract(){
  saveStudentContracts(contracts);
  const students=getStudents();
  const idx=students.findIndex(s=>s.id===student.id);
- if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);}
+ if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);syncStudentToSupabase(students[idx]);}
  contractSelectedStudentId=student.id;
  contractSavedForStudentId=student.id;
  setStudentContractActionState(true);
@@ -15405,6 +15440,7 @@ function savePaymentReceipt(){
     const updatedStudents=getStudents();
     updatedStudents[studentIndex]={...updatedStudents[studentIndex],paymentRenewalRequired:false,paymentReceiptSubmittedAt:new Date().toISOString()};
     saveStudents(updatedStudents);
+    syncStudentToSupabase(updatedStudents[studentIndex]);
   }
   paymentReceiptSaved=true; paymentReceiptSavedSnapshot=paymentReceiptSnapshot();
   const b=document.getElementById('paymentReceiptDownloadBtn');if(b)b.disabled=false;
@@ -16467,21 +16503,11 @@ closeStudentContractPreview = function(){
 ========================================================= */
 const TEACHER_SUBSCRIPTION_PRICE = 99;
 const SUBSCRIPTION_PAYMENT_CONFIG = {
-  GCash: {
-    type:'qr',
-    qr:'',
-    text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
-  },
-  PayPal: {
-    type:'paypal',
-    url:'',
-    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
-  },
-  'Bank / InstaPay': {
-    type:'qr',
-    qr:'',
-    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
-  }
+  GCash:{type:'qr',text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'},
+  BPI:{type:'qr',text:'Scan the BPI QR code below, pay ₱99, then enter your payment reference number.'},
+  CIMB:{type:'qr',text:'Scan the CIMB QR code below, pay ₱99, then enter your payment reference number.'},
+  UnionBank:{type:'qr',text:'Scan the UnionBank QR code below, pay ₱99, then enter your payment reference number.'},
+  AUB:{type:'qr',text:'Scan the AUB QR code below, pay ₱99, then enter your payment reference number.'}
 };
 
 function subscriptionEscape(value){
@@ -16645,7 +16671,7 @@ async function submitSubscriptionPayment(){
 
     const msg=remoteSaved
       ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
-      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
+      : 'Payment was saved on this device, but the online submission could not be completed. Please contact Teacher Danyeal to complete verification.';
     if(message)message.textContent=msg;
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
