@@ -3845,6 +3845,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 }
 
 </style>
+<style id="subscription-qr-direct-style">.subscription-qr-option-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.subscription-qr-view-card{justify-content:center;min-height:78px;text-align:center;border:1px solid var(--global-border);}.subscription-qr-view-card:hover{transform:translateY(-1px);}.subscription-qr-view-card .subscription-check-mark{color:#111827;border-color:#cbd5e1;background:#fff;font-size:17px;}.subscription-qr-modal{z-index:100000;}.subscription-qr-modal-box{max-width:520px;text-align:center;}.subscription-qr-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.subscription-qr-modal-head h3{margin:0;}.subscription-qr-close{border:0;background:#f1f5f9;color:#111827;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;}.subscription-qr-image-wrap{margin:12px auto 8px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;min-height:300px;padding:10px;}.subscription-qr-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;}.subscription-qr-help{margin:8px 0 0;color:#6b7280;font-size:13px;}@media(max-width:1100px){.subscription-qr-option-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.subscription-qr-option-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.subscription-qr-option-grid{grid-template-columns:1fr;}}</style>
 </head>
 
 <body>
@@ -5398,45 +5399,24 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
         <div class="subscription-plan-price">₱99</div>
       </div>
 
-      <div class="subscription-section-title">1. SELECT TO VIEW PAYMENT METHOD QR CODE OPTION</div>
+      <div class="subscription-section-title">1. SELECT TO VIEW PAYMENT METHOD QR CODE</div>
 
-      <div class="subscription-form-grid">
-        <div style="grid-column:1/-1;">
-          <label for="subscriptionPaymentViewer">Payment Method / QR Code</label>
-          <select id="subscriptionPaymentViewer" onchange="openSubscriptionPaymentMethod(this.value)">
-            <option value="">SELECT TO VIEW PAYMENT METHOD QR CODE OPTION</option>
-            <option value="GCash">GCash</option>
-            <option value="PayPal">PayPal</option>
-            <option value="BPI">BPI</option>
-            <option value="LANDBANK">LANDBANK</option>
-            <option value="CIMB">CIMB</option>
-            <option value="UnionBank">UnionBank</option>
-            <option value="AUB">AUB</option>
-          </select>
-          <small class="subscription-field-note">Select a payment method above to open the Payment Methods website and view its QR code or payment details.</small>
-        </div>
+      <div class="subscription-method-check-grid subscription-qr-option-grid" aria-label="View payment QR code">
+        <button type="button" class="subscription-method-check-card subscription-qr-view-card" onclick="openSubscriptionPaymentMethod('GCash')"><span class="subscription-check-mark subscription-qr-icon">⌕</span><span><strong>GCash</strong><small>VIEW QR CODE</small></span></button>
+        <button type="button" class="subscription-method-check-card subscription-qr-view-card" onclick="openSubscriptionPaymentMethod('BPI')"><span class="subscription-check-mark subscription-qr-icon">⌕</span><span><strong>BPI</strong><small>VIEW QR CODE</small></span></button>
+        <button type="button" class="subscription-method-check-card subscription-qr-view-card" onclick="openSubscriptionPaymentMethod('CIMB')"><span class="subscription-check-mark subscription-qr-icon">⌕</span><span><strong>CIMB</strong><small>VIEW QR CODE</small></span></button>
+        <button type="button" class="subscription-method-check-card subscription-qr-view-card" onclick="openSubscriptionPaymentMethod('UnionBank')"><span class="subscription-check-mark subscription-qr-icon">⌕</span><span><strong>UnionBank</strong><small>VIEW QR CODE</small></span></button>
+        <button type="button" class="subscription-method-check-card subscription-qr-view-card" onclick="openSubscriptionPaymentMethod('AUB')"><span class="subscription-check-mark subscription-qr-icon">⌕</span><span><strong>AUB</strong><small>VIEW QR CODE</small></span></button>
       </div>
 
       <div class="subscription-section-title">2. SELECT PAYMENT OPTION USED</div>
 
       <div class="subscription-method-check-grid" role="radiogroup" aria-label="Payment option used">
-        <label class="subscription-method-check-card">
-          <input type="radio" name="subscriptionUsedMethod" value="GCash" onchange="selectSubscriptionMethod(this.value)">
-          <span class="subscription-check-mark">✓</span>
-          <span><strong>GCash</strong><small>E-Wallet</small></span>
-        </label>
-
-        <label class="subscription-method-check-card">
-          <input type="radio" name="subscriptionUsedMethod" value="PayPal" onchange="selectSubscriptionMethod(this.value)">
-          <span class="subscription-check-mark">✓</span>
-          <span><strong>PayPal</strong><small>Online Payment</small></span>
-        </label>
-
-        <label class="subscription-method-check-card">
-          <input type="radio" name="subscriptionUsedMethod" value="Bank / InstaPay" onchange="selectSubscriptionMethod(this.value)">
-          <span class="subscription-check-mark">✓</span>
-          <span><strong>Bank / InstaPay</strong><small>BPI · LANDBANK · CIMB · UnionBank · AUB</small></span>
-        </label>
+        <label class="subscription-method-check-card"><input type="radio" name="subscriptionUsedMethod" value="GCash" onchange="selectSubscriptionMethod(this.value)"><span class="subscription-check-mark">✓</span><span><strong>GCash</strong><small>E-Wallet</small></span></label>
+        <label class="subscription-method-check-card"><input type="radio" name="subscriptionUsedMethod" value="BPI" onchange="selectSubscriptionMethod(this.value)"><span class="subscription-check-mark">✓</span><span><strong>BPI</strong><small>Bank / InstaPay</small></span></label>
+        <label class="subscription-method-check-card"><input type="radio" name="subscriptionUsedMethod" value="CIMB" onchange="selectSubscriptionMethod(this.value)"><span class="subscription-check-mark">✓</span><span><strong>CIMB</strong><small>Bank / InstaPay</small></span></label>
+        <label class="subscription-method-check-card"><input type="radio" name="subscriptionUsedMethod" value="UnionBank" onchange="selectSubscriptionMethod(this.value)"><span class="subscription-check-mark">✓</span><span><strong>UnionBank</strong><small>Bank / InstaPay</small></span></label>
+        <label class="subscription-method-check-card"><input type="radio" name="subscriptionUsedMethod" value="AUB" onchange="selectSubscriptionMethod(this.value)"><span class="subscription-check-mark">✓</span><span><strong>AUB</strong><small>Bank / InstaPay</small></span></label>
       </div>
 
       <input type="hidden" id="subscriptionPaymentMethod" value="">
@@ -5469,6 +5449,8 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
     </div>
   </div>
 </div>
+
+<div id="subscriptionQrModal" class="modal-backdrop subscription-qr-modal" aria-hidden="true" onclick="if(event.target===this)closeSubscriptionQrModal()"><div class="modal subscription-qr-modal-box" role="dialog" aria-modal="true" aria-labelledby="subscriptionQrModalTitle"><div class="subscription-qr-modal-head"><h3 id="subscriptionQrModalTitle">PAYMENT QR CODE</h3><button type="button" class="subscription-qr-close" onclick="closeSubscriptionQrModal()" aria-label="Close QR code">×</button></div><div class="subscription-qr-image-wrap"><img id="subscriptionQrModalImage" src="" alt="Payment QR code"></div><p class="subscription-qr-help">Scan this QR code to make your ₱99 payment.</p></div></div>
 
 <div id="lessonMaterialsPage" class="page">
 <div class="lesson-materials-wrap">
@@ -16373,14 +16355,29 @@ function saveLocalSubscriptionRequests(rows){
   try{localStorage.setItem(subscriptionLocalKey(),JSON.stringify(rows));}catch(e){}
 }
 
-const SUBSCRIPTION_PAYMENT_METHODS_URL='https://td-2026000.github.io/Teacher-Management-Portal-Payment-Methods/';
+const SUBSCRIPTION_QR_IMAGES={
+  GCash:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/Gcash.png',
+  BPI:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/BPI.png',
+  CIMB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/CIMB.png',
+  UnionBank:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/UnionBank.png',
+  AUB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/AUB.png'
+};
 
 function openSubscriptionPaymentMethod(method){
   const cleanMethod=String(method||'').trim();
-  if(!cleanMethod)return;
-  window.open(SUBSCRIPTION_PAYMENT_METHODS_URL,'_blank','noopener,noreferrer');
-  const viewer=document.getElementById('subscriptionPaymentViewer');
-  if(viewer)viewer.value='';
+  const qrUrl=SUBSCRIPTION_QR_IMAGES[cleanMethod];
+  if(!qrUrl)return;
+  const modal=document.getElementById('subscriptionQrModal');
+  const title=document.getElementById('subscriptionQrModalTitle');
+  const image=document.getElementById('subscriptionQrModalImage');
+  if(title)title.textContent=cleanMethod+' QR CODE';
+  if(image){image.src=qrUrl;image.alt=cleanMethod+' payment QR code';}
+  if(modal){modal.classList.add('show');modal.setAttribute('aria-hidden','false');}
+}
+
+function closeSubscriptionQrModal(){
+  const modal=document.getElementById('subscriptionQrModal');
+  if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
 }
 
 function selectSubscriptionMethod(method){
