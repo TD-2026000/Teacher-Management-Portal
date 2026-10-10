@@ -9282,7 +9282,8 @@ students.push({
 });
 
 saveStudents(students);
-
+syncStudentToSupabase(students[students.length - 1]);
+  
 [
 'newStudentName',
 'newStudentNickname',
