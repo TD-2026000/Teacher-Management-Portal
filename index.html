@@ -16506,10 +16506,12 @@ async function submitSubscriptionPayment(){
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
     const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
     renderSubscriptionHistory();
-  }catch(err){
-    console.error('Subscription payment submission failed:',err);
-    if(message)message.textContent='Unable to submit the payment right now. Please check the payment details and try again.';
+}catch(err){
+  console.error('Subscription payment submission failed:',err);
+  if(message){
+    message.textContent='Payment error: ' + (err?.message || 'Unknown error');
   }
+}
 }
 </script>
 
