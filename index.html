@@ -6436,6 +6436,40 @@ async function syncStudentByIdToSupabase(studentId){
 }
 
 
+const CLEAR_ALL_STUDENT_MARKER='__TEACHER_DANYEAL_CLEAR_ALL__';
+
+function clearLocalTeachingRecords(){
+  const uid=String(currentUser?.id||'');
+  const keysToRemove=[
+    userStorageKey(STUDENTS_BASE_KEY),
+    userStorageKey(EVALUATIONS_BASE_KEY),
+    userStorageKey(PAYMENT_RECEIPTS_BASE_KEY),
+    userStorageKey(STUDENT_CONTRACTS_BASE_KEY),
+    `teacherDanyealAppointments_${uid}`,
+    `teacherDanyealAppointmentsReset_20261001_${uid}`
+  ];
+
+  keysToRemove.forEach(key=>{
+    if(key)localStorage.removeItem(key);
+  });
+}
+
+async function removeClearAllMarkerFromSupabase(){
+  if(!currentUser) return false;
+  try{
+    const {error}=await supabaseClient
+      .from('students')
+      .delete()
+      .eq('user_id',currentUser.id)
+      .eq('student_id',CLEAR_ALL_STUDENT_MARKER);
+    if(error) throw error;
+    return true;
+  }catch(error){
+    console.warn('Clear-all marker removal failed:',error);
+    return false;
+  }
+}
+
 async function loadStudentsFromSupabase(){
   if(!currentUser) return;
 
@@ -6450,9 +6484,26 @@ async function loadStudentsFromSupabase(){
 
     if(!Array.isArray(data)) return;
 
+    /*
+       A clear-all action is represented by a tiny marker row in the
+       existing students table. This is intentional: localStorage is
+       browser-specific, so a marker is needed to tell every browser/device
+       that its old local teaching records must NOT be migrated back.
+    */
+    const clearMarker=data.some(row=>
+      String(row?.student_id||'')===CLEAR_ALL_STUDENT_MARKER
+    );
+
+    if(clearMarker){
+      clearLocalTeachingRecords();
+      return;
+    }
+
     const existingLocal=getStudents();
 
     if(!data.length){
+      /* No remote records and no clear-all marker: preserve the existing
+         first-time migration behavior for an existing local account. */
       for(const student of existingLocal){
         await syncStudentToSupabase(student);
       }
@@ -8289,7 +8340,7 @@ document.getElementById(
 
 }
 
-function confirmClearAllRecords(){
+async function confirmClearAllRecords(){
 
 const input=
 document.getElementById(
@@ -8351,18 +8402,54 @@ return;
 */
 const uid=String(currentUser.id||'');
 
-const keysToRemove=[
-  userStorageKey(STUDENTS_BASE_KEY),
-  userStorageKey(EVALUATIONS_BASE_KEY),
-  userStorageKey(PAYMENT_RECEIPTS_BASE_KEY),
-  userStorageKey(STUDENT_CONTRACTS_BASE_KEY),
-  `teacherDanyealAppointments_${uid}`,
-  `teacherDanyealAppointmentsReset_20261001_${uid}`
-];
+/*
+   IMPORTANT:
+   localStorage is isolated per browser/device, so deleting only local keys
+   is not enough. We first create a clear-all marker in the existing
+   `students` table, then remove all real student rows. Every other browser
+   sees the marker on refresh/login and clears its own local teaching cache.
+*/
+let markerCreated=false;
+try{
+  const {error:markerError}=await supabaseClient
+    .from('students')
+    .insert([{
+      user_id:currentUser.id,
+      student_id:CLEAR_ALL_STUDENT_MARKER,
+      full_name:CLEAR_ALL_STUDENT_MARKER,
+      parent_email:'',
+      parent_facebook:'',
+      parent_wechat:'',
+      country:'',
+      age:null,
+      enrolled_date:null,
+      level:''
+    }]);
 
-keysToRemove.forEach(key=>{
-  if(key)localStorage.removeItem(key);
-});
+  if(markerError && !/duplicate|unique/i.test(String(markerError.message||''))) throw markerError;
+  markerCreated=true;
+
+  const {error:deleteError}=await supabaseClient
+    .from('students')
+    .delete()
+    .eq('user_id',currentUser.id)
+    .neq('student_id',CLEAR_ALL_STUDENT_MARKER);
+
+  if(deleteError) throw deleteError;
+
+  clearLocalTeachingRecords();
+
+}catch(error){
+  console.error('Clear-all Supabase operation failed:',error);
+
+  if(markerCreated){
+    try{ await removeClearAllMarkerFromSupabase(); }catch(e){}
+  }
+
+  error.textContent='Unable to clear all records online. No records were cleared. Please try again.';
+  error.classList.add('show');
+  return;
+}
 
 closeClearAllRecords();
 
