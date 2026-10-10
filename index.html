@@ -5421,7 +5421,7 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 
       <input type="hidden" id="subscriptionPaymentMethod" value="">
 
-      <div class="subscription-section-title">3. PAYMENT DETAILS</div>
+      <div class="subscription-section-title">2. PAYMENT DETAILS</div>
       <div class="subscription-form-grid">
         <div>
           <label for="subscriptionReference">Reference Number</label>
@@ -6333,142 +6333,51 @@ JSON.stringify(data)
 }
 
 async function syncStudentToSupabase(student){
-  if(!currentUser || !student || typeof supabaseClient==='undefined' || !supabaseClient) return false;
+  if(!currentUser || !student) return;
 
   try{
-    const metadata={
-      nickname:student.nickname||'',
-      birthday:student.birthday||'',
-      parentName:student.parentName||'',
-      duration:student.duration||'',
-      packageName:student.packageName||'',
-      status:student.status||'',
-      preferredSchedule:Array.isArray(student.preferredSchedule)?student.preferredSchedule:[],
-      scheduleDetails:student.scheduleDetails||{},
-      classTime:student.classTime||'',
-      picture:student.picture||'',
-      currentPackageId:student.currentPackageId||'',
-      packageHistory:Array.isArray(student.packageHistory)?student.packageHistory:[],
-      contractStatus:student.contractStatus||'',
-      contractSavedAt:student.contractSavedAt||'',
-      contractRenewalRequired:!!student.contractRenewalRequired,
-      contractRenewalRequestedAt:student.contractRenewalRequestedAt||'',
-      contractRenewalPackageId:student.contractRenewalPackageId||'',
-      contractRenewalPackageName:student.contractRenewalPackageName||'',
-      contractRenewalVersion:Number(student.contractRenewalVersion||0),
-      paymentRenewalRequired:!!student.paymentRenewalRequired,
-      paymentRenewalRequestedAt:student.paymentRenewalRequestedAt||'',
-      paymentReceiptSubmittedAt:student.paymentReceiptSubmittedAt||''
-    };
-
-    const coreData={
-      user_id:currentUser.id,
-      student_id:String(student.id||''),
-      full_name:String(student.name||''),
-      parent_email:String(student.email||''),
-      parent_facebook:String(student.parentFacebook||''),
-      parent_wechat:String(student.parentWechat||''),
-      country:String(student.country||''),
-      age:student.age!=='' && student.age!=null ? Number(student.age) : null,
-      enrolled_date:student.startDate||student.createdAt
-        ? String(student.startDate||student.createdAt).slice(0,10)
+    const studentData = {
+      user_id: currentUser.id,
+      student_id: String(student.id || ''),
+      full_name: String(student.name || ''),
+      parent_email: String(student.email || ''),
+      country: String(student.country || ''),
+      age: student.age ? Number(student.age) : null,
+      enrolled_date: student.startDate || student.createdAt
+        ? String(student.startDate || student.createdAt).slice(0,10)
         : null,
-      level:String(student.level||'')
+      level: String(student.level || '')
     };
 
     const {data:existing,error:findError}=await supabaseClient
       .from('students')
       .select('id')
       .eq('user_id',currentUser.id)
-      .eq('student_id',coreData.student_id)
+      .eq('student_id',studentData.student_id)
       .maybeSingle();
 
     if(findError) throw findError;
 
-    const fullData={...coreData,metadata};
-    let saveError=null;
-
     if(existing?.id){
-      const result=await supabaseClient
+      const {error}=await supabaseClient
         .from('students')
-        .update(fullData)
+        .update(studentData)
         .eq('id',existing.id);
-      saveError=result.error;
+
+      if(error) throw error;
     }else{
-      const result=await supabaseClient
+      const {error}=await supabaseClient
         .from('students')
-        .insert([fullData]);
-      saveError=result.error;
-    }
+        .insert([studentData]);
 
-    /* The current table may not yet have the optional JSONB metadata column.
-       If it does not, save the core fields instead so existing functionality
-       never breaks. The rich fields will sync automatically after the column
-       is added. */
-    if(saveError && /metadata|column .* does not exist|schema cache/i.test(String(saveError.message||''))){
-      if(existing?.id){
-        const result=await supabaseClient
-          .from('students')
-          .update(coreData)
-          .eq('id',existing.id);
-        saveError=result.error;
-      }else{
-        const result=await supabaseClient
-          .from('students')
-          .insert([coreData]);
-        saveError=result.error;
-      }
+      if(error) throw error;
     }
-
-    if(saveError) throw saveError;
-    return true;
 
   }catch(error){
     console.error('Student Supabase sync failed:',error);
-    return false;
   }
 }
 
-
-async function syncStudentByIdToSupabase(studentId){
-  const student=getStudents().find(s=>String(s.id||'')===String(studentId||''));
-  return student ? syncStudentToSupabase(student) : false;
-}
-
-
-const CLEAR_ALL_STUDENT_MARKER='__TEACHER_DANYEAL_CLEAR_ALL__';
-
-function clearLocalTeachingRecords(){
-  const uid=String(currentUser?.id||'');
-  const keysToRemove=[
-    userStorageKey(STUDENTS_BASE_KEY),
-    userStorageKey(EVALUATIONS_BASE_KEY),
-    userStorageKey(PAYMENT_RECEIPTS_BASE_KEY),
-    userStorageKey(STUDENT_CONTRACTS_BASE_KEY),
-    `teacherDanyealAppointments_${uid}`,
-    `teacherDanyealAppointmentsReset_20261001_${uid}`
-  ];
-
-  keysToRemove.forEach(key=>{
-    if(key)localStorage.removeItem(key);
-  });
-}
-
-async function removeClearAllMarkerFromSupabase(){
-  if(!currentUser) return false;
-  try{
-    const {error}=await supabaseClient
-      .from('students')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',CLEAR_ALL_STUDENT_MARKER);
-    if(error) throw error;
-    return true;
-  }catch(error){
-    console.warn('Clear-all marker removal failed:',error);
-    return false;
-  }
-}
 
 async function loadStudentsFromSupabase(){
   if(!currentUser) return;
@@ -6484,26 +6393,9 @@ async function loadStudentsFromSupabase(){
 
     if(!Array.isArray(data)) return;
 
-    /*
-       A clear-all action is represented by a tiny marker row in the
-       existing students table. This is intentional: localStorage is
-       browser-specific, so a marker is needed to tell every browser/device
-       that its old local teaching records must NOT be migrated back.
-    */
-    const clearMarker=data.some(row=>
-      String(row?.student_id||'')===CLEAR_ALL_STUDENT_MARKER
-    );
-
-    if(clearMarker){
-      clearLocalTeachingRecords();
-      return;
-    }
-
     const existingLocal=getStudents();
 
     if(!data.length){
-      /* No remote records and no clear-all marker: preserve the existing
-         first-time migration behavior for an existing local account. */
       for(const student of existingLocal){
         await syncStudentToSupabase(student);
       }
@@ -6515,15 +6407,11 @@ async function loadStudentsFromSupabase(){
         s=>String(s.id||'')===String(row.student_id||'')
       ) || {};
 
-      const metadata=(row.metadata && typeof row.metadata==='object') ? row.metadata : {};
       return {
         ...old,
-        ...metadata,
         id:row.student_id || old.id,
         name:row.full_name || old.name || '',
         email:row.parent_email || old.email || '',
-        parentFacebook:row.parent_facebook || old.parentFacebook || '',
-        parentWechat:row.parent_wechat || old.parentWechat || '',
         country:row.country || old.country || '',
         age:row.age ?? old.age ?? '',
         level:row.level || old.level || '',
@@ -8340,7 +8228,7 @@ document.getElementById(
 
 }
 
-async function confirmClearAllRecords(){
+function confirmClearAllRecords(){
 
 const input=
 document.getElementById(
@@ -8402,54 +8290,18 @@ return;
 */
 const uid=String(currentUser.id||'');
 
-/*
-   IMPORTANT:
-   localStorage is isolated per browser/device, so deleting only local keys
-   is not enough. We first create a clear-all marker in the existing
-   `students` table, then remove all real student rows. Every other browser
-   sees the marker on refresh/login and clears its own local teaching cache.
-*/
-let markerCreated=false;
-try{
-  const {error:markerError}=await supabaseClient
-    .from('students')
-    .insert([{
-      user_id:currentUser.id,
-      student_id:CLEAR_ALL_STUDENT_MARKER,
-      full_name:CLEAR_ALL_STUDENT_MARKER,
-      parent_email:'',
-      parent_facebook:'',
-      parent_wechat:'',
-      country:'',
-      age:null,
-      enrolled_date:null,
-      level:''
-    }]);
+const keysToRemove=[
+  userStorageKey(STUDENTS_BASE_KEY),
+  userStorageKey(EVALUATIONS_BASE_KEY),
+  userStorageKey(PAYMENT_RECEIPTS_BASE_KEY),
+  userStorageKey(STUDENT_CONTRACTS_BASE_KEY),
+  `teacherDanyealAppointments_${uid}`,
+  `teacherDanyealAppointmentsReset_20261001_${uid}`
+];
 
-  if(markerError && !/duplicate|unique/i.test(String(markerError.message||''))) throw markerError;
-  markerCreated=true;
-
-  const {error:deleteError}=await supabaseClient
-    .from('students')
-    .delete()
-    .eq('user_id',currentUser.id)
-    .neq('student_id',CLEAR_ALL_STUDENT_MARKER);
-
-  if(deleteError) throw deleteError;
-
-  clearLocalTeachingRecords();
-
-}catch(error){
-  console.error('Clear-all Supabase operation failed:',error);
-
-  if(markerCreated){
-    try{ await removeClearAllMarkerFromSupabase(); }catch(e){}
-  }
-
-  error.textContent='Unable to clear all records online. No records were cleared. Please try again.';
-  error.classList.add('show');
-  return;
-}
+keysToRemove.forEach(key=>{
+  if(key)localStorage.removeItem(key);
+});
 
 closeClearAllRecords();
 
@@ -9345,7 +9197,7 @@ function scheduleDataToText(scheduleDetails,preferredSchedule,duration){
 }
 
 
-async function addStudent(){
+function addStudent(){
 
 const name=document.getElementById('newStudentName').value.trim();
 const nickname=document.getElementById('newStudentNickname').value.trim();
@@ -9430,7 +9282,7 @@ students.push({
 });
 
 saveStudents(students);
-await syncStudentToSupabase(students[students.length - 1]);
+syncStudentToSupabase(students[students.length - 1]);
   
 [
 'newStudentName',
@@ -9739,7 +9591,7 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
     console.warn('Student schedule sync warning:',error);
   }
 }
-async function saveEditedStudent(){
+function saveEditedStudent(){
 const originalId=document.getElementById('editOriginalId').value;
 const name=document.getElementById('editStudentName').value.trim();
 const email=document.getElementById('editStudentEmail').value.trim();
@@ -9816,7 +9668,6 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
-await syncStudentToSupabase(editedStudent);
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
@@ -9899,7 +9750,7 @@ document.getElementById(
 
 }
 
-async function confirmDeleteStudent(){
+function confirmDeleteStudent(){
 
 const target=
 document.getElementById(
@@ -9939,7 +9790,6 @@ const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(
 
 saveStudents(remainingStudents);
 saveAppointments(remainingAppointments);
-await deleteStudentFromSupabase(target);
 
 closeDeleteStudent();
 
@@ -11652,7 +11502,6 @@ students[index]={
  contractRenewalVersion:Number(students[index].contractRenewalVersion||0)
 };
 saveStudents(students);
-syncStudentToSupabase(students[index]);
 
 let appointments=getAppointments();
 
@@ -14674,7 +14523,7 @@ function saveStudentContract(){
  saveStudentContracts(contracts);
  const students=getStudents();
  const idx=students.findIndex(s=>s.id===student.id);
- if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);syncStudentToSupabase(students[idx]);}
+ if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);}
  contractSelectedStudentId=student.id;
  contractSavedForStudentId=student.id;
  setStudentContractActionState(true);
@@ -15527,7 +15376,6 @@ function savePaymentReceipt(){
     const updatedStudents=getStudents();
     updatedStudents[studentIndex]={...updatedStudents[studentIndex],paymentRenewalRequired:false,paymentReceiptSubmittedAt:new Date().toISOString()};
     saveStudents(updatedStudents);
-    syncStudentToSupabase(updatedStudents[studentIndex]);
   }
   paymentReceiptSaved=true; paymentReceiptSavedSnapshot=paymentReceiptSnapshot();
   const b=document.getElementById('paymentReceiptDownloadBtn');if(b)b.disabled=false;
@@ -16590,11 +16438,21 @@ closeStudentContractPreview = function(){
 ========================================================= */
 const TEACHER_SUBSCRIPTION_PRICE = 99;
 const SUBSCRIPTION_PAYMENT_CONFIG = {
-  GCash:{type:'qr',text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'},
-  BPI:{type:'qr',text:'Scan the BPI QR code below, pay ₱99, then enter your payment reference number.'},
-  CIMB:{type:'qr',text:'Scan the CIMB QR code below, pay ₱99, then enter your payment reference number.'},
-  UnionBank:{type:'qr',text:'Scan the UnionBank QR code below, pay ₱99, then enter your payment reference number.'},
-  AUB:{type:'qr',text:'Scan the AUB QR code below, pay ₱99, then enter your payment reference number.'}
+  GCash: {
+    type:'qr',
+    qr:'',
+    text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
+  },
+  PayPal: {
+    type:'paypal',
+    url:'',
+    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
+  },
+  'Bank / InstaPay': {
+    type:'qr',
+    qr:'',
+    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
+  }
 };
 
 function subscriptionEscape(value){
@@ -16758,7 +16616,7 @@ async function submitSubscriptionPayment(){
 
     const msg=remoteSaved
       ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
-      : 'Payment was saved on this device, but the online submission could not be completed. Please contact Teacher Danyeal to complete verification.';
+      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
     if(message)message.textContent=msg;
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
