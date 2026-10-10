@@ -6332,6 +6332,119 @@ JSON.stringify(data)
 
 }
 
+async function syncStudentToSupabase(student){
+  if(!currentUser || !student) return;
+
+  try{
+    const studentData = {
+      user_id: currentUser.id,
+      student_id: String(student.id || ''),
+      full_name: String(student.name || ''),
+      parent_email: String(student.email || ''),
+      country: String(student.country || ''),
+      age: student.age ? Number(student.age) : null,
+      enrolled_date: student.startDate || student.createdAt
+        ? String(student.startDate || student.createdAt).slice(0,10)
+        : null,
+      level: String(student.level || '')
+    };
+
+    const {data:existing,error:findError}=await supabaseClient
+      .from('students')
+      .select('id')
+      .eq('user_id',currentUser.id)
+      .eq('student_id',studentData.student_id)
+      .maybeSingle();
+
+    if(findError) throw findError;
+
+    if(existing?.id){
+      const {error}=await supabaseClient
+        .from('students')
+        .update(studentData)
+        .eq('id',existing.id);
+
+      if(error) throw error;
+    }else{
+      const {error}=await supabaseClient
+        .from('students')
+        .insert([studentData]);
+
+      if(error) throw error;
+    }
+
+  }catch(error){
+    console.error('Student Supabase sync failed:',error);
+  }
+}
+
+
+async function loadStudentsFromSupabase(){
+  if(!currentUser) return;
+
+  try{
+    const {data,error}=await supabaseClient
+      .from('students')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('created_at',{ascending:true});
+
+    if(error) throw error;
+
+    if(!Array.isArray(data)) return;
+
+    const existingLocal=getStudents();
+
+    if(!data.length){
+      for(const student of existingLocal){
+        await syncStudentToSupabase(student);
+      }
+      return;
+    }
+
+    const students=data.map(row=>{
+      const old=existingLocal.find(
+        s=>String(s.id||'')===String(row.student_id||'')
+      ) || {};
+
+      return {
+        ...old,
+        id:row.student_id || old.id,
+        name:row.full_name || old.name || '',
+        email:row.parent_email || old.email || '',
+        country:row.country || old.country || '',
+        age:row.age ?? old.age ?? '',
+        level:row.level || old.level || '',
+        startDate:row.enrolled_date || old.startDate || '',
+        createdAt:row.created_at || old.createdAt || new Date().toISOString()
+      };
+    });
+
+    saveStudents(students);
+
+  }catch(error){
+    console.error('Loading students from Supabase failed:',error);
+  }
+}
+
+
+async function deleteStudentFromSupabase(studentId){
+  if(!currentUser || !studentId) return;
+
+  try{
+    const {error}=await supabaseClient
+      .from('students')
+      .delete()
+      .eq('user_id',currentUser.id)
+      .eq('student_id',String(studentId));
+
+    if(error) throw error;
+
+  }catch(error){
+    console.error('Student Supabase delete failed:',error);
+  }
+}
+
 function getEvaluations(){
 
 return JSON.parse(
@@ -7630,6 +7743,8 @@ await supabaseClient.auth.signOut();
 async function handleSignedIn(user){
 
 currentUser=user;
+
+await loadStudentsFromSupabase();
 
 /* One-time appointment reset requested for the current portal version.
    This clears the old appointment/test data so the dashboard starts at 0.
