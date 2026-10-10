@@ -6420,6 +6420,23 @@ async function loadStudentsFromSupabase(){
       };
     });
 
+    /* Keep any local student that has not reached Supabase yet.
+       This prevents a partially migrated browser from losing its local
+       student when another device already has remote student records. */
+    const remoteIds=new Set(
+      students.map(s=>String(s.id||'')).filter(Boolean)
+    );
+    const localOnly=existingLocal.filter(
+      s=>String(s.id||'') && !remoteIds.has(String(s.id||''))
+    );
+
+    if(localOnly.length){
+      students.push(...localOnly);
+      for(const student of localOnly){
+        await syncStudentToSupabase(student);
+      }
+    }
+
     saveStudents(students);
 
   }catch(error){
@@ -9591,7 +9608,7 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
     console.warn('Student schedule sync warning:',error);
   }
 }
-function saveEditedStudent(){
+async function saveEditedStudent(){
 const originalId=document.getElementById('editOriginalId').value;
 const name=document.getElementById('editStudentName').value.trim();
 const email=document.getElementById('editStudentEmail').value.trim();
@@ -9668,6 +9685,15 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
+
+/* Keep the existing local-first behavior, then mirror the edited student
+   to Supabase. If the Student ID itself changed, remove the old remote row
+   first so the edit does not create a duplicate student record. */
+if(String(originalId)!==String(id)){
+  await deleteStudentFromSupabase(originalId);
+}
+await syncStudentToSupabase(editedStudent);
+
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
@@ -9750,7 +9776,7 @@ document.getElementById(
 
 }
 
-function confirmDeleteStudent(){
+async function confirmDeleteStudent(){
 
 const target=
 document.getElementById(
@@ -9790,6 +9816,9 @@ const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(
 
 saveStudents(remainingStudents);
 saveAppointments(remainingAppointments);
+
+/* Remove the same student from the shared Supabase student table. */
+await deleteStudentFromSupabase(target);
 
 closeDeleteStudent();
 
