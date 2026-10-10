@@ -16482,7 +16482,7 @@ async function submitSubscriptionPayment(){
 
     const msg=remoteSaved
       ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
-      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.';
+      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
     if(message)message.textContent=msg;
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
