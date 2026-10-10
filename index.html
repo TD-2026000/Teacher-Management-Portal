@@ -6335,34 +6335,49 @@ JSON.stringify(data)
 async function syncStudentToSupabase(student){
   if(!currentUser || !student) return;
 
+  const studentId=String(student.id||'').trim();
+  if(!studentId) return;
+
   try{
-    const studentData = {
-      user_id: currentUser.id,
-      student_id: String(student.id || ''),
-      full_name: String(student.name || ''),
-      parent_email: String(student.email || ''),
-      country: String(student.country || ''),
-      age: student.age ? Number(student.age) : null,
-      enrolled_date: student.startDate || student.createdAt
-        ? String(student.startDate || student.createdAt).slice(0,10)
+    /* Keep the existing students table as the single online source for
+       student records. Only columns that already exist in that table are
+       written here, so no database structure is changed. */
+    const studentData={
+      user_id:currentUser.id,
+      student_id:studentId,
+      full_name:String(student.name||''),
+      parent_email:String(student.email||''),
+      parent_facebook:String(student.parentFacebook||student.facebook||''),
+      parent_wechat:String(student.parentWechat||student.wechat||''),
+      country:String(student.country||''),
+      age:student.age!==''&&student.age!==null&&student.age!==undefined
+        ? Number(student.age)
         : null,
-      level: String(student.level || '')
+      enrolled_date:student.startDate||student.createdAt
+        ? String(student.startDate||student.createdAt).slice(0,10)
+        : null,
+      level:String(student.level||'')
     };
 
-    const {data:existing,error:findError}=await supabaseClient
+    const {data:existingRows,error:findError}=await supabaseClient
       .from('students')
       .select('id')
       .eq('user_id',currentUser.id)
-      .eq('student_id',studentData.student_id)
-      .maybeSingle();
+      .eq('student_id',studentId)
+      .limit(1);
 
     if(findError) throw findError;
+
+    const existing=Array.isArray(existingRows)&&existingRows.length
+      ? existingRows[0]
+      : null;
 
     if(existing?.id){
       const {error}=await supabaseClient
         .from('students')
         .update(studentData)
-        .eq('id',existing.id);
+        .eq('id',existing.id)
+        .eq('user_id',currentUser.id);
 
       if(error) throw error;
     }else{
@@ -6373,8 +6388,10 @@ async function syncStudentToSupabase(student){
       if(error) throw error;
     }
 
+    return true;
   }catch(error){
     console.error('Student Supabase sync failed:',error);
+    return false;
   }
 }
 
@@ -6390,11 +6407,12 @@ async function loadStudentsFromSupabase(){
       .order('created_at',{ascending:true});
 
     if(error) throw error;
-
     if(!Array.isArray(data)) return;
 
     const existingLocal=getStudents();
 
+    /* If the online table is empty, preserve the current local records and
+       migrate them online instead of deleting them. */
     if(!data.length){
       for(const student of existingLocal){
         await syncStudentToSupabase(student);
@@ -6402,25 +6420,40 @@ async function loadStudentsFromSupabase(){
       return;
     }
 
-    const students=data.map(row=>{
+    const remoteStudents=data.map(row=>{
       const old=existingLocal.find(
         s=>String(s.id||'')===String(row.student_id||'')
-      ) || {};
+      )||{};
 
       return {
         ...old,
-        id:row.student_id || old.id,
-        name:row.full_name || old.name || '',
-        email:row.parent_email || old.email || '',
-        country:row.country || old.country || '',
-        age:row.age ?? old.age ?? '',
-        level:row.level || old.level || '',
-        startDate:row.enrolled_date || old.startDate || '',
-        createdAt:row.created_at || old.createdAt || new Date().toISOString()
+        id:row.student_id||old.id||'',
+        name:row.full_name||old.name||'',
+        email:row.parent_email||old.email||'',
+        parentFacebook:row.parent_facebook||old.parentFacebook||old.facebook||'',
+        parentWechat:row.parent_wechat||old.parentWechat||old.wechat||'',
+        country:row.country||old.country||'',
+        age:row.age??old.age??'',
+        level:row.level||old.level||'',
+        startDate:row.enrolled_date||old.startDate||'',
+        createdAt:row.created_at||old.createdAt||new Date().toISOString()
       };
     });
 
+    /* Keep any local student that is not online yet. This prevents an
+       unsynced local record from disappearing when another device logs in. */
+    const remoteIds=new Set(remoteStudents.map(s=>String(s.id||'')));
+    const localOnly=existingLocal.filter(
+      s=>String(s.id||'') && !remoteIds.has(String(s.id||''))
+    );
+
+    const students=[...remoteStudents,...localOnly];
     saveStudents(students);
+
+    /* Upload any local-only records so future devices receive them too. */
+    for(const student of localOnly){
+      await syncStudentToSupabase(student);
+    }
 
   }catch(error){
     console.error('Loading students from Supabase failed:',error);
@@ -6439,11 +6472,13 @@ async function deleteStudentFromSupabase(studentId){
       .eq('student_id',String(studentId));
 
     if(error) throw error;
-
+    return true;
   }catch(error){
     console.error('Student Supabase delete failed:',error);
+    return false;
   }
 }
+
 
 function getEvaluations(){
 
@@ -9591,7 +9626,7 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
     console.warn('Student schedule sync warning:',error);
   }
 }
-function saveEditedStudent(){
+async function saveEditedStudent(){
 const originalId=document.getElementById('editOriginalId').value;
 const name=document.getElementById('editStudentName').value.trim();
 const email=document.getElementById('editStudentEmail').value.trim();
@@ -9668,6 +9703,15 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
+
+/* Keep the online student record synchronized after every edit. If the
+   Student ID itself was changed, remove the old online row first so the
+   previous ID cannot remain as a duplicate record. */
+if(String(originalId)!==String(id)){
+  await deleteStudentFromSupabase(originalId);
+}
+await syncStudentToSupabase(editedStudent);
+
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
@@ -9750,7 +9794,7 @@ document.getElementById(
 
 }
 
-function confirmDeleteStudent(){
+async function confirmDeleteStudent(){
 
 const target=
 document.getElementById(
@@ -9790,6 +9834,10 @@ const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(
 
 saveStudents(remainingStudents);
 saveAppointments(remainingAppointments);
+
+/* Remove the same student from Supabase so deletion stays consistent
+   across browsers and devices. */
+await deleteStudentFromSupabase(target);
 
 closeDeleteStudent();
 
