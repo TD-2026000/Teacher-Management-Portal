@@ -7963,15 +7963,10 @@ showAuthPanel('login');
 
 async function initAuth(){
 
-const loadingScreen=
-document.getElementById('authLoadingScreen');
-
 const recovery=
 await checkPasswordRecovery();
 
-if(loadingScreen){
-  loadingScreen.remove();
-}
+if(recovery){
 
 return;
 
@@ -7983,11 +7978,6 @@ const {
 
 if(session){
   await handleSignedIn(session.user);
-
-  if(loadingScreen){
-    loadingScreen.remove();
-  }
-
   return;
 }
 
