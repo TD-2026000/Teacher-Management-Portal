@@ -10193,6 +10193,23 @@ async function syncAppointmentsToSupabase(appointments){
   }
 }
 
+async function migrateExistingAppointmentsToSupabase(){
+  if(!currentUser || !supabaseClient) return;
+
+  const appointments=getAppointments();
+
+  if(!appointments.length){
+    console.log('No local appointments found to migrate.');
+    return;
+  }
+
+  console.log(`Migrating ${appointments.length} appointments to Supabase...`);
+
+  await syncAppointmentsToSupabase(appointments);
+
+  console.log('Appointment migration completed.');
+}
+
 function getLocalDateString(date){
 const d=new Date(date);
 const y=d.getFullYear();
