@@ -2192,11 +2192,35 @@ button.secondary,
 .student-profile-id{font-size:13px;color:#666;margin-top:5px}
 .student-profile-main{min-width:0}
 .student-profile-section{border:1px solid #ddd;border-radius:12px;background:#fff;padding:13px;margin-bottom:12px}
-.student-profile-section h4{margin:0 0 10px;font-size:15px}.student-information-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.add-student-field-btn{width:30px;height:30px;border:1px solid #d8dce3;background:#fff;color:#333;border-radius:7px;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}.add-student-field-btn:hover{background:#f3f4f6}.student-custom-field-actions{display:flex;gap:6px;align-items:center;margin-top:6px}.student-custom-field-btn{border:1px solid #d8dce3;background:#fff;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}.student-custom-field-btn:hover{background:#f3f4f6}
+.student-profile-section h4{margin:0 0 10px;font-size:15px}
 .student-profile-info-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .student-profile-info-box{border:1px solid #e2e2e2;border-radius:8px;padding:9px;background:#fafafa;min-width:0}
 .student-profile-info-box label{display:block;font-size:10px;color:#666;margin-bottom:3px}
 .student-profile-info-box div{font-size:13px;font-weight:700;word-break:break-word;line-height:1.4}
+.student-information-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.student-information-title h4{margin:0!important}
+.student-information-add-btn{width:30px;height:30px;border:1px solid #d7d7d7;border-radius:8px;background:#fff;color:#111;font-size:20px;font-weight:800;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.student-information-add-btn:hover{background:#f3f3f3}
+.custom-student-fields-form{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:2px}
+.custom-student-field{border:1px solid #ddd;border-radius:9px;padding:10px;background:#fafafa;min-width:0}
+.custom-student-field-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.custom-student-field-head label{margin:0!important;font-weight:700;font-size:13px}
+.custom-student-field-rename{border:0;background:transparent;color:#666;font-size:11px;font-weight:700;cursor:pointer;padding:2px 4px}
+.custom-student-field-rename:hover{color:#111;text-decoration:underline}
+.custom-student-field input{width:100%;box-sizing:border-box}
+.custom-field-create-overlay{position:fixed;inset:0;background:rgba(0,0,0,.32);display:flex;align-items:center;justify-content:center;padding:18px;z-index:100000}
+.custom-field-create-modal{width:min(360px,calc(100vw - 36px));background:#fff;border:1px solid #ddd;border-radius:12px;padding:18px;box-shadow:0 18px 55px rgba(0,0,0,.22)}
+.custom-field-create-modal h3{margin:0 0 14px;font-size:17px}
+.custom-field-create-modal label{display:block;font-size:12px;font-weight:700;margin-bottom:5px}
+.custom-field-create-modal input{width:100%;box-sizing:border-box}
+.custom-field-create-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.student-profile-custom-field-box{border:1px solid #e2e2e2;border-radius:8px;padding:9px;background:#fafafa;min-width:0}
+.student-profile-custom-field-box label{display:block;font-size:10px;color:#666;margin-bottom:3px}
+.student-profile-custom-field-box>div{font-size:13px;font-weight:700;word-break:break-word;line-height:1.4}
+.student-profile-schedule-list{margin:0;padding-left:20px;display:grid;gap:4px}
+.student-profile-schedule-list li{font-size:13px;font-weight:700;line-height:1.4}
+@media(max-width:900px){.custom-student-fields-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.custom-student-fields-form{grid-template-columns:1fr}}
 .student-class-table{width:100%;border-collapse:collapse;font-size:12px}
 .student-class-table th,.student-class-table td{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}
 .student-class-table th{background:#f3f3f3;font-weight:900}
@@ -4537,6 +4561,11 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div class="student-add-grid">
 
+<div class="student-information-title" style="grid-column:1/-1;margin-bottom:2px">
+  <h4>STUDENT INFORMATION</h4>
+  <button type="button" class="student-information-add-btn" onclick="openCustomFieldCreator('new')" title="Create Field">＋</button>
+</div>
+
 <div><label>Full Name</label><input id="newStudentName" placeholder="Student full name"></div>
 <div><label>Nickname</label><input id="newStudentNickname" placeholder="Nickname"></div>
 <div><label>Student ID</label><input id="newStudentId" placeholder="Student ID"></div>
@@ -4555,6 +4584,8 @@ onclick="if(event.target===this) closeAddStudent()"
 <option value="50 Minutes">50 Minutes</option>
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
+
+<div id="newCustomStudentFields" class="custom-student-fields-form"></div>
 
 <div class="full">
 <label>Preferred Class Schedule</label>
@@ -5768,6 +5799,10 @@ onclick="if(event.target===this) closeEditStudent()"
 
   <div class="edit-student-fields">
     <div class="edit-student-fields-grid">
+      <div class="student-information-title" style="grid-column:1/-1;margin-bottom:2px">
+        <h4>STUDENT INFORMATION</h4>
+        <button type="button" class="student-information-add-btn" onclick="openCustomFieldCreator('edit')" title="Create Field">＋</button>
+      </div>
       <div class="edit-student-field"><label>Full Name</label><input id="editStudentName" placeholder="Student full name"></div>
       <div class="edit-student-field"><label>Nickname</label><input id="editStudentNickname" placeholder="Nickname"></div>
       <div class="edit-student-field"><label>Parent's Email</label><input id="editStudentEmail" type="email" placeholder="parent@email.com"></div>
@@ -5781,6 +5816,7 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
+      <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
       <div class="edit-student-field full"><label>Preferred Class Schedule</label><div class="small" style="margin-top:4px">Select the day(s) and choose the class start time. No typing required.</div><div id="editSchedulePicker" class="schedule-picker"></div></div>
     </div>
   </div>
@@ -6336,88 +6372,107 @@ async function syncStudentToSupabase(student){
   if(!currentUser || !student) return;
 
   try{
-    const currentPackage=getCurrentStudentPackage(student);
-    const studentData={
-      user_id:currentUser.id,
-      student_id:String(student.id||''),
-      full_name:String(student.name||''),
-      nickname:String(student.nickname||''),
-      birthday:student.birthday?String(student.birthday).slice(0,10):null,
-      parent_name:String(student.parentName||''),
-      parent_email:String(student.email||''),
-      parent_facebook:String(student.parentFacebook||''),
-      parent_wechat:String(student.parentWechat||''),
-      country:String(student.country||''),
-      age:student.age?Number(student.age):null,
-      enrolled_date:student.startDate||student.createdAt?String(student.startDate||student.createdAt).slice(0,10):null,
-      level:String(student.level||''),
-      duration:String(student.duration||''),
-      package_name:String(student.packageName||''),
-      status:String(student.status||'Active'),
-      preferred_schedule:Array.isArray(student.preferredSchedule)?student.preferredSchedule:[],
-      schedule_details:student.scheduleDetails||{},
-      class_time:String(student.classTime||''),
-      current_package_id:String(student.currentPackageId||currentPackage?.id||''),
-      package_history:Array.isArray(student.packageHistory)?student.packageHistory:[],
-      custom_fields:student.customFields&&typeof student.customFields==='object'?student.customFields:{}
+    const studentData = {
+      user_id: currentUser.id,
+      student_id: String(student.id || ''),
+      full_name: String(student.name || ''),
+      nickname: String(student.nickname || ''),
+      birthday: student.birthday ? String(student.birthday) : null,
+      parent_name: String(student.parentName || ''),
+      parent_email: String(student.email || ''),
+      country: String(student.country || ''),
+      age: student.age ? Number(student.age) : null,
+      level: String(student.level || ''),
+      duration: String(student.duration || ''),
+      package_name: String(student.packageName || ''),
+      status: String(student.status || 'Active'),
+      enrolled_date: student.startDate || student.createdAt
+        ? String(student.startDate || student.createdAt).slice(0,10)
+        : null,
+      preferred_schedule: Array.isArray(student.preferredSchedule) ? student.preferredSchedule : [],
+      schedule_details: student.scheduleDetails && typeof student.scheduleDetails==='object' ? student.scheduleDetails : {},
+      class_time: String(student.classTime || ''),
+      current_package_id: String(student.currentPackageId || ''),
+      package_history: Array.isArray(student.packageHistory) ? student.packageHistory : [],
+      custom_fields: normalizeCustomStudentFields(student.customFields || {})
     };
 
     const {data:existing,error:findError}=await supabaseClient
-      .from('students').select('id').eq('user_id',currentUser.id)
-      .eq('student_id',studentData.student_id).maybeSingle();
-    if(findError)throw findError;
+      .from('students')
+      .select('id')
+      .eq('user_id',currentUser.id)
+      .eq('student_id',studentData.student_id)
+      .maybeSingle();
+
+    if(findError) throw findError;
 
     if(existing?.id){
-      const {error}=await supabaseClient.from('students').update(studentData).eq('id',existing.id);
-      if(error)throw error;
+      const {error}=await supabaseClient
+        .from('students')
+        .update(studentData)
+        .eq('id',existing.id);
+      if(error) throw error;
     }else{
-      const {error}=await supabaseClient.from('students').insert([studentData]);
-      if(error)throw error;
+      const {error}=await supabaseClient
+        .from('students')
+        .insert([studentData]);
+      if(error) throw error;
     }
   }catch(error){
     console.error('Student Supabase sync failed:',error);
   }
 }
 
+
 async function loadStudentsFromSupabase(){
-  if(!currentUser)return;
+  if(!currentUser) return;
+
   try{
-    const {data,error}=await supabaseClient.from('students').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true});
-    if(error)throw error;
-    if(!Array.isArray(data))return;
+    const {data,error}=await supabaseClient
+      .from('students')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('created_at',{ascending:true});
+
+    if(error) throw error;
+    if(!Array.isArray(data)) return;
 
     const existingLocal=getStudents();
+
     if(!data.length){
-      for(const student of existingLocal)await syncStudentToSupabase(student);
+      for(const student of existingLocal){
+        await syncStudentToSupabase(student);
+      }
       return;
     }
 
     const students=data.map(row=>{
-      const old=existingLocal.find(s=>String(s.id||'')===String(row.student_id||''))||{};
+      const old=existingLocal.find(
+        s=>String(s.id||'')===String(row.student_id||'')
+      ) || {};
+
       return {
         ...old,
-        id:row.student_id||old.id,
-        name:row.full_name||old.name||'',
-        nickname:row.nickname??old.nickname??'',
-        birthday:row.birthday||old.birthday||'',
-        parentName:row.parent_name??old.parentName??'',
-        email:row.parent_email||old.email||'',
-        parentFacebook:row.parent_facebook??old.parentFacebook??'',
-        parentWechat:row.parent_wechat??old.parentWechat??'',
-        country:row.country||old.country||'',
-        age:row.age??old.age??'',
-        level:row.level||old.level||'',
-        duration:row.duration||old.duration||'',
-        packageName:row.package_name||old.packageName||'',
-        status:row.status||old.status||'Active',
-        startDate:row.enrolled_date||old.startDate||'',
-        preferredSchedule:Array.isArray(row.preferred_schedule)&&row.preferred_schedule.length?row.preferred_schedule:(old.preferredSchedule||[]),
-        scheduleDetails:row.schedule_details&&typeof row.schedule_details==='object'?row.schedule_details:(old.scheduleDetails||{}),
-        classTime:row.class_time??old.classTime??'',
-        currentPackageId:row.current_package_id||old.currentPackageId||'',
-        packageHistory:Array.isArray(row.package_history)&&row.package_history.length?row.package_history:(old.packageHistory||[]),
-        customFields:row.custom_fields&&typeof row.custom_fields==='object'&&Object.keys(row.custom_fields).length?row.custom_fields:(old.customFields||{}),
-        createdAt:row.created_at||old.createdAt||new Date().toISOString()
+        id:row.student_id || old.id,
+        name:row.full_name ?? old.name ?? '',
+        nickname:row.nickname ?? old.nickname ?? '',
+        birthday:row.birthday ?? old.birthday ?? '',
+        parentName:row.parent_name ?? old.parentName ?? '',
+        email:row.parent_email ?? old.email ?? '',
+        country:row.country ?? old.country ?? '',
+        age:row.age ?? old.age ?? '',
+        level:row.level ?? old.level ?? '',
+        duration:row.duration ?? old.duration ?? '',
+        packageName:row.package_name ?? old.packageName ?? '',
+        status:row.status ?? old.status ?? 'Active',
+        startDate:row.enrolled_date ?? old.startDate ?? '',
+        preferredSchedule:Array.isArray(row.preferred_schedule) ? row.preferred_schedule : (old.preferredSchedule||[]),
+        scheduleDetails:row.schedule_details && typeof row.schedule_details==='object' ? row.schedule_details : (old.scheduleDetails||{}),
+        classTime:row.class_time ?? old.classTime ?? '',
+        currentPackageId:row.current_package_id ?? old.currentPackageId ?? '',
+        packageHistory:Array.isArray(row.package_history) ? row.package_history : (old.packageHistory||[]),
+        customFields:normalizeCustomStudentFields(row.custom_fields ?? old.customFields ?? {}),
+        createdAt:row.created_at || old.createdAt || new Date().toISOString()
       };
     });
 
@@ -6426,6 +6481,7 @@ async function loadStudentsFromSupabase(){
     console.error('Loading students from Supabase failed:',error);
   }
 }
+
 
 async function deleteStudentFromSupabase(studentId){
   if(!currentUser || !studentId) return;
@@ -8866,12 +8922,193 @@ s.className=
 
 
 /* =========================================================
+   CUSTOM STUDENT INFORMATION FIELDS
+========================================================= */
+
+window.newStudentCustomFields=window.newStudentCustomFields||{};
+
+function normalizeCustomStudentFields(fields){
+  if(!fields || typeof fields!=='object' || Array.isArray(fields))return {};
+  return Object.fromEntries(Object.entries(fields).map(([key,value])=>[
+    String(key),
+    value===null || value===undefined ? '' : String(value)
+  ]));
+}
+
+function getCustomStudentFieldsFromForm(prefix){
+  const container=document.getElementById(`${prefix}CustomStudentFields`);
+  if(!container)return {};
+
+  const fields={};
+  container.querySelectorAll('.custom-student-field').forEach(card=>{
+    const name=card.getAttribute('data-field-name')||'';
+    const input=card.querySelector('[data-custom-field-input]');
+    if(name)fields[name]=input?input.value:'';
+  });
+  return fields;
+}
+
+function renderCustomStudentFieldsForm(prefix,fields){
+  const container=document.getElementById(`${prefix}CustomStudentFields`);
+  if(!container)return;
+
+  const normalized=normalizeCustomStudentFields(fields);
+  container.innerHTML=Object.entries(normalized).map(([name,value])=>`
+    <div class="custom-student-field" data-field-name="${escapeAttr(name)}">
+      <div class="custom-student-field-head">
+        <label>${escapeHtml(name)}</label>
+        <button type="button" class="custom-student-field-rename" onclick="openCustomFieldRename('${prefix}','${escapeAttr(encodeURIComponent(name))}')">Rename</button>
+      </div>
+      <input type="text" data-custom-field-input value="${escapeAttr(value)}" placeholder="Enter information">
+    </div>
+  `).join('');
+}
+
+function openCustomFieldCreator(prefix){
+  const existing=document.getElementById('customFieldCreateOverlay');
+  if(existing)existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='customFieldCreateOverlay';
+  overlay.className='custom-field-create-overlay';
+  overlay.addEventListener('click',event=>{
+    if(event.target===overlay)closeCustomFieldCreator();
+  });
+
+  overlay.innerHTML=`
+    <div class="custom-field-create-modal">
+      <h3>Create Field</h3>
+      <label for="customFieldNameInput">Field Name</label>
+      <input id="customFieldNameInput" type="text" placeholder="e.g. School" autocomplete="off">
+      <div class="custom-field-create-actions">
+        <button type="button" class="modal-cancel" onclick="closeCustomFieldCreator()">Cancel</button>
+        <button type="button" class="modal-save" onclick="confirmCustomFieldCreation('${prefix}')">Confirm</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  setTimeout(()=>document.getElementById('customFieldNameInput')?.focus(),40);
+}
+
+function closeCustomFieldCreator(){
+  document.getElementById('customFieldCreateOverlay')?.remove();
+}
+
+function confirmCustomFieldCreation(prefix){
+  const input=document.getElementById('customFieldNameInput');
+  const fieldName=String(input?.value||'').trim();
+  if(!fieldName){
+    alert('Please enter a field name.');
+    input?.focus();
+    return;
+  }
+
+  const current=getCustomStudentFieldsFromForm(prefix);
+  const duplicate=Object.keys(current).some(key=>key.toLowerCase()===fieldName.toLowerCase());
+  if(duplicate){
+    alert('This field already exists.');
+    input?.focus();
+    return;
+  }
+
+  current[fieldName]='';
+  if(prefix==='new')window.newStudentCustomFields=current;
+  renderCustomStudentFieldsForm(prefix,current);
+  closeCustomFieldCreator();
+
+  const container=document.getElementById(`${prefix}CustomStudentFields`);
+  const last=container?.lastElementChild;
+  last?.querySelector('[data-custom-field-input]')?.focus();
+}
+
+function openCustomFieldRename(prefix,encodedOldName){
+  const oldName=decodeURIComponent(encodedOldName||'');
+  const current=getCustomStudentFieldsFromForm(prefix);
+  if(!Object.prototype.hasOwnProperty.call(current,oldName))return;
+
+  const existing=document.getElementById('customFieldCreateOverlay');
+  if(existing)existing.remove();
+
+  const overlay=document.createElement('div');
+  overlay.id='customFieldCreateOverlay';
+  overlay.className='custom-field-create-overlay';
+  overlay.addEventListener('click',event=>{
+    if(event.target===overlay)closeCustomFieldCreator();
+  });
+
+  overlay.innerHTML=`
+    <div class="custom-field-create-modal">
+      <h3>Rename Field</h3>
+      <label for="customFieldNameInput">Field Name</label>
+      <input id="customFieldNameInput" type="text" value="${escapeAttr(oldName)}" autocomplete="off">
+      <div class="custom-field-create-actions">
+        <button type="button" class="modal-cancel" onclick="closeCustomFieldCreator()">Cancel</button>
+        <button type="button" class="modal-save" onclick="confirmCustomFieldRename('${prefix}','${escapeAttr(encodedOldName)}')">Confirm</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  setTimeout(()=>{
+    const input=document.getElementById('customFieldNameInput');
+    input?.focus();
+    input?.select();
+  },40);
+}
+
+function confirmCustomFieldRename(prefix,encodedOldName){
+  const oldName=decodeURIComponent(encodedOldName||'');
+  const input=document.getElementById('customFieldNameInput');
+  const clean=String(input?.value||'').trim();
+  if(!clean){
+    alert('Please enter a field name.');
+    input?.focus();
+    return;
+  }
+
+  const current=getCustomStudentFieldsFromForm(prefix);
+  if(!Object.prototype.hasOwnProperty.call(current,oldName)){
+    closeCustomFieldCreator();
+    return;
+  }
+
+  if(clean!==oldName){
+    const duplicate=Object.keys(current).some(key=>key!==oldName&&key.toLowerCase()===clean.toLowerCase());
+    if(duplicate){
+      alert('This field already exists.');
+      input?.focus();
+      return;
+    }
+  }
+
+  const renamed={};
+  Object.entries(current).forEach(([key,value])=>{
+    renamed[key===oldName?clean:key]=value;
+  });
+
+  if(prefix==='new')window.newStudentCustomFields=renamed;
+  renderCustomStudentFieldsForm(prefix,renamed);
+  closeCustomFieldCreator();
+}
+
+function collectAndStoreCustomStudentFields(prefix){
+  const fields=getCustomStudentFieldsFromForm(prefix);
+  if(prefix==='new')window.newStudentCustomFields=fields;
+  return fields;
+}
+
+
+/* =========================================================
    ADD STUDENT
 ========================================================= */
 
 function openAddStudent(){
   const modal=document.getElementById('addStudentModal');
   if(!modal)return;
+
+  window.newStudentCustomFields={};
+  renderCustomStudentFieldsForm('new',window.newStudentCustomFields);
 
   const status=document.getElementById('studentStatus');
   if(status){
@@ -9182,6 +9419,20 @@ function setSchedulePicker(prefix,scheduleDetails,preferredSchedule){
   });
 }
 
+function renderStudentProfileScheduleList(scheduleDetails,preferredSchedule,duration){
+  const details=scheduleDetails||{};
+  const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
+  const days=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(details[day]).length || preferred.includes(day));
+  if(!days.length)return '<span>Schedule not set</span>';
+
+  return `<ul class="student-profile-schedule-list">${days.map(day=>{
+    const times=normalizeScheduleTimes(details[day]);
+    if(!times.length)return `<li>${escapeHtml(day)}</li>`;
+    const text=times.map(start=>`${minutesToTimeLabel(start)}–${minutesToTimeLabel(start+durationToMinutes(duration))}`).join(' / ');
+    return `<li>${escapeHtml(day)} — ${escapeHtml(text)}</li>`;
+  }).join('')}</ul>`;
+}
+
 function scheduleDataToText(scheduleDetails,preferredSchedule,duration){
   const details=scheduleDetails||{};
   const preferred=Array.isArray(preferredSchedule)?preferredSchedule:[];
@@ -9277,6 +9528,7 @@ students.push({
   classTime,
   currentPackageId:initialPackageId,
   packageHistory:initialClassesCount?[initialClasses]:[],
+  customFields:collectAndStoreCustomStudentFields('new'),
   createdAt:new Date().toISOString()
 });
 
@@ -9385,111 +9637,36 @@ function removeStudentEditPicture(){
  renderEditStudentPicture();
 }
 
-function openCreateStudentField(){
-  const studentId=window.currentStudentProfileId||'';
-  if(!studentId){
-    alert('Please open a student profile first.');
-    return;
+function openAddStudentField(studentId){
+  const students=getStudents();
+
+  const student=students.find(
+    s=>String(s.id)===String(studentId)
+  );
+
+  if(!student) return;
+
+  const fieldName=prompt('Enter field name:');
+
+  if(!fieldName || !fieldName.trim()) return;
+
+  const fieldValue=prompt(`Enter information for "${fieldName.trim()}":`);
+
+  if(fieldValue===null) return;
+
+  if(!student.customFields){
+    student.customFields={};
   }
 
-  document.getElementById('createStudentFieldModal')?.remove();
+  student.customFields[fieldName.trim()]=fieldValue.trim();
 
-  const modal=document.createElement('div');
-  modal.id='createStudentFieldModal';
-  modal.className='student-field-modal-overlay';
-  modal.innerHTML=`
-    <div class="student-field-modal">
-      <div class="student-field-modal-title">Create Field</div>
-      <label>Field Name</label>
-      <input type="text" id="newStudentFieldName" class="student-field-modal-input" placeholder="e.g. School" autocomplete="off">
-      <div class="student-field-modal-actions">
-        <button type="button" class="student-field-cancel-btn" onclick="closeCreateStudentField()">Cancel</button>
-        <button type="button" class="student-field-confirm-btn" onclick="confirmCreateStudentField('${escapeAttr(studentId)}')">Confirm</button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(modal);
-  setTimeout(()=>document.getElementById('newStudentFieldName')?.focus(),50);
-}
-
-function closeCreateStudentField(){
-  document.getElementById('createStudentFieldModal')?.remove();
-}
-
-async function confirmCreateStudentField(studentId){
-  const input=document.getElementById('newStudentFieldName');
-  const fieldName=String(input?.value||'').trim();
-  if(!fieldName){
-    alert('Please enter a field name.');
-    input?.focus();
-    return;
-  }
-
-  const students=getStudents();
-  const student=students.find(s=>String(s.id)===String(studentId));
-  if(!student)return;
-
-  if(!student.customFields)student.customFields={};
-  if(Object.prototype.hasOwnProperty.call(student.customFields,fieldName)){
-    alert('This field already exists.');
-    input?.focus();
-    return;
-  }
-
-  student.customFields[fieldName]='';
   saveStudents(students);
-  await syncStudentToSupabase(student);
-  closeCreateStudentField();
-  openStudentProfile(studentId);
+
+  renderDashboard();
+
+  alert('Student information field added successfully.');
 }
-
-async function renameStudentCustomField(studentId,oldName){
-  const students=getStudents();
-  const student=students.find(s=>String(s.id)===String(studentId));
-  if(!student?.customFields)return;
-
-  const newName=prompt('Rename field:',oldName);
-  if(newName===null)return;
-  const cleanName=String(newName).trim();
-  if(!cleanName||cleanName===oldName)return;
-  if(Object.prototype.hasOwnProperty.call(student.customFields,cleanName)){
-    alert('This field name already exists.');
-    return;
-  }
-
-  student.customFields[cleanName]=student.customFields[oldName]??'';
-  delete student.customFields[oldName];
-  saveStudents(students);
-  await syncStudentToSupabase(student);
-  openStudentProfile(studentId);
-}
-
-async function editStudentCustomFieldValue(studentId,fieldName){
-  const students=getStudents();
-  const student=students.find(s=>String(s.id)===String(studentId));
-  if(!student?.customFields)return;
-
-  const value=prompt(`Enter information for "${fieldName}":`,student.customFields[fieldName]||'');
-  if(value===null)return;
-
-  student.customFields[fieldName]=String(value).trim();
-  saveStudents(students);
-  await syncStudentToSupabase(student);
-  openStudentProfile(studentId);
-}
-
-async function deleteStudentCustomField(studentId,fieldName){
-  const students=getStudents();
-  const student=students.find(s=>String(s.id)===String(studentId));
-  if(!student?.customFields)return;
-  if(!confirm(`Delete "${fieldName}"?`))return;
-
-  delete student.customFields[fieldName];
-  saveStudents(students);
-  await syncStudentToSupabase(student);
-  openStudentProfile(studentId);
-}
-
+  
 function openEditStudent(id){
 
 closeStudentMenus();
@@ -9523,6 +9700,8 @@ editStudentPendingPicture=student.picture||student.profilePicture||student.photo
 renderEditStudentPicture();
 
 document.getElementById('editStudentStatus').value=student.status||'Active';
+
+renderCustomStudentFieldsForm('edit',student.customFields||{});
 
 setSchedulePicker(
 'edit',
@@ -9758,6 +9937,7 @@ getSchedulePickerData('edit').selected,
 document.getElementById('editStudentDuration').value
 ),
 startDate:editedStartDate,
+customFields:collectAndStoreCustomStudentFields('edit'),
 picture:editStudentPendingPicture
 };
 
@@ -11273,10 +11453,15 @@ list.innerHTML=students.map(s=>`
 <div class="student-info">
 <b>${escapeHtml(s.name)}</b>
 <span>ID: ${escapeHtml(s.id)} · ${escapeHtml(s.email)}</span>
+${Object.entries(normalizeCustomStudentFields(s.customFields||{})).length ? `<div class="student-custom-fields">${Object.entries(normalizeCustomStudentFields(s.customFields||{})).map(([key,value])=>`<span><b>${escapeHtml(key)}:</b> ${escapeHtml(value)}</span>`).join('')}</div>` : ''}
 </div>
 <div class="student-actions">
-  <button type="button" class="primary-action" onclick="event.stopPropagation();openEditStudent('${escapeAttr(s.id)}')">Edit</button>
-  <button type="button" class="danger-action" onclick="event.stopPropagation();openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
+  <button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
+
+  <div id="studentMenu-${encodeURIComponent(s.id)}" class="student-menu">
+    <button type="button" onclick="openEditStudent('${escapeAttr(s.id)}')">Edit</button>
+    <button type="button" class="delete-option" onclick="openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
+  </div>
 </div>
 `).join('');
 }
@@ -11370,7 +11555,7 @@ content.innerHTML=`
 
  <div class="student-profile-main">
   <div class="student-profile-section">
-   <div class="student-information-title"><h4>STUDENT INFORMATION</h4><button type="button" class="add-student-field-btn" onclick="openCreateStudentField()" title="Add Student Information Field">＋</button></div>
+   <h4>STUDENT INFORMATION</h4>
    <div class="student-profile-info-grid">
     <div class="student-profile-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div>
     <div class="student-profile-info-box"><label>Full Name</label><div>${escapeHtml(student.name||'Not set')}</div></div>
@@ -11385,8 +11570,8 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Class Duration</label><div>${escapeHtml(student.duration||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
-    <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${escapeHtml(schedule)}</div></div>
-    ${student.customFields&&Object.keys(student.customFields).length?Object.entries(student.customFields).map(([key,value])=>`<div class="student-profile-info-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div><div class="student-custom-field-actions"><button type="button" class="student-custom-field-btn" onclick="editStudentCustomFieldValue('${escapeAttr(student.id)}','${escapeAttr(key)}')">Edit</button><button type="button" class="student-custom-field-btn" onclick="renameStudentCustomField('${escapeAttr(student.id)}','${escapeAttr(key)}')">Rename</button><button type="button" class="student-custom-field-btn" onclick="deleteStudentCustomField('${escapeAttr(student.id)}','${escapeAttr(key)}')">Delete</button></div></div>`).join(''):''}
+    <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
+   ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
    </div>
   </div>
 
@@ -16426,7 +16611,7 @@ body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 .lesson-delete-confirm-actions{display:flex;gap:10px;justify-content:center;}
 .lesson-delete-confirm-actions button{border:1px solid #aaa;border-radius:9px;padding:10px 18px;font-weight:800;cursor:pointer;background:#f5f5f5;}
 .lesson-delete-confirm-actions .danger{background:#ffe1e1;border-color:#d55;color:#a00;}
-.student-field-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px}.student-field-modal{width:100%;max-width:360px;background:#fff;border-radius:12px;padding:20px;box-shadow:0 15px 45px rgba(0,0,0,.2)}.student-field-modal-title{font-size:18px;font-weight:700;margin-bottom:16px}.student-field-modal label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}.student-field-modal-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d8dce3;border-radius:7px;outline:none;font-size:14px}.student-field-modal-input:focus{border-color:#888}.student-field-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.student-field-cancel-btn,.student-field-confirm-btn{border:0;border-radius:7px;padding:9px 15px;cursor:pointer;font-size:13px}.student-field-cancel-btn{background:#eee;color:#333}.student-field-confirm-btn{background:#222;color:#fff}</style>
+</style>
 
 
 <script id="student-record-image-view-functions">
