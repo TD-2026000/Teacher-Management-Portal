@@ -7973,19 +7973,15 @@ return;
 }
 
 const {
-data:{session}
-}=
-await supabaseClient.auth.getSession();
+  data:{session}
+} = await supabaseClient.auth.getSession();
 
 if(session){
-
-await handleSignedIn(session.user);
-
-}else{
+  await handleSignedIn(session.user);
+  return;
+}
 
 handleSignedOut();
-
-}
 
 supabaseClient.auth.onAuthStateChange(
 (event,session)=>{
