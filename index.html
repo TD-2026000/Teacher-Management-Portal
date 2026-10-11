@@ -9668,6 +9668,7 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
+syncStudentToSupabase(students[index]);
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
