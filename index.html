@@ -7251,8 +7251,8 @@ async function loadTeacherProfileFromSupabase(){
 
     const profile={
       ...saved,
-      fullName:data.full_name || saved.fullName || '',
-      picture:data.avatar_url || saved.picture || ''
+      fullName:data.full_name || '',
+      picture:data.avatar_url || ''
     };
 
     saveTeacherProfileData(profile);
