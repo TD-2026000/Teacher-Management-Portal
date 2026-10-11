@@ -7252,7 +7252,10 @@ async function loadTeacherProfileFromSupabase(){
     const profile={
       ...saved,
       fullName:data.full_name || '',
-      picture:data.avatar_url || ''
+      picture:data.avatar_url || '',
+      username:data.profile_data?.username || saved.username || '',
+      phone:data.profile_data?.phone || saved.phone || '',
+      gender:data.profile_data?.gender || saved.gender || ''
     };
 
     saveTeacherProfileData(profile);
@@ -7330,7 +7333,12 @@ async function saveTeacherProfileToSupabase(data){
       user_id:currentUser.id,
       full_name:data.fullName || '',
       email:currentUser.email || '',
-      avatar_url:data.picture || ''
+      avatar_url:data.picture || '',
+      profile_data:{
+        username:data.username || '',
+        phone:data.phone || '',
+        gender:data.gender || ''
+      }
     };
 
     const {data:existing,error:findError}=await supabaseClient
