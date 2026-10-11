@@ -9386,6 +9386,36 @@ function removeStudentEditPicture(){
  renderEditStudentPicture();
 }
 
+function openAddStudentField(studentId){
+  const students=getStudents();
+
+  const student=students.find(
+    s=>String(s.id)===String(studentId)
+  );
+
+  if(!student) return;
+
+  const fieldName=prompt('Enter field name:');
+
+  if(!fieldName || !fieldName.trim()) return;
+
+  const fieldValue=prompt(`Enter information for "${fieldName.trim()}":`);
+
+  if(fieldValue===null) return;
+
+  if(!student.customFields){
+    student.customFields={};
+  }
+
+  student.customFields[fieldName.trim()]=fieldValue.trim();
+
+  saveStudents(students);
+
+  renderDashboard();
+
+  alert('Student information field added successfully.');
+}
+  
 function openEditStudent(id){
 
 closeStudentMenus();
