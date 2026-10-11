@@ -8023,10 +8023,15 @@ showAuthPanel('login');
 
 async function initAuth(){
 
+const loadingScreen=
+document.getElementById('authLoadingScreen');
+
 const recovery=
 await checkPasswordRecovery();
 
-if(recovery){
+if(loadingScreen){
+  loadingScreen.remove();
+}
 
 return;
 
@@ -8038,6 +8043,11 @@ const {
 
 if(session){
   await handleSignedIn(session.user);
+
+  if(loadingScreen){
+    loadingScreen.remove();
+  }
+
   return;
 }
 
