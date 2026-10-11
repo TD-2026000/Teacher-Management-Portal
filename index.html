@@ -653,19 +653,6 @@ button.secondary,
   color:#666;
 }
 
-.student-custom-fields{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-  margin-top:5px;
-}
-
-.student-custom-fields span{
-  font-size:12px;
-  color:#555;
-  word-break:break-word;
-}
-
 .student-actions{
   position:relative;
   margin-left:auto;
@@ -690,9 +677,9 @@ button.secondary,
 
 .student-menu{
   position:absolute;
-  right:0;
-  top:44px;
-  transform:none;
+  right:44px;
+  top:50%;
+  transform:translateY(-50%);
   min-width:130px;
   background:#fff;
   border:1px solid #ccc;
@@ -6396,37 +6383,11 @@ async function loadStudentsFromSupabase(){
   if(!currentUser) return;
 
   try{
-    /* Make sure the browser has the current authenticated session
-       before requesting the teacher's students. */
-    const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
-
-    if(sessionError) throw sessionError;
-
-    if(sessionData?.session?.user){
-      currentUser=sessionData.session.user;
-    }
-
-    if(!currentUser) return;
-
-    let {data,error}=await supabaseClient
+    const {data,error}=await supabaseClient
       .from('students')
       .select('*')
       .eq('user_id',currentUser.id)
       .order('created_at',{ascending:true});
-
-    /* Short retry for a freshly restored browser session. */
-    if(error){
-      await new Promise(resolve=>setTimeout(resolve,500));
-
-      const retry=await supabaseClient
-        .from('students')
-        .select('*')
-        .eq('user_id',currentUser.id)
-        .order('created_at',{ascending:true});
-
-      data=retry.data;
-      error=retry.error;
-    }
 
     if(error) throw error;
 
@@ -6465,6 +6426,7 @@ async function loadStudentsFromSupabase(){
     console.error('Loading students from Supabase failed:',error);
   }
 }
+
 
 async function deleteStudentFromSupabase(studentId){
   if(!currentUser || !studentId) return;
@@ -9213,7 +9175,10 @@ function setSchedulePicker(prefix,scheduleDetails,preferredSchedule){
       `;
       list.appendChild(item);
       const select=item.querySelector('select');
-      if(select && timeValue!==null)select.value=String(timeValue);
+      if(select && timeValue!==null){
+        const normalizedValue=String(Number(timeValue)).padStart(4,'0');
+        select.value=normalizedValue;
+      }
     });
 
     list.querySelectorAll('select').forEach(select=>select.disabled=!checkbox.checked);
@@ -9725,11 +9690,21 @@ startDate:editedStartDate,
 picture:editStudentPendingPicture
 };
 
+const editedClassCount=getPackageClassCount(editedStudent.packageName);
+if(!Number.isInteger(editedClassCount)||editedClassCount<1){
+  return fail('Please enter a valid whole number of classes (1 or more).');
+}
+
 const currentPackageForEdit=getCurrentStudentPackage(editedStudent);
 if(currentPackageForEdit){
   editedStudent.packageHistory=(editedStudent.packageHistory||[]).map(pkg=>
     pkg.id===currentPackageForEdit.id
-    ?{...pkg,startDate:editedStartDate}
+    ?{
+      ...pkg,
+      packageName:editedStudent.packageName||`${editedClassCount} Classes`,
+      classCount:editedClassCount,
+      startDate:editedStartDate
+    }
     :pkg
   );
 }
@@ -11237,12 +11212,6 @@ list.innerHTML=students.map(s=>`
 <div class="student-info">
 <b>${escapeHtml(s.name)}</b>
 <span>ID: ${escapeHtml(s.id)} · ${escapeHtml(s.email)}</span>
-${s.customFields && Object.keys(s.customFields).length ? `
-<div class="student-custom-fields">
-${Object.entries(s.customFields).map(([key,value])=>`
-<span><b>${escapeHtml(key)}:</b> ${escapeHtml(value)}</span>
-`).join('')}
-</div>` : ''}
 </div>
 <div class="student-actions">
   <button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
