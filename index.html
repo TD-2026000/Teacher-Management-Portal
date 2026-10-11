@@ -7803,17 +7803,6 @@ await loadStudentsFromSupabase();
 await migrateExistingAppointmentsToSupabase();
 await loadAppointmentsFromSupabase();
 
-renderDashboard();
-
-/* One-time appointment reset requested for the current portal version.
-   This clears the old appointment/test data so the dashboard starts at 0.
-   Student records and evaluations are not affected. */
-const appointmentResetKey=`teacherManagementAppointmentsReset_20261001_${currentUser.id}`;
-if(localStorage.getItem(appointmentResetKey)!=='done'){
-localStorage.removeItem(appointmentStorageKey());
-localStorage.setItem(appointmentResetKey,'done');
-}
-
 const savedProfile=
 getTeacherProfile();
 
@@ -7845,7 +7834,6 @@ populateStudentSelect();
 renderRecords();
 
 }
-
 
 /* =========================================================
    SIGNED OUT
