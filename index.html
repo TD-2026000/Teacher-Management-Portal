@@ -3870,6 +3870,58 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 
 </style>
 <style id="subscription-qr-direct-style">.subscription-qr-option-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.subscription-qr-view-card{justify-content:center;min-height:78px;text-align:center;border:1px solid var(--global-border);}.subscription-qr-view-card:hover{transform:translateY(-1px);}.subscription-qr-view-card .subscription-check-mark{color:#111827;border-color:#cbd5e1;background:#fff;font-size:17px;}.subscription-qr-modal{z-index:100000;}.subscription-qr-modal-box{max-width:520px;text-align:center;}.subscription-qr-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.subscription-qr-modal-head h3{margin:0;}.subscription-qr-close{border:0;background:#f1f5f9;color:#111827;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;}.subscription-qr-image-wrap{margin:12px auto 8px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;min-height:300px;padding:10px;}.subscription-qr-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;}.subscription-qr-help{margin:8px 0 0;color:#6b7280;font-size:13px;}@media(max-width:1100px){.subscription-qr-option-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.subscription-qr-option-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.subscription-qr-option-grid{grid-template-columns:1fr;}}</style>
+
+.auth-loading-screen{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#ffffff;
+}
+
+.auth-loading-card{
+  text-align:center;
+  font-family:Arial,sans-serif;
+}
+
+.auth-loading-logo{
+  width:64px;
+  height:64px;
+  margin:0 auto 18px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#111827;
+  color:#ffffff;
+  font-size:24px;
+  font-weight:800;
+}
+
+.auth-loading-spinner{
+  width:30px;
+  height:30px;
+  margin:0 auto 14px;
+  border:3px solid #e5e7eb;
+  border-top-color:#111827;
+  border-radius:50%;
+  animation:authLoadingSpin .8s linear infinite;
+}
+
+.auth-loading-card p{
+  margin:0;
+  color:#6b7280;
+  font-size:14px;
+}
+
+@keyframes authLoadingSpin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
 </head>
 
 <body>
@@ -3878,6 +3930,14 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
      AUTH SCREEN
 ========================================================= -->
 
+<div id="authLoadingScreen" class="auth-loading-screen">
+  <div class="auth-loading-card">
+    <div class="auth-loading-logo">TD</div>
+    <div class="auth-loading-spinner"></div>
+    <p>Checking your account...</p>
+  </div>
+</div>
+  
 <div id="authScreen" class="auth-screen">
 
 <div class="auth-card">
