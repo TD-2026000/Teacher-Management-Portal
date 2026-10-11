@@ -9411,7 +9411,19 @@ function setSchedulePicker(prefix,scheduleDetails,preferredSchedule){
       `;
       list.appendChild(item);
       const select=item.querySelector('select');
-      if(select && timeValue!==null)select.value=String(timeValue);
+
+      if(select && timeValue!==null){
+        const savedValue=String(timeValue).padStart(4,'0');
+
+        const matchingOption=Array.from(select.options).find(
+          option=>String(option.value).padStart(4,'0')===savedValue
+        );
+
+        if(matchingOption){
+          select.value=matchingOption.value;
+      }
+    }
+
     });
 
     list.querySelectorAll('select').forEach(select=>select.disabled=!checkbox.checked);
