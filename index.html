@@ -10133,7 +10133,64 @@ return Array.isArray(data)?data:[];
 }
 
 function saveAppointments(data){
-localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));
+  localStorage.setItem(
+    appointmentStorageKey(),
+    JSON.stringify(data)
+  );
+
+  syncAppointmentsToSupabase(data);
+}
+
+async function syncAppointmentsToSupabase(appointments){
+  if(!currentUser || !supabaseClient || !Array.isArray(appointments)) return;
+
+  try{
+    const rows=appointments.map(a=>({
+      user_id:currentUser.id,
+      student_id:String(a.studentId||''),
+      class_date:a.date||null,
+      class_time:a.time ? `${a.time}:00` : null,
+      duration:parseInt(String(a.duration||'').match(/\d+/)?.[0]||0,10)||null,
+      class_type:String(a.type||'Regular Class'),
+      status:String(a.status||'Scheduled'),
+      attendance:a.attendance||null,
+      cancel_reason:a.cancelReason||null,
+      notes:a.notes||null,
+      created_at:a.createdAt||new Date().toISOString()
+    }));
+
+    if(!rows.length) return;
+
+    for(const row of rows){
+      const {data:existing,error:findError}=await supabaseClient
+        .from('appointments')
+        .select('id')
+        .eq('user_id',currentUser.id)
+        .eq('student_id',row.student_id)
+        .eq('class_date',row.class_date)
+        .eq('class_time',row.class_time)
+        .maybeSingle();
+
+      if(findError) throw findError;
+
+      if(existing?.id){
+        const {error}=await supabaseClient
+          .from('appointments')
+          .update(row)
+          .eq('id',existing.id);
+
+        if(error) throw error;
+      }else{
+        const {error}=await supabaseClient
+          .from('appointments')
+          .insert([row]);
+
+        if(error) throw error;
+      }
+    }
+  }catch(error){
+    console.error('Appointment Supabase sync failed:',error);
+  }
 }
 
 function getLocalDateString(date){
