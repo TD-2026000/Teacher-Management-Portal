@@ -7800,8 +7800,8 @@ async function handleSignedIn(user){
 currentUser=user;
 
 await loadStudentsFromSupabase();
-
 await migrateExistingAppointmentsToSupabase();
+await loadAppointmentsFromSupabase();
 
 /* One-time appointment reset requested for the current portal version.
    This clears the old appointment/test data so the dashboard starts at 0.
@@ -10210,6 +10210,67 @@ async function migrateExistingAppointmentsToSupabase(){
   await syncAppointmentsToSupabase(appointments);
 
   console.log('Appointment migration completed.');
+}
+
+async function loadAppointmentsFromSupabase(){
+  if(!currentUser || !supabaseClient) return;
+
+  try{
+    const {data,error}=await supabaseClient
+      .from('appointments')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .order('class_date',{ascending:true})
+      .order('class_time',{ascending:true});
+
+    if(error) throw error;
+
+    if(!Array.isArray(data)) return;
+
+    const students=getStudents();
+
+    const appointments=data.map(row=>{
+      const student=students.find(
+        s=>String(s.id)===String(row.student_id)
+      );
+
+      return {
+        id:String(row.id),
+        studentId:String(row.student_id||''),
+        studentName:student?.name||'',
+        date:row.class_date||'',
+        time:row.class_time
+          ?String(row.class_time).slice(0,5)
+          :'',
+        duration:row.duration
+          ?`${row.duration} Minutes`
+          :'30 Minutes',
+        type:row.class_type||'Regular Class',
+        status:row.status||'Scheduled',
+        attendance:row.attendance||'',
+        cancelReason:row.cancel_reason||'',
+        notes:row.notes||'',
+        scheduleMode:'manual',
+        createdAt:row.created_at||new Date().toISOString(),
+        updatedAt:row.created_at||new Date().toISOString()
+      };
+    });
+
+    localStorage.setItem(
+      appointmentStorageKey(),
+      JSON.stringify(appointments)
+    );
+
+    console.log(
+      `Loaded ${appointments.length} appointments from Supabase.`
+    );
+
+  }catch(error){
+    console.error(
+      'Failed to load appointments from Supabase:',
+      error
+    );
+  }
 }
 
 function getLocalDateString(date){
