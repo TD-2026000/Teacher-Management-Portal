@@ -9790,6 +9790,7 @@ const appointments=getAppointments();
 const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(target));
 
 saveStudents(remainingStudents);
+deleteStudentFromSupabase(deletedStudent?.id);
 saveAppointments(remainingAppointments);
 
 closeDeleteStudent();
