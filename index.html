@@ -7231,6 +7231,43 @@ true
 
 }
 
+async function loadTeacherProfileFromSupabase(){
+
+  if(!currentUser || !supabaseClient) return;
+
+  try{
+
+    const {data,error}=await supabaseClient
+      .from('teacher_profiles')
+      .select('*')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    if(!data) return;
+
+    const saved=getTeacherProfile();
+
+    const profile={
+      ...saved,
+      fullName:data.full_name || saved.fullName || '',
+      picture:data.avatar_url || saved.picture || ''
+    };
+
+    saveTeacherProfileData(profile);
+
+  }catch(error){
+
+    console.error(
+      'Loading teacher profile from Supabase failed:',
+      error
+    );
+
+  }
+
+}
+
 function loadTeacherProfile(){
 
 if(!currentUser)
@@ -7285,6 +7322,45 @@ setTeacherProfileEditMode(false);
 
 }
 
+async function saveTeacherProfileToSupabase(data){
+  if(!currentUser || !supabaseClient) return;
+
+  try{
+    const profileData={
+      user_id:currentUser.id,
+      full_name:data.fullName || '',
+      email:currentUser.email || '',
+      avatar_url:data.picture || ''
+    };
+
+    const {data:existing,error:findError}=await supabaseClient
+      .from('teacher_profiles')
+      .select('id')
+      .eq('user_id',currentUser.id)
+      .maybeSingle();
+
+    if(findError) throw findError;
+
+    if(existing?.id){
+      const {error}=await supabaseClient
+        .from('teacher_profiles')
+        .update(profileData)
+        .eq('id',existing.id);
+
+      if(error) throw error;
+    }else{
+      const {error}=await supabaseClient
+        .from('teacher_profiles')
+        .insert([profileData]);
+
+      if(error) throw error;
+    }
+
+  }catch(error){
+    console.error('Teacher profile Supabase sync failed:',error);
+  }
+}
+
 function saveTeacherProfile(){
 
 if(!currentUser)
@@ -7326,7 +7402,14 @@ pendingProfilePicture || ''
 };
 
 saveTeacherProfileData(data);
-try{localStorage.setItem('teacherDanyealLastTeacherUpdateNotice',String(Date.now()));}catch(e){}
+saveTeacherProfileToSupabase(data);
+
+try{
+  localStorage.setItem(
+    'teacherDanyealLastTeacherUpdateNotice',
+    String(Date.now())
+  );
+}catch(e){}
 
 const currentTeacherEl=
 document.getElementById('currentTeacher');
@@ -7798,6 +7881,8 @@ await supabaseClient.auth.signOut();
 async function handleSignedIn(user){
 
 currentUser=user;
+
+await loadTeacherProfileFromSupabase();
 
 await loadStudentsFromSupabase();
 await migrateExistingAppointmentsToSupabase();
