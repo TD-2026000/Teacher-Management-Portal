@@ -11522,7 +11522,7 @@ photoEl.textContent='👤';
 const studentCountDash=document.getElementById('dashboardStudentCount');
 if(studentCountDash) studentCountDash.textContent=students.length;
 
-const appointments=getDashboardAppointments();
+const appointments=getAppointments();
 const now=new Date();
 const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
