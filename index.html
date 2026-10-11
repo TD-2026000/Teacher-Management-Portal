@@ -6347,6 +6347,8 @@ async function syncStudentToSupabase(student){
         ? String(student.startDate || student.createdAt).slice(0,10)
         : null,
       level: String(student.level || '')
+      parent_facebook: String(student.parentFacebook || ''),
+      parent_wechat: String(student.parentWechat || '')
     };
 
     const {data:existing,error:findError}=await supabaseClient
