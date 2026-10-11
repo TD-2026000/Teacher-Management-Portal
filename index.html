@@ -2192,7 +2192,7 @@ button.secondary,
 .student-profile-id{font-size:13px;color:#666;margin-top:5px}
 .student-profile-main{min-width:0}
 .student-profile-section{border:1px solid #ddd;border-radius:12px;background:#fff;padding:13px;margin-bottom:12px}
-.student-profile-section h4{margin:0 0 10px;font-size:15px}
+.student-profile-section h4{margin:0 0 10px;font-size:15px}.student-information-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.add-student-field-btn{width:30px;height:30px;border:1px solid #d8dce3;background:#fff;color:#333;border-radius:7px;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}.add-student-field-btn:hover{background:#f3f4f6}.student-custom-field-actions{display:flex;gap:6px;align-items:center;margin-top:6px}.student-custom-field-btn{border:1px solid #d8dce3;background:#fff;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer}.student-custom-field-btn:hover{background:#f3f4f6}
 .student-profile-info-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
 .student-profile-info-box{border:1px solid #e2e2e2;border-radius:8px;padding:9px;background:#fafafa;min-width:0}
 .student-profile-info-box label{display:block;font-size:10px;color:#666;margin-bottom:3px}
@@ -6336,97 +6336,96 @@ async function syncStudentToSupabase(student){
   if(!currentUser || !student) return;
 
   try{
-    const studentData = {
-      user_id: currentUser.id,
-      student_id: String(student.id || ''),
-      full_name: String(student.name || ''),
-      parent_email: String(student.email || ''),
-      country: String(student.country || ''),
-      age: student.age ? Number(student.age) : null,
-      enrolled_date: student.startDate || student.createdAt
-        ? String(student.startDate || student.createdAt).slice(0,10)
-        : null,
-      level: String(student.level || '')
+    const currentPackage=getCurrentStudentPackage(student);
+    const studentData={
+      user_id:currentUser.id,
+      student_id:String(student.id||''),
+      full_name:String(student.name||''),
+      nickname:String(student.nickname||''),
+      birthday:student.birthday?String(student.birthday).slice(0,10):null,
+      parent_name:String(student.parentName||''),
+      parent_email:String(student.email||''),
+      parent_facebook:String(student.parentFacebook||''),
+      parent_wechat:String(student.parentWechat||''),
+      country:String(student.country||''),
+      age:student.age?Number(student.age):null,
+      enrolled_date:student.startDate||student.createdAt?String(student.startDate||student.createdAt).slice(0,10):null,
+      level:String(student.level||''),
+      duration:String(student.duration||''),
+      package_name:String(student.packageName||''),
+      status:String(student.status||'Active'),
+      preferred_schedule:Array.isArray(student.preferredSchedule)?student.preferredSchedule:[],
+      schedule_details:student.scheduleDetails||{},
+      class_time:String(student.classTime||''),
+      current_package_id:String(student.currentPackageId||currentPackage?.id||''),
+      package_history:Array.isArray(student.packageHistory)?student.packageHistory:[],
+      custom_fields:student.customFields&&typeof student.customFields==='object'?student.customFields:{}
     };
 
     const {data:existing,error:findError}=await supabaseClient
-      .from('students')
-      .select('id')
-      .eq('user_id',currentUser.id)
-      .eq('student_id',studentData.student_id)
-      .maybeSingle();
-
-    if(findError) throw findError;
+      .from('students').select('id').eq('user_id',currentUser.id)
+      .eq('student_id',studentData.student_id).maybeSingle();
+    if(findError)throw findError;
 
     if(existing?.id){
-      const {error}=await supabaseClient
-        .from('students')
-        .update(studentData)
-        .eq('id',existing.id);
-
-      if(error) throw error;
+      const {error}=await supabaseClient.from('students').update(studentData).eq('id',existing.id);
+      if(error)throw error;
     }else{
-      const {error}=await supabaseClient
-        .from('students')
-        .insert([studentData]);
-
-      if(error) throw error;
+      const {error}=await supabaseClient.from('students').insert([studentData]);
+      if(error)throw error;
     }
-
   }catch(error){
     console.error('Student Supabase sync failed:',error);
   }
 }
 
-
 async function loadStudentsFromSupabase(){
-  if(!currentUser) return;
-
+  if(!currentUser)return;
   try{
-    const {data,error}=await supabaseClient
-      .from('students')
-      .select('*')
-      .eq('user_id',currentUser.id)
-      .order('created_at',{ascending:true});
-
-    if(error) throw error;
-
-    if(!Array.isArray(data)) return;
+    const {data,error}=await supabaseClient.from('students').select('*').eq('user_id',currentUser.id).order('created_at',{ascending:true});
+    if(error)throw error;
+    if(!Array.isArray(data))return;
 
     const existingLocal=getStudents();
-
     if(!data.length){
-      for(const student of existingLocal){
-        await syncStudentToSupabase(student);
-      }
+      for(const student of existingLocal)await syncStudentToSupabase(student);
       return;
     }
 
     const students=data.map(row=>{
-      const old=existingLocal.find(
-        s=>String(s.id||'')===String(row.student_id||'')
-      ) || {};
-
+      const old=existingLocal.find(s=>String(s.id||'')===String(row.student_id||''))||{};
       return {
         ...old,
-        id:row.student_id || old.id,
-        name:row.full_name || old.name || '',
-        email:row.parent_email || old.email || '',
-        country:row.country || old.country || '',
-        age:row.age ?? old.age ?? '',
-        level:row.level || old.level || '',
-        startDate:row.enrolled_date || old.startDate || '',
-        createdAt:row.created_at || old.createdAt || new Date().toISOString()
+        id:row.student_id||old.id,
+        name:row.full_name||old.name||'',
+        nickname:row.nickname??old.nickname??'',
+        birthday:row.birthday||old.birthday||'',
+        parentName:row.parent_name??old.parentName??'',
+        email:row.parent_email||old.email||'',
+        parentFacebook:row.parent_facebook??old.parentFacebook??'',
+        parentWechat:row.parent_wechat??old.parentWechat??'',
+        country:row.country||old.country||'',
+        age:row.age??old.age??'',
+        level:row.level||old.level||'',
+        duration:row.duration||old.duration||'',
+        packageName:row.package_name||old.packageName||'',
+        status:row.status||old.status||'Active',
+        startDate:row.enrolled_date||old.startDate||'',
+        preferredSchedule:Array.isArray(row.preferred_schedule)&&row.preferred_schedule.length?row.preferred_schedule:(old.preferredSchedule||[]),
+        scheduleDetails:row.schedule_details&&typeof row.schedule_details==='object'?row.schedule_details:(old.scheduleDetails||{}),
+        classTime:row.class_time??old.classTime??'',
+        currentPackageId:row.current_package_id||old.currentPackageId||'',
+        packageHistory:Array.isArray(row.package_history)&&row.package_history.length?row.package_history:(old.packageHistory||[]),
+        customFields:row.custom_fields&&typeof row.custom_fields==='object'&&Object.keys(row.custom_fields).length?row.custom_fields:(old.customFields||{}),
+        createdAt:row.created_at||old.createdAt||new Date().toISOString()
       };
     });
 
     saveStudents(students);
-
   }catch(error){
     console.error('Loading students from Supabase failed:',error);
   }
 }
-
 
 async function deleteStudentFromSupabase(studentId){
   if(!currentUser || !studentId) return;
@@ -9175,10 +9174,7 @@ function setSchedulePicker(prefix,scheduleDetails,preferredSchedule){
       `;
       list.appendChild(item);
       const select=item.querySelector('select');
-      if(select && timeValue!==null){
-        const normalizedValue=String(Number(timeValue)).padStart(4,'0');
-        select.value=normalizedValue;
-      }
+      if(select && timeValue!==null)select.value=String(timeValue);
     });
 
     list.querySelectorAll('select').forEach(select=>select.disabled=!checkbox.checked);
@@ -9389,36 +9385,111 @@ function removeStudentEditPicture(){
  renderEditStudentPicture();
 }
 
-function openAddStudentField(studentId){
-  const students=getStudents();
-
-  const student=students.find(
-    s=>String(s.id)===String(studentId)
-  );
-
-  if(!student) return;
-
-  const fieldName=prompt('Enter field name:');
-
-  if(!fieldName || !fieldName.trim()) return;
-
-  const fieldValue=prompt(`Enter information for "${fieldName.trim()}":`);
-
-  if(fieldValue===null) return;
-
-  if(!student.customFields){
-    student.customFields={};
+function openCreateStudentField(){
+  const studentId=window.currentStudentProfileId||'';
+  if(!studentId){
+    alert('Please open a student profile first.');
+    return;
   }
 
-  student.customFields[fieldName.trim()]=fieldValue.trim();
+  document.getElementById('createStudentFieldModal')?.remove();
 
-  saveStudents(students);
+  const modal=document.createElement('div');
+  modal.id='createStudentFieldModal';
+  modal.className='student-field-modal-overlay';
+  modal.innerHTML=`
+    <div class="student-field-modal">
+      <div class="student-field-modal-title">Create Field</div>
+      <label>Field Name</label>
+      <input type="text" id="newStudentFieldName" class="student-field-modal-input" placeholder="e.g. School" autocomplete="off">
+      <div class="student-field-modal-actions">
+        <button type="button" class="student-field-cancel-btn" onclick="closeCreateStudentField()">Cancel</button>
+        <button type="button" class="student-field-confirm-btn" onclick="confirmCreateStudentField('${escapeAttr(studentId)}')">Confirm</button>
+      </div>
+    </div>`;
 
-  renderDashboard();
-
-  alert('Student information field added successfully.');
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('newStudentFieldName')?.focus(),50);
 }
-  
+
+function closeCreateStudentField(){
+  document.getElementById('createStudentFieldModal')?.remove();
+}
+
+async function confirmCreateStudentField(studentId){
+  const input=document.getElementById('newStudentFieldName');
+  const fieldName=String(input?.value||'').trim();
+  if(!fieldName){
+    alert('Please enter a field name.');
+    input?.focus();
+    return;
+  }
+
+  const students=getStudents();
+  const student=students.find(s=>String(s.id)===String(studentId));
+  if(!student)return;
+
+  if(!student.customFields)student.customFields={};
+  if(Object.prototype.hasOwnProperty.call(student.customFields,fieldName)){
+    alert('This field already exists.');
+    input?.focus();
+    return;
+  }
+
+  student.customFields[fieldName]='';
+  saveStudents(students);
+  await syncStudentToSupabase(student);
+  closeCreateStudentField();
+  openStudentProfile(studentId);
+}
+
+async function renameStudentCustomField(studentId,oldName){
+  const students=getStudents();
+  const student=students.find(s=>String(s.id)===String(studentId));
+  if(!student?.customFields)return;
+
+  const newName=prompt('Rename field:',oldName);
+  if(newName===null)return;
+  const cleanName=String(newName).trim();
+  if(!cleanName||cleanName===oldName)return;
+  if(Object.prototype.hasOwnProperty.call(student.customFields,cleanName)){
+    alert('This field name already exists.');
+    return;
+  }
+
+  student.customFields[cleanName]=student.customFields[oldName]??'';
+  delete student.customFields[oldName];
+  saveStudents(students);
+  await syncStudentToSupabase(student);
+  openStudentProfile(studentId);
+}
+
+async function editStudentCustomFieldValue(studentId,fieldName){
+  const students=getStudents();
+  const student=students.find(s=>String(s.id)===String(studentId));
+  if(!student?.customFields)return;
+
+  const value=prompt(`Enter information for "${fieldName}":`,student.customFields[fieldName]||'');
+  if(value===null)return;
+
+  student.customFields[fieldName]=String(value).trim();
+  saveStudents(students);
+  await syncStudentToSupabase(student);
+  openStudentProfile(studentId);
+}
+
+async function deleteStudentCustomField(studentId,fieldName){
+  const students=getStudents();
+  const student=students.find(s=>String(s.id)===String(studentId));
+  if(!student?.customFields)return;
+  if(!confirm(`Delete "${fieldName}"?`))return;
+
+  delete student.customFields[fieldName];
+  saveStudents(students);
+  await syncStudentToSupabase(student);
+  openStudentProfile(studentId);
+}
+
 function openEditStudent(id){
 
 closeStudentMenus();
@@ -9690,21 +9761,11 @@ startDate:editedStartDate,
 picture:editStudentPendingPicture
 };
 
-const editedClassCount=getPackageClassCount(editedStudent.packageName);
-if(!Number.isInteger(editedClassCount)||editedClassCount<1){
-  return fail('Please enter a valid whole number of classes (1 or more).');
-}
-
 const currentPackageForEdit=getCurrentStudentPackage(editedStudent);
 if(currentPackageForEdit){
   editedStudent.packageHistory=(editedStudent.packageHistory||[]).map(pkg=>
     pkg.id===currentPackageForEdit.id
-    ?{
-      ...pkg,
-      packageName:editedStudent.packageName||`${editedClassCount} Classes`,
-      classCount:editedClassCount,
-      startDate:editedStartDate
-    }
+    ?{...pkg,startDate:editedStartDate}
     :pkg
   );
 }
@@ -11214,13 +11275,8 @@ list.innerHTML=students.map(s=>`
 <span>ID: ${escapeHtml(s.id)} · ${escapeHtml(s.email)}</span>
 </div>
 <div class="student-actions">
-  <button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
-
-  <div id="studentMenu-${encodeURIComponent(s.id)}" class="student-menu">
-    <button type="button" onclick="openEditStudent('${escapeAttr(s.id)}')">Edit</button>
-    <button type="button" onclick="openAddStudentField('${escapeAttr(s.id)}')">＋ Add Field</button>
-    <button type="button" class="delete-option" onclick="openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
-  </div>
+  <button type="button" class="primary-action" onclick="event.stopPropagation();openEditStudent('${escapeAttr(s.id)}')">Edit</button>
+  <button type="button" class="danger-action" onclick="event.stopPropagation();openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
 </div>
 `).join('');
 }
@@ -11274,6 +11330,7 @@ return {purchased:packageCount,completed,remaining,percent,currentPackage:curren
 }
 
 function openStudentProfile(id){
+window.currentStudentProfileId=id;
 const student=getStudents().find(s=>s.id===id);
 if(!student)return;
 const p=getStudentProgress(student);
@@ -11313,7 +11370,7 @@ content.innerHTML=`
 
  <div class="student-profile-main">
   <div class="student-profile-section">
-   <h4>STUDENT INFORMATION</h4>
+   <div class="student-information-title"><h4>STUDENT INFORMATION</h4><button type="button" class="add-student-field-btn" onclick="openCreateStudentField()" title="Add Student Information Field">＋</button></div>
    <div class="student-profile-info-grid">
     <div class="student-profile-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div>
     <div class="student-profile-info-box"><label>Full Name</label><div>${escapeHtml(student.name||'Not set')}</div></div>
@@ -11329,6 +11386,7 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${escapeHtml(schedule)}</div></div>
+    ${student.customFields&&Object.keys(student.customFields).length?Object.entries(student.customFields).map(([key,value])=>`<div class="student-profile-info-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div><div class="student-custom-field-actions"><button type="button" class="student-custom-field-btn" onclick="editStudentCustomFieldValue('${escapeAttr(student.id)}','${escapeAttr(key)}')">Edit</button><button type="button" class="student-custom-field-btn" onclick="renameStudentCustomField('${escapeAttr(student.id)}','${escapeAttr(key)}')">Rename</button><button type="button" class="student-custom-field-btn" onclick="deleteStudentCustomField('${escapeAttr(student.id)}','${escapeAttr(key)}')">Delete</button></div></div>`).join(''):''}
    </div>
   </div>
 
@@ -16368,7 +16426,7 @@ body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 .lesson-delete-confirm-actions{display:flex;gap:10px;justify-content:center;}
 .lesson-delete-confirm-actions button{border:1px solid #aaa;border-radius:9px;padding:10px 18px;font-weight:800;cursor:pointer;background:#f5f5f5;}
 .lesson-delete-confirm-actions .danger{background:#ffe1e1;border-color:#d55;color:#a00;}
-</style>
+.student-field-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px}.student-field-modal{width:100%;max-width:360px;background:#fff;border-radius:12px;padding:20px;box-shadow:0 15px 45px rgba(0,0,0,.2)}.student-field-modal-title{font-size:18px;font-weight:700;margin-bottom:16px}.student-field-modal label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}.student-field-modal-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #d8dce3;border-radius:7px;outline:none;font-size:14px}.student-field-modal-input:focus{border-color:#888}.student-field-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.student-field-cancel-btn,.student-field-confirm-btn{border:0;border-radius:7px;padding:9px 15px;cursor:pointer;font-size:13px}.student-field-cancel-btn{background:#eee;color:#333}.student-field-confirm-btn{background:#222;color:#fff}</style>
 
 
 <script id="student-record-image-view-functions">
