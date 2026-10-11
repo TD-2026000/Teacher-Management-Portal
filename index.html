@@ -7746,10 +7746,12 @@ currentUser=user;
 
 await loadStudentsFromSupabase();
 
+startStudentAutoSync();
+
 /* One-time appointment reset requested for the current portal version.
    This clears the old appointment/test data so the dashboard starts at 0.
    Student records and evaluations are not affected. */
-const appointmentResetKey=`teacherDanyealAppointmentsReset_20261001_${currentUser.id}`;
+const appointmentResetKey=`teacherManagementAppointmentsReset_20261001_${currentUser.id}`;
 if(localStorage.getItem(appointmentResetKey)!=='done'){
 localStorage.removeItem(appointmentStorageKey());
 localStorage.setItem(appointmentResetKey,'done');
