@@ -11201,13 +11201,15 @@ list.innerHTML=students.map(s=>`
 <span>ID: ${escapeHtml(s.id)} · ${escapeHtml(s.email)}</span>
 </div>
 <div class="student-actions">
-<button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
-<div id="studentMenu-${encodeURIComponent(s.id)}" class="student-menu">
-<button type="button" onclick="openEditStudent('${escapeAttr(s.id)}')">Edit</button>
-<button type="button" onclick="openAddStudentField('${escapeAttr(s.id)}')">＋ Add Field</button>
-<button type="button" class="delete-option" onclick="openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
-</div>
-</div>
+  <button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
+
+  <div id="studentMenu-${encodeURIComponent(s.id)}" class="student-menu">
+    <button type="button" onclick="openEditStudent('${escapeAttr(s.id)}')">Edit</button>
+
+    <button type="button" onclick="openAddStudentField('${escapeAttr(s.id)}')">＋ Add Field</button>
+
+    <button type="button" class="delete-option" onclick="openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
+  </div>
 </div>
 `).join('');
 }
