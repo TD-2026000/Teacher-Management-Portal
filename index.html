@@ -11174,10 +11174,8 @@ list.innerHTML=students.map(s=>`
 <button type="button" class="dots-btn" aria-label="Student options" onclick="event.stopPropagation();toggleStudentMenu('${escapeAttr(s.id)}')">⋮</button>
 <div id="studentMenu-${encodeURIComponent(s.id)}" class="student-menu">
 <button type="button" onclick="openEditStudent('${escapeAttr(s.id)}')">Edit</button>
-
 <button type="button" onclick="openParentFacebook('${escapeAttr(s.id)}')">Parent Facebook</button>
 <button type="button" onclick="openParentWechat('${escapeAttr(s.id)}')">Parent WeChat</button>
-  
 <button type="button" class="delete-option" onclick="openDeleteStudent('${escapeAttr(s.id)}')">Delete</button>
 </div>
 </div>
