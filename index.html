@@ -6503,19 +6503,36 @@ async function loadStudentsFromSupabase(){
 
 
 async function deleteStudentFromSupabase(studentId){
-  if(!currentUser || !studentId) return;
+  if(!currentUser || !studentId || !supabaseClient) return;
+
+  const sid=String(studentId);
 
   try{
-    const {error}=await supabaseClient
+    /* Remove every Supabase record that belongs to this student.
+       Do not affect any other student's records. */
+    const {error:appointmentError}=await supabaseClient
+      .from('appointments')
+      .delete()
+      .eq('user_id',currentUser.id)
+      .eq('student_id',sid);
+    if(appointmentError) throw appointmentError;
+
+    const {error:classRecordError}=await supabaseClient
+      .from('class_records')
+      .delete()
+      .eq('user_id',currentUser.id)
+      .eq('student_id',sid);
+    if(classRecordError) throw classRecordError;
+
+    const {error:studentError}=await supabaseClient
       .from('students')
       .delete()
       .eq('user_id',currentUser.id)
-      .eq('student_id',String(studentId));
-
-    if(error) throw error;
+      .eq('student_id',sid);
+    if(studentError) throw studentError;
 
   }catch(error){
-    console.error('Student Supabase delete failed:',error);
+    console.error('Student Supabase full delete failed:',error);
   }
 }
   
@@ -10186,8 +10203,35 @@ const appointments=getAppointments();
 const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(target));
 
 saveStudents(remainingStudents);
-deleteStudentFromSupabase(deletedStudent?.id);
 saveAppointments(remainingAppointments);
+
+/* Remove this student's local evaluation, contract, payment-receipt,
+   and package-based class-record data as well. */
+try{
+  const evaluations=getEvaluations();
+  saveEvaluations(evaluations.filter(ev=>String(ev.student_id||ev.studentId||'')!==String(target)));
+}catch(e){}
+
+try{
+  const contracts=getStudentContracts();
+  if(contracts && typeof contracts==='object') delete contracts[target];
+  saveStudentContracts(contracts||{});
+}catch(e){}
+
+try{
+  const receipts=getPaymentReceipts();
+  savePaymentReceipts(receipts.filter(r=>String(r.studentId||'')!==String(target)));
+}catch(e){}
+
+try{
+  const prefix=`teacherDanyealPackageClassRecord_${currentUser?.id||'local'}_${target}_`;
+  for(let i=localStorage.length-1;i>=0;i--){
+    const key=localStorage.key(i);
+    if(key && key.startsWith(prefix)) localStorage.removeItem(key);
+  }
+}catch(e){}
+
+deleteStudentFromSupabase(deletedStudent?.id);
 
 closeDeleteStudent();
 
@@ -10201,7 +10245,7 @@ try{renderContractStudentLists();}catch(e){}
 showStudentStatus(`${deletedStudent?.nickname||deletedStudent?.name||'Student'} and all of the student's appointments were deleted successfully.`,true);
 
 showStudentStatus(
-'Student deleted successfully. Existing evaluation history was kept.',
+'Student deleted successfully. All records belonging to this student were removed.',
 true
 );
 
