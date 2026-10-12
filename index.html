@@ -11773,10 +11773,11 @@ async function refreshDashboardSummaryCounts(){
     if(studentError) throw studentError;
 
     const {count:appointmentCount,error:appointmentError} =
-      await supabaseClient
-        .from('appointments')
-        .select('id',{count:'exact',head:true})
-        .eq('user_id',currentUser.id);
+          await supabaseClient
+            .from('appointments')
+            .select('id',{count:'exact',head:true})
+            .eq('user_id',currentUser.id)
+            .neq('status','COMPLETED');
 
     if(appointmentError) throw appointmentError;
 
