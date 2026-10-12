@@ -6503,37 +6503,50 @@ async function loadStudentsFromSupabase(){
 
 
 async function deleteStudentFromSupabase(studentId){
-  if(!currentUser || !studentId || !supabaseClient) return;
+  if(!currentUser || !studentId || !supabaseClient) return {ok:true};
 
   const sid=String(studentId);
 
-  try{
-    /* Remove every Supabase record that belongs to this student.
-       Do not affect any other student's records. */
-    const {error:appointmentError}=await supabaseClient
-      .from('appointments')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(appointmentError) throw appointmentError;
+  // Delete the student's remote records FIRST and report errors to the caller.
+  // This prevents the UI from saying "deleted" while Supabase still contains data.
+  const {error:appointmentError}=await supabaseClient
+    .from('appointments')
+    .delete()
+    .eq('user_id',currentUser.id)
+    .eq('student_id',sid);
+  if(appointmentError) throw appointmentError;
 
-    const {error:classRecordError}=await supabaseClient
-      .from('class_records')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(classRecordError) throw classRecordError;
+  const {error:classRecordError}=await supabaseClient
+    .from('class_records')
+    .delete()
+    .eq('user_id',currentUser.id)
+    .eq('student_id',sid);
+  if(classRecordError) throw classRecordError;
 
-    const {error:studentError}=await supabaseClient
-      .from('students')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(studentError) throw studentError;
+  const {error:studentError}=await supabaseClient
+    .from('students')
+    .delete()
+    .eq('user_id',currentUser.id)
+    .eq('student_id',sid);
+  if(studentError) throw studentError;
 
-  }catch(error){
-    console.error('Student Supabase full delete failed:',error);
-  }
+  // Verify that the student and linked records are really gone.
+  const {data:studentLeft,error:studentCheckError}=await supabaseClient
+    .from('students').select('id').eq('user_id',currentUser.id).eq('student_id',sid);
+  if(studentCheckError) throw studentCheckError;
+  if(Array.isArray(studentLeft) && studentLeft.length) throw new Error('Student record still exists in Supabase.');
+
+  const {data:appointmentLeft,error:appointmentCheckError}=await supabaseClient
+    .from('appointments').select('id').eq('user_id',currentUser.id).eq('student_id',sid);
+  if(appointmentCheckError) throw appointmentCheckError;
+  if(Array.isArray(appointmentLeft) && appointmentLeft.length) throw new Error('Appointment records still exist in Supabase.');
+
+  const {data:classRecordLeft,error:classRecordCheckError}=await supabaseClient
+    .from('class_records').select('id').eq('user_id',currentUser.id).eq('student_id',sid);
+  if(classRecordCheckError) throw classRecordCheckError;
+  if(Array.isArray(classRecordLeft) && classRecordLeft.length) throw new Error('Class Record records still exist in Supabase.');
+
+  return {ok:true};
 }
   
 function getEvaluations(){
@@ -8405,51 +8418,77 @@ async function clearAllRecordsFromSupabase(){
 
   const uid=String(currentUser.id||'');
 
-  /*
-    IMPORTANT:
-    Only delete records that are actually teacher-owned/student-related.
-    Do NOT touch teacher profile, login, subscription, payments, or lesson materials.
-  */
-  const results=[];
-
-  // 1. Get all student IDs first so linked records can be removed reliably.
+  // Get every student id first. Some older records may not have a matching
+  // user_id, so we also remove linked rows by student_id below.
   const {data:studentRows,error:studentReadError}=await supabaseClient
     .from('students')
     .select('student_id')
     .eq('user_id',uid);
-
   if(studentReadError) throw studentReadError;
 
   const studentIds=(Array.isArray(studentRows)?studentRows:[])
     .map(row=>String(row.student_id||''))
     .filter(Boolean);
 
-  // 2. Delete all appointments belonging to this teacher.
+  // Delete all appointments belonging to this teacher.
   const {error:appointmentsError}=await supabaseClient
     .from('appointments')
     .delete()
     .eq('user_id',uid);
   if(appointmentsError) throw appointmentsError;
-  results.push('appointments');
 
-  // 3. Delete all package/class records belonging to this teacher.
+  // Also remove appointment rows linked to the students in case they were
+  // created by an older version without the correct user_id.
+  if(studentIds.length){
+    const {error:appointmentsByStudentError}=await supabaseClient
+      .from('appointments')
+      .delete()
+      .in('student_id',studentIds);
+    if(appointmentsByStudentError) throw appointmentsByStudentError;
+  }
+
+  // Delete all package/class records for this teacher.
   const {error:classRecordsError}=await supabaseClient
     .from('class_records')
     .delete()
     .eq('user_id',uid);
   if(classRecordsError) throw classRecordsError;
-  results.push('class_records');
 
-  // 4. Delete all students belonging to this teacher.
+  // Also remove class records linked to the students in case of older rows.
+  if(studentIds.length){
+    const {error:classRecordsByStudentError}=await supabaseClient
+      .from('class_records')
+      .delete()
+      .in('student_id',studentIds);
+    if(classRecordsByStudentError) throw classRecordsByStudentError;
+  }
+
+  // Finally delete all students belonging to this teacher.
   const {error:studentsError}=await supabaseClient
     .from('students')
     .delete()
     .eq('user_id',uid);
   if(studentsError) throw studentsError;
-  results.push('students');
 
-  return {ok:true,studentIds,results};
+  // Verify that nothing student-related remains remotely.
+  const {data:studentsLeft,error:studentsCheckError}=await supabaseClient
+    .from('students').select('id').eq('user_id',uid);
+  if(studentsCheckError) throw studentsCheckError;
+  if(Array.isArray(studentsLeft) && studentsLeft.length) throw new Error('Student records still exist in Supabase.');
+
+  const {data:appointmentsLeft,error:appointmentsCheckError}=await supabaseClient
+    .from('appointments').select('id').eq('user_id',uid);
+  if(appointmentsCheckError) throw appointmentsCheckError;
+  if(Array.isArray(appointmentsLeft) && appointmentsLeft.length) throw new Error('Appointment records still exist in Supabase.');
+
+  const {data:classRecordsLeft,error:classRecordsCheckError}=await supabaseClient
+    .from('class_records').select('id').eq('user_id',uid);
+  if(classRecordsCheckError) throw classRecordsCheckError;
+  if(Array.isArray(classRecordsLeft) && classRecordsLeft.length) throw new Error('Class Record records still exist in Supabase.');
+
+  return {ok:true};
 }
+
 
 async function confirmClearAllRecords(){
 
@@ -8531,6 +8570,13 @@ try{
   keysToRemove.forEach(key=>{
     if(key) localStorage.removeItem(key);
   });
+
+  // Remove every local package-based Class Record for this teacher.
+  const packageRecordPrefix=`teacherDanyealPackageClassRecord_${uid}_`;
+  for(let i=localStorage.length-1;i>=0;i--){
+    const key=localStorage.key(i);
+    if(key && key.startsWith(packageRecordPrefix)) localStorage.removeItem(key);
+  }
 
   // Also clear the current in-memory appointment/student state immediately.
   try{
@@ -10244,7 +10290,7 @@ document.getElementById(
 
 }
 
-function confirmDeleteStudent(){
+async function confirmDeleteStudent(){
 
 const target=
 document.getElementById(
@@ -10282,6 +10328,15 @@ const remainingStudents=students.filter(s=>String(s.id)!==String(target));
 const appointments=getAppointments();
 const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(target));
 
+try{
+  await deleteStudentFromSupabase(deletedStudent?.id);
+}catch(error){
+  err.textContent='Student deletion failed: ' + (error?.message || 'Unable to remove the student from Supabase.');
+  err.classList.add('show');
+  console.error('Student deletion failed:',error);
+  return;
+}
+
 saveStudents(remainingStudents);
 saveAppointments(remainingAppointments);
 
@@ -10311,14 +10366,13 @@ try{
   }
 }catch(e){}
 
-deleteStudentFromSupabase(deletedStudent?.id);
-
 closeDeleteStudent();
 
 renderDashboard();
 renderAppointments();
 populateStudentSelect();
 renderRecords();
+try{ refreshDashboardSummaryCounts(); }catch(e){}
 renderStudents();
 try{renderContractStudentLists();}catch(e){}
 
