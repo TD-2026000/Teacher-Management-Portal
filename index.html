@@ -6459,9 +6459,10 @@ async function loadStudentsFromSupabase(){
     const existingLocal=getStudents();
 
     if(!data.length){
-      for(const student of existingLocal){
-        await syncStudentToSupabase(student);
-      }
+      // Supabase is the source of truth. If there are no remote students,
+      // do NOT push stale local records back to Supabase. This is especially
+      // important after Clear All Records or when another browser deleted data.
+      saveStudents([]);
       return;
     }
 
