@@ -8400,6 +8400,40 @@ document.getElementById(
 
 }
 
+async function clearAllRecordsFromSupabase(){
+  if(!currentUser || !supabaseClient) return;
+
+  const uid=currentUser.id;
+
+  /*
+    Delete student-linked teaching records first, then students.
+    Teacher account, profile, subscription, and lesson materials
+    are intentionally preserved.
+  */
+  const tables=[
+    'class_records',
+    'evaluations',
+    'student_contracts',
+    'appointments',
+    'students'
+  ];
+
+  for(const table of tables){
+    try{
+      const {error}=await supabaseClient
+        .from(table)
+        .delete()
+        .eq('user_id',uid);
+
+      if(error){
+        console.warn(`Clear All Records: ${table} delete failed:`,error);
+      }
+    }catch(error){
+      console.warn(`Clear All Records: ${table} delete failed:`,error);
+    }
+  }
+}
+
 async function confirmClearAllRecords(){
 
 const input=
@@ -8412,7 +8446,7 @@ document.getElementById(
 'clearAllRecordsError'
 );
 
-if(!/^\\d{6}$/.test(input)){
+if(!/^\d{6}$/.test(input)){
 
 error.textContent=
 'Please enter the complete 6-digit CAPTCHA.';
@@ -8447,36 +8481,28 @@ return;
 
 }
 
-try{
+/*
+   CLEAR ALL RECORDS = delete every student-related teaching record
+   for the currently signed-in teacher.
+
+   Deletes:
+   - Students
+   - Evaluations
+   - Student contracts
+   - Appointments / calendar bookings
+   - Package/Class Records
+   - Local payment receipts
+   - Local student/evaluation/appointment/contract data
+
+   Preserves:
+   - Teacher profile
+   - Login account
+   - Subscription/payment account
+   - Lesson Materials
+*/
 
 const uid=String(currentUser.id||'');
 
-/* Delete all remote student-related records first. */
-if(supabaseClient){
-
-  const {error:appointmentsError}=await supabaseClient
-    .from('appointments')
-    .delete()
-    .eq('user_id',currentUser.id);
-
-  if(appointmentsError) throw appointmentsError;
-
-  const {error:classRecordsError}=await supabaseClient
-    .from('class_records')
-    .delete()
-    .eq('user_id',currentUser.id);
-
-  if(classRecordsError) throw classRecordsError;
-
-  const {error:studentsError}=await supabaseClient
-    .from('students')
-    .delete()
-    .eq('user_id',currentUser.id);
-
-  if(studentsError) throw studentsError;
-}
-
-/* Delete all local student-related records. */
 const keysToRemove=[
   userStorageKey(STUDENTS_BASE_KEY),
   userStorageKey(EVALUATIONS_BASE_KEY),
@@ -8490,64 +8516,61 @@ keysToRemove.forEach(key=>{
   if(key)localStorage.removeItem(key);
 });
 
-/* Delete all local package class records for this teacher. */
-const packagePrefix=
-  `teacherDanyealPackageClassRecord_${uid}_`;
+/* Remove remote records too, so another browser cannot restore them. */
+error.textContent='Deleting all records...';
+error.classList.add('show');
 
-Object.keys(localStorage).forEach(key=>{
-  if(key.startsWith(packagePrefix)){
-    localStorage.removeItem(key);
-  }
-});
-
-try{
-  currentPackageClassRecordContext=null;
-}catch(e){}
+await clearAllRecordsFromSupabase();
 
 closeClearAllRecords();
 
-try{ renderDashboard(); }catch(e){}
-try{ populateStudentSelect(); }catch(e){}
-try{ renderRecords(); }catch(e){}
-try{ renderStudents(); }catch(e){}
+/* Make sure the in-memory UI is empty immediately. */
+try{
+  if(typeof loadStudentsFromSupabase==='function'){
+    await loadStudentsFromSupabase();
+  }
+}catch(e){}
+
+try{
+  if(typeof loadAppointmentsFromSupabase==='function'){
+    await loadAppointmentsFromSupabase();
+  }
+}catch(e){}
+
+/* Re-render every affected part immediately. */
+renderDashboard();
+populateStudentSelect();
+renderRecords();
+
 try{
   if(typeof renderAppointments==='function') renderAppointments();
-}catch(e){}
-try{
-  if(typeof renderCalendar==='function') renderCalendar();
-}catch(e){}
-
-try{
-  if(typeof refreshDashboardSummaryCounts==='function'){
-    await refreshDashboardSummaryCounts();
-  }
 }catch(e){
-  console.warn('Dashboard count refresh skipped:',e);
+  console.warn('Appointment refresh skipped:',e);
 }
 
+try{
+  if(typeof renderCalendar==='function') renderCalendar();
+}catch(e){
+  console.warn('Calendar refresh skipped:',e);
+}
+
+try{
+  if(typeof renderStudents==='function') renderStudents();
+}catch(e){}
+
+try{
+  if(typeof renderContractStudentLists==='function') renderContractStudentLists();
+}catch(e){}
+
 showStudentStatus(
-  'All student records, evaluations, contracts, payments, appointments, class records, and calendar bookings have been cleared successfully.',
-  true
+'All student records, evaluations, contracts, appointments, calendar bookings, and package/class records have been cleared successfully.',
+true
 );
 
 showPage('dashboard');
 
-}catch(deleteError){
-
-console.error(
-  'Clear All Records failed:',
-  deleteError
-);
-
-error.textContent=
-'Clear All Records failed: '+
-(deleteError?.message||'Unable to delete the records.');
-
-error.classList.add('show');
-
 }
 
-}
 
 
 /* =========================================================
