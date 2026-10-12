@@ -11777,7 +11777,7 @@ async function refreshDashboardSummaryCounts(){
             .from('appointments')
             .select('id',{count:'exact',head:true})
             .eq('user_id',currentUser.id)
-            .neq('status','COMPLETED');
+            .neq('status','Completed');
 
     if(appointmentError) throw appointmentError;
 
