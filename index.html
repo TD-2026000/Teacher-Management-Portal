@@ -2262,25 +2262,6 @@ button.secondary,
 .package-history-meta{font-size:12px;color:#666;margin-top:3px;line-height:1.45}
 .package-history-badge{align-self:start;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900;background:#e7f7e7;color:#187a18}
 .package-history-badge.old{background:#eee;color:#666}
-.package-class-record-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.package-class-record-actions button{border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;background:#fff;color:#111827;font-weight:800;font-size:11px;cursor:pointer}
-.package-class-record-actions button.primary{background:#87CEEB;border-color:#87CEEB;color:#111}
-.package-class-record-actions button.locked{opacity:.45;cursor:not-allowed}
-.package-record-editor{margin-top:14px;overflow:auto;border:1px solid #d9dee3;border-radius:10px}
-.package-record-editor table{width:100%;border-collapse:collapse;min-width:900px;background:#fff}
-.package-record-editor th,.package-record-editor td{border:1px solid #d9dee3;padding:7px 8px;font-size:12px;vertical-align:top}
-.package-record-editor th{background:#f5f7f9;font-weight:900;white-space:nowrap}
-.package-record-editor input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:5px;padding:6px 7px;font:inherit;background:#fff}
-.package-record-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
-.package-record-toolbar button{border:1px solid #d1d5db;border-radius:7px;padding:8px 11px;background:#fff;font-weight:800;cursor:pointer}
-.package-record-toolbar button.primary{background:#87CEEB;border-color:#87CEEB;color:#111}
-.package-record-lock{padding:10px 12px;border:1px solid #f1d48a;background:#fff8df;border-radius:8px;color:#775b00;font-size:12px;margin-top:10px}
-.package-record-preview-page{background:#fff;color:#111;padding:28px;max-width:980px;margin:0 auto;box-sizing:border-box}
-.package-record-preview-page h1{text-align:center;margin:0 0 4px;font-size:22px}.package-record-preview-page h2{text-align:center;margin:0 0 18px;font-size:14px;color:#555}
-.package-record-preview-page .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.package-record-preview-page .info-box{border:1px solid #ddd;border-radius:7px;padding:8px}.package-record-preview-page .info-box small{display:block;color:#666;font-size:10px;margin-bottom:3px}
-.package-record-preview-page table{width:100%;border-collapse:collapse;margin-top:10px}.package-record-preview-page th,.package-record-preview-page td{border:1px solid #bbb;padding:6px;font-size:10px}.package-record-preview-page th{background:#f3f4f6;font-weight:900}
-@media(max-width:700px){.package-record-preview-page .info-grid{grid-template-columns:1fr}.package-record-preview-page{padding:16px}}
-
 .renew-modal{max-width:620px}
 .renew-summary{border:1px solid #ddd;border-radius:9px;background:#fafafa;padding:10px;margin:10px 0 14px;line-height:1.5}
 .renew-preview{border:1px solid #d8eeee;border-radius:9px;background:#f4ffff;padding:10px;margin-top:10px;font-size:13px}
@@ -6503,36 +6484,19 @@ async function loadStudentsFromSupabase(){
 
 
 async function deleteStudentFromSupabase(studentId){
-  if(!currentUser || !studentId || !supabaseClient) return;
-
-  const sid=String(studentId);
+  if(!currentUser || !studentId) return;
 
   try{
-    /* Remove every Supabase record that belongs to this student.
-       Do not affect any other student's records. */
-    const {error:appointmentError}=await supabaseClient
-      .from('appointments')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(appointmentError) throw appointmentError;
-
-    const {error:classRecordError}=await supabaseClient
-      .from('class_records')
-      .delete()
-      .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(classRecordError) throw classRecordError;
-
-    const {error:studentError}=await supabaseClient
+    const {error}=await supabaseClient
       .from('students')
       .delete()
       .eq('user_id',currentUser.id)
-      .eq('student_id',sid);
-    if(studentError) throw studentError;
+      .eq('student_id',String(studentId));
+
+    if(error) throw error;
 
   }catch(error){
-    console.error('Student Supabase full delete failed:',error);
+    console.error('Student Supabase delete failed:',error);
   }
 }
   
@@ -8400,41 +8364,7 @@ document.getElementById(
 
 }
 
-async function clearAllRecordsFromSupabase(){
-  if(!currentUser || !supabaseClient) return;
-
-  const uid=currentUser.id;
-
-  /*
-    Delete student-linked teaching records first, then students.
-    Teacher account, profile, subscription, and lesson materials
-    are intentionally preserved.
-  */
-  const tables=[
-    'class_records',
-    'evaluations',
-    'student_contracts',
-    'appointments',
-    'students'
-  ];
-
-  for(const table of tables){
-    try{
-      const {error}=await supabaseClient
-        .from(table)
-        .delete()
-        .eq('user_id',uid);
-
-      if(error){
-        console.warn(`Clear All Records: ${table} delete failed:`,error);
-      }
-    }catch(error){
-      console.warn(`Clear All Records: ${table} delete failed:`,error);
-    }
-  }
-}
-
-async function confirmClearAllRecords(){
+function confirmClearAllRecords(){
 
 const input=
 document.getElementById(
@@ -8482,25 +8412,18 @@ return;
 }
 
 /*
-   CLEAR ALL RECORDS = delete every student-related teaching record
-   for the currently signed-in teacher.
-
-   Deletes:
+   CLEAR ALL RECORDS = clear every student-related teaching record
+   for the currently signed-in teacher. This includes:
    - Students
-   - Evaluations
+   - Evaluations / records
+   - Student payments / receipts
    - Student contracts
    - Appointments / calendar bookings
-   - Package/Class Records
-   - Local payment receipts
-   - Local student/evaluation/appointment/contract data
+   - Appointment reset marker so the calendar is completely empty
 
-   Preserves:
-   - Teacher profile
-   - Login account
-   - Subscription/payment account
-   - Lesson Materials
+   Teacher profile, login account, subscription, and Lesson Materials
+   are intentionally NOT deleted.
 */
-
 const uid=String(currentUser.id||'');
 
 const keysToRemove=[
@@ -8516,61 +8439,30 @@ keysToRemove.forEach(key=>{
   if(key)localStorage.removeItem(key);
 });
 
-/* Remove remote records too, so another browser cannot restore them. */
-error.textContent='Deleting all records...';
-error.classList.add('show');
-
-await clearAllRecordsFromSupabase();
-
 closeClearAllRecords();
-
-/* Make sure the in-memory UI is empty immediately. */
-try{
-  if(typeof loadStudentsFromSupabase==='function'){
-    await loadStudentsFromSupabase();
-  }
-}catch(e){}
-
-try{
-  if(typeof loadAppointmentsFromSupabase==='function'){
-    await loadAppointmentsFromSupabase();
-  }
-}catch(e){}
 
 /* Re-render every affected part immediately. */
 renderDashboard();
 populateStudentSelect();
 renderRecords();
 
+/* Refresh appointment/calendar views if their containers are present. */
 try{
   if(typeof renderAppointments==='function') renderAppointments();
-}catch(e){
-  console.warn('Appointment refresh skipped:',e);
-}
+}catch(e){ console.warn('Appointment refresh skipped:',e); }
 
 try{
   if(typeof renderCalendar==='function') renderCalendar();
-}catch(e){
-  console.warn('Calendar refresh skipped:',e);
-}
-
-try{
-  if(typeof renderStudents==='function') renderStudents();
-}catch(e){}
-
-try{
-  if(typeof renderContractStudentLists==='function') renderContractStudentLists();
-}catch(e){}
+}catch(e){ console.warn('Calendar refresh skipped:',e); }
 
 showStudentStatus(
-'All student records, evaluations, contracts, appointments, calendar bookings, and package/class records have been cleared successfully.',
+'All student records, evaluations, contracts, payments, appointments, and calendar bookings have been cleared successfully.',
 true
 );
 
 showPage('dashboard');
 
 }
-
 
 
 /* =========================================================
@@ -10275,35 +10167,8 @@ const appointments=getAppointments();
 const remainingAppointments=appointments.filter(a=>String(a.studentId)!==String(target));
 
 saveStudents(remainingStudents);
-saveAppointments(remainingAppointments);
-
-/* Remove this student's local evaluation, contract, payment-receipt,
-   and package-based class-record data as well. */
-try{
-  const evaluations=getEvaluations();
-  saveEvaluations(evaluations.filter(ev=>String(ev.student_id||ev.studentId||'')!==String(target)));
-}catch(e){}
-
-try{
-  const contracts=getStudentContracts();
-  if(contracts && typeof contracts==='object') delete contracts[target];
-  saveStudentContracts(contracts||{});
-}catch(e){}
-
-try{
-  const receipts=getPaymentReceipts();
-  savePaymentReceipts(receipts.filter(r=>String(r.studentId||'')!==String(target)));
-}catch(e){}
-
-try{
-  const prefix=`teacherDanyealPackageClassRecord_${currentUser?.id||'local'}_${target}_`;
-  for(let i=localStorage.length-1;i>=0;i--){
-    const key=localStorage.key(i);
-    if(key && key.startsWith(prefix)) localStorage.removeItem(key);
-  }
-}catch(e){}
-
 deleteStudentFromSupabase(deletedStudent?.id);
+saveAppointments(remainingAppointments);
 
 closeDeleteStudent();
 
@@ -10317,7 +10182,7 @@ try{renderContractStudentLists();}catch(e){}
 showStudentStatus(`${deletedStudent?.nickname||deletedStudent?.name||'Student'} and all of the student's appointments were deleted successfully.`,true);
 
 showStudentStatus(
-'Student deleted successfully. All records belonging to this student were removed.',
+'Student deleted successfully. Existing evaluation history was kept.',
 true
 );
 
@@ -12013,10 +11878,7 @@ content.innerHTML=`
     const pkgCount=Math.max(0,parseInt(pkg.classCount,10)||getPackageClassCount(pkg.packageName));
     const pkgCompleted=getAppointments().filter(a=>a.studentId===student.id&&a.packageId===pkg.id&&a.type==='Regular Class'&&a.status==='Completed').length;
     const pkgStatus=pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed');
-    const packageDone=pkgCount>0 && pkgCompleted>=pkgCount;
-     const packageStatus=packageDone?'Completed':(pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed'));
-     const locked=!packageDone;
-     return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div><div class="package-class-record-actions"><button type="button" class="primary" onclick="openPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')">VIEW CLASS RECORD</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`previewPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">PREVIEW</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`downloadPackageClassRecordPDF('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">DOWNLOAD PDF</button></div></div><span class="package-history-badge ${packageDone?'':'old'}">${escapeHtml(packageStatus)}</span></div>`;
+    return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div></div><span class="package-history-badge ${pkg.id===student.currentPackageId?'':'old'}">${escapeHtml(pkgStatus)}</span></div>`;
    }).join('')||'<div class="small">No classes history yet.</div>'}
   </div>
 
@@ -13980,30 +13842,6 @@ Class Record
 /* =========================================================
    OPEN STUDENT CLASS RECORD
 ========================================================= */
-
-/* =========================================================
-   PACKAGE-BASED CLASS RECORDS
-========================================================= */
-const PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT=['Class Number','Date','Day','Time','Attendance','Late','Homework Score'];
-let currentPackageClassRecordContext=null;
-function packageClassRecordStorageKey(studentId,packageId){return `teacherDanyealPackageClassRecord_${currentUser?.id||'local'}_${studentId}_${packageId}`;}
-function getLocalPackageClassRecord(studentId,packageId){try{return JSON.parse(localStorage.getItem(packageClassRecordStorageKey(studentId,packageId))||'null')}catch(e){return null}}
-function saveLocalPackageClassRecord(record){localStorage.setItem(packageClassRecordStorageKey(record.studentId,record.packageId),JSON.stringify(record));}
-function packageRecordEntriesFromAppointments(studentId,packageId){return getAppointments().filter(a=>String(a.studentId)===String(studentId)&&String(a.packageId||'')===String(packageId)&&String(a.type||'Regular Class')==='Regular Class').sort((a,b)=>(getAppointmentDateTime(a)?.getTime()||0)-(getAppointmentDateTime(b)?.getTime()||0)).map((a,i)=>{const dt=getAppointmentDateTime(a);return {'Class Number':i+1,'Date':a.date|| (dt?getLocalDateString(dt):''),'Day':a.day|| (dt?dt.toLocaleDateString([], {weekday:'long'}):''),'Time':a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''),'Attendance':a.attendance|| (a.status==='Completed'?'Present':''),'Late':a.late||'','Homework Score':a.homeworkScore||''};});}
-function getPackageRecordCompleted(studentId,packageId){return getAppointments().filter(a=>String(a.studentId)===String(studentId)&&String(a.packageId||'')===String(packageId)&&String(a.type||'Regular Class')==='Regular Class'&&a.status==='Completed').length;}
-function buildPackageClassRecord(studentId,packageId,existing){const student=getStudents().find(s=>String(s.id)===String(studentId));const pkg=student?ensureStudentPackageState(student).find(p=>String(p.id)===String(packageId)):null;const rows=Array.isArray(existing?.classEntries)?existing.classEntries:packageRecordEntriesFromAppointments(studentId,packageId);return {id:existing?.id||'',studentId,packageId,packageNumber:existing?.packageNumber||((student?ensureStudentPackageState(student):[]).findIndex(p=>String(p.id)===String(packageId))+1||1),packageName:pkg?.packageName||existing?.packageName||'',totalClasses:Number(pkg?.classCount||existing?.totalClasses||0),status:getPackageRecordCompleted(studentId,packageId)>=Number(pkg?.classCount||existing?.totalClasses||0)&&Number(pkg?.classCount||existing?.totalClasses||0)>0?'COMPLETED':'ACTIVE',studentInfo:existing?.studentInfo||{name:student?.name||'',nickname:student?.nickname||'',studentId:student?.id||'',country:student?.country||'',level:student?.level||'',birthday:student?.birthday||'',duration:student?.duration||''},preferredSchedule:existing?.preferredSchedule||student?.preferredSchedule||[],columns:Array.isArray(existing?.columns)&&existing.columns.length?existing.columns:PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT.slice(),classEntries:rows};}
-async function loadPackageClassRecord(studentId,packageId){let local=getLocalPackageClassRecord(studentId,packageId);if(local)return buildPackageClassRecord(studentId,packageId,local);if(currentUser&&supabaseClient){try{const {data,error}=await supabaseClient.from('class_records').select('*').eq('user_id',currentUser.id).eq('student_id',String(studentId)).eq('package_id',String(packageId)).maybeSingle();if(error)throw error;if(data){const ce=data.class_entries;const parsed=Array.isArray(ce)?{rows:ce}:{columns:ce?.columns,rows:ce?.rows};return buildPackageClassRecord(studentId,packageId,{...data,columns:parsed.columns,classEntries:parsed.rows});}}catch(e){console.warn('Package class record load failed:',e)}}return buildPackageClassRecord(studentId,packageId,null);}
-async function savePackageClassRecord(record){saveLocalPackageClassRecord(record);if(currentUser&&supabaseClient){try{const payload={user_id:currentUser.id,student_id:String(record.studentId),package_id:String(record.packageId),package_number:Number(record.packageNumber||1),package_name:String(record.packageName||''),total_classes:Number(record.totalClasses||0),status:String(record.status||'ACTIVE'),student_info:record.studentInfo||{},preferred_schedule:record.preferredSchedule||[],class_entries:{columns:record.columns||[],rows:record.classEntries||[]}};const {data:existing,error:findError}=await supabaseClient.from('class_records').select('id').eq('user_id',currentUser.id).eq('student_id',String(record.studentId)).eq('package_id',String(record.packageId)).maybeSingle();if(findError)throw findError;if(existing?.id){const {error}=await supabaseClient.from('class_records').update(payload).eq('id',existing.id);if(error)throw error;}else{const {error}=await supabaseClient.from('class_records').insert([payload]);if(error)throw error;}}catch(e){console.warn('Package class record save failed:',e)}}}
-function packageRecordTableHtml(record){const cols=record.columns||PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT;const rows=record.classEntries||[];return `<div class="package-record-editor"><table><thead><tr>${cols.map(c=>`<th>${escapeHtml(c)}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map((row,ri)=>`<tr>${cols.map(c=>`<td><input data-pcr-row="${ri}" data-pcr-col="${escapeAttr(c)}" value="${escapeAttr(row[c]??'')}"></td>`).join('')}</tr>`).join(''):`<tr><td colspan="${cols.length}" class="small" style="text-align:center;padding:18px">No class entries yet. Click ADD ROW to start.</td></tr>`}</tbody></table></div>`}
-function readPackageRecordEditor(record){const cols=record.columns||PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT;const rows=record.classEntries||[];document.querySelectorAll('[data-pcr-row]').forEach(el=>{const r=Number(el.dataset.pcrRow),c=el.dataset.pcrCol;if(rows[r])rows[r][c]=el.value});record.classEntries=rows;record.columns=cols;return record;}
-async function openPackageClassRecord(studentId,packageId){const record=await loadPackageClassRecord(studentId,packageId);currentPackageClassRecordContext=record;const student=getStudents().find(s=>String(s.id)===String(studentId));const completed=getPackageRecordCompleted(studentId,packageId);const total=Number(record.totalClasses||0);record.status=total>0&&completed>=total?'COMPLETED':'ACTIVE';const content=document.getElementById('studentClassRecordContent');if(!content)return;content.innerHTML=`<div class="record-student-header"><div class="record-student-header-info"><b>${escapeHtml(student?.nickname||student?.name||'Student')} — Class Record #${record.packageNumber}</b><span>${escapeHtml(record.packageName||`${total} Classes`)} · ${completed} / ${total} completed</span></div></div><div class="package-record-toolbar"><button type="button" class="primary" onclick="packageRecordAddRow()">ADD ROW</button><button type="button" onclick="packageRecordAddColumn()">ADD COLUMN</button><button type="button" class="primary" onclick="saveOpenPackageClassRecord()">SAVE CLASS RECORD</button></div>${record.status!=='COMPLETED'?`<div class="package-record-lock">Preview and Download PDF will become available after this package reaches ${total}/${total} completed classes.</div>`:''}${packageRecordTableHtml(record)}`;document.getElementById('studentClassRecordModal')?.classList.add('show');}
-function packageRecordAddRow(){if(!currentPackageClassRecordContext)return;const r={};(currentPackageClassRecordContext.columns||[]).forEach(c=>r[c]='');r['Class Number']=(currentPackageClassRecordContext.classEntries||[]).length+1;currentPackageClassRecordContext.classEntries.push(r);openPackageClassRecord(currentPackageClassRecordContext.studentId,currentPackageClassRecordContext.packageId);}
-function packageRecordAddColumn(){if(!currentPackageClassRecordContext)return;let name=prompt('Column name');if(!name)return;name=name.trim();if(!name)return;if((currentPackageClassRecordContext.columns||[]).some(c=>c.toLowerCase()===name.toLowerCase()))return;currentPackageClassRecordContext.columns.push(name);(currentPackageClassRecordContext.classEntries||[]).forEach(r=>r[name]='');openPackageClassRecord(currentPackageClassRecordContext.studentId,currentPackageClassRecordContext.packageId);}
-async function saveOpenPackageClassRecord(){if(!currentPackageClassRecordContext)return;readPackageRecordEditor(currentPackageClassRecordContext);const completed=getPackageRecordCompleted(currentPackageClassRecordContext.studentId,currentPackageClassRecordContext.packageId);currentPackageClassRecordContext.status=currentPackageClassRecordContext.totalClasses>0&&completed>=currentPackageClassRecordContext.totalClasses?'COMPLETED':'ACTIVE';await savePackageClassRecord(currentPackageClassRecordContext);openPackageClassRecord(currentPackageClassRecordContext.studentId,currentPackageClassRecordContext.packageId);openStudentProfile(currentPackageClassRecordContext.studentId);}
-function packageClassRecordPreviewHtml(record){return `<div class="package-record-preview-page"><h1>CLASS RECORD</h1><h2>${escapeHtml(record.packageName||'Package')} · Record #${record.packageNumber}</h2><div class="info-grid">${Object.entries(record.studentInfo||{}).filter(([k,v])=>v!==''&&v!=null).map(([k,v])=>`<div class="info-box"><small>${escapeHtml(k)}</small><b>${escapeHtml(String(v))}</b></div>`).join('')}</div><table><thead><tr>${(record.columns||[]).map(c=>`<th>${escapeHtml(c)}</th>`).join('')}</tr></thead><tbody>${(record.classEntries||[]).map(r=>`<tr>${(record.columns||[]).map(c=>`<td>${escapeHtml(r[c]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
-async function previewPackageClassRecord(studentId,packageId){const record=await loadPackageClassRecord(studentId,packageId);const completed=getPackageRecordCompleted(studentId,packageId);if(!(record.totalClasses>0&&completed>=record.totalClasses))return;const el=document.getElementById('packageClassRecordPreviewContent');if(el)el.innerHTML=packageClassRecordPreviewHtml(record);document.getElementById('packageClassRecordPreviewModal')?.classList.add('show');currentPackageClassRecordContext=record;}
-function closePackageClassRecordPreview(){document.getElementById('packageClassRecordPreviewModal')?.classList.remove('show');}
-async function downloadPackageClassRecordPDF(studentId,packageId){if(studentId&&packageId){const record=await loadPackageClassRecord(studentId,packageId);const completed=getPackageRecordCompleted(studentId,packageId);if(!(record.totalClasses>0&&completed>=record.totalClasses))return;currentPackageClassRecordContext=record;}const record=currentPackageClassRecordContext;if(!record)return;const holder=document.createElement('div');holder.style.position='fixed';holder.style.left='-100000px';holder.style.top='0';holder.style.width='980px';holder.innerHTML=packageClassRecordPreviewHtml(record);document.body.appendChild(holder);try{const canvas=await html2canvas(holder,{scale:2,backgroundColor:'#fff'});const img=canvas.toDataURL('image/png');const {jsPDF}=window.jspdf||{};if(!jsPDF)throw new Error('PDF library not available');const pdf=new jsPDF('p','mm','a4');const pw=210,ph=297,margin=8,iw=pw-margin*2,ih=canvas.height*(iw/canvas.width);let y=margin;let remaining=ih;let sy=0;while(remaining>0){const slice=Math.min(remaining,ph-margin*2);pdf.addImage(img,'PNG',margin,y,iw,slice);remaining-=slice;if(remaining>0){pdf.addPage();y=margin-sy;sy+=slice;}}pdf.save(`Class-Record-${String(record.studentInfo?.name||record.studentId).replace(/[^a-z0-9]+/gi,'-')}-Package-${record.packageNumber}.pdf`);}catch(e){console.error(e);alert('Unable to create the PDF.');}finally{holder.remove();}}
 
 function openStudentClassRecord(studentId){
 
