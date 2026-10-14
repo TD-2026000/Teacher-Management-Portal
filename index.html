@@ -2171,6 +2171,50 @@ button.secondary,
 .student-card-actions button{border:0;border-radius:8px;padding:8px 11px;font-size:12px;font-weight:800;cursor:pointer;background:#eee}
 .student-card-actions .primary-action{background:#00d9d9}
 .student-card-actions .danger-action{background:#ffe1e1;color:#a00000}
+.student-all-record-modal{width:90vw;max-width:1200px;height:90vh;max-height:90vh;overflow:auto}
+.student-all-record-header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.student-all-record-preview-note{padding:10px 12px;border:1px solid #f7a6c8;border-radius:8px;background:#fff7fb;margin-bottom:12px;font-size:12px}
+.student-all-record-preview-pages{display:grid;gap:18px;justify-items:center}
+.student-all-record-pdf-page{width:794px;height:1123px;min-height:1123px;max-height:1123px;box-sizing:border-box;background:#fff;color:#111;padding:28px 34px;overflow:hidden;font-family:Arial,sans-serif;border:1px solid #f0a1c4;position:relative}
+.student-all-record-pdf-topline{display:flex;justify-content:space-between;color:#9b1f59;font-size:10px;border-bottom:2px solid #f45b9c;padding-bottom:7px;margin-bottom:14px}
+.student-all-record-pdf-title{font-size:22px;font-weight:800;color:#d92c78;margin-bottom:6px}
+.student-all-record-pdf-student{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid #f4b3d0}
+.student-all-record-pdf-table{width:100%;border-collapse:collapse;font-size:11px}
+.student-all-record-pdf-table th,.student-all-record-pdf-table td{border:1px solid #e8a7c5;padding:7px 8px;text-align:left;vertical-align:top}
+.student-all-record-pdf-table th{background:#fff0f7;color:#a91e5d;font-weight:800;width:28%}
+.student-all-record-info-table td{font-weight:600}
+.student-all-record-schedule-table{font-size:9.5px}
+.student-all-record-schedule-table th{width:auto}
+.student-all-record-schedule-table th,.student-all-record-schedule-table td{padding:5px 5px}
+.student-all-record-empty{padding:30px;border:1px dashed #e8a7c5;border-radius:10px;text-align:center;color:#666}
+.student-all-record-contract-pdf-page{font-size:10px}
+.student-all-record-contract-meta{display:flex;gap:12px;flex-wrap:wrap;border:1px solid #e8a7c5;background:#fff7fb;padding:8px;border-radius:8px;margin-bottom:10px}
+.student-all-record-contract-box{border:1px solid #e8a7c5;border-radius:8px;padding:10px;height:700px;overflow:hidden}
+.student-all-record-contract-box h4{margin:0 0 8px;color:#d92c78;font-size:12px}
+.student-all-record-contract-text{font-size:10px;line-height:1.35;overflow:hidden}
+.student-all-record-signatures{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.student-all-record-sign-card{border:1px solid #e8a7c5;border-radius:8px;padding:8px;min-height:95px;font-size:10px;overflow:hidden}
+.student-all-record-sign-card img{display:block;max-width:100%;max-height:70px;object-fit:contain;margin:6px auto 0}
+.student-all-record-sign-note{margin-top:8px;color:#666}
+.student-all-record-payment-pdf-page{font-size:11px}
+.student-all-record-receipt-image{border:2px solid #f2b1cf;border-radius:14px;padding:20px;margin-top:10px;min-height:760px}
+.student-all-record-receipt-banner{background:#f65ba1;color:#fff;border-radius:12px;padding:18px;text-align:center;font-size:26px;font-weight:800}
+.student-all-record-receipt-subtitle{text-align:center;font-size:13px;font-weight:700;margin:8px 0 18px;color:#444}
+.student-all-record-receipt-table th{width:34%}
+.student-all-record-receipt-notes{border:1px solid #e8a7c5;border-radius:8px;padding:10px;margin-top:14px;line-height:1.5}
+.student-all-record-receipt-footer{margin-top:18px;color:#777;font-size:9px;text-align:center}
+.student-all-record-evaluation-image{font-size:10px}
+.student-all-record-eval-section-title{background:#f65ba1;color:#fff;font-weight:800;padding:8px 10px;border-radius:7px;margin:10px 0 7px;font-size:11px}
+.student-all-record-eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.student-all-record-eval-grid>div,.student-all-record-performance-grid>div{border:1px solid #e8a7c5;border-radius:7px;padding:7px;min-height:40px}
+.student-all-record-eval-grid label,.student-all-record-performance-grid label{display:block;color:#777;font-size:8px;margin-bottom:3px}
+.student-all-record-eval-grid b{font-size:10px;line-height:1.3}
+.student-all-record-eval-body{border:1px solid #e8a7c5;border-radius:7px;padding:8px;min-height:80px;line-height:1.35}
+.student-all-record-eval-body ul{margin:0;padding-left:18px}
+.student-all-record-performance-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.student-all-record-star{font-size:17px;color:#ddd}.student-all-record-star.on{color:#f65ba1}
+@media(max-width:900px){.student-all-record-pdf-page{transform-origin:top center;transform:scale(.8);margin-bottom:-220px}.student-all-record-modal{width:94vw}.student-all-record-preview-pages{overflow-x:hidden}}
+@media(max-width:560px){.student-all-record-pdf-page{transform:scale(.58);margin-bottom:-470px}.student-all-record-header{align-items:flex-start}}
 .student-profile-modal{width:95vw;max-width:1450px;max-height:92vh;overflow:auto}
 .edit-student-landscape-modal{width:95vw;max-width:1450px;max-height:92vh;overflow-y:auto}
 .edit-student-landscape{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
@@ -5836,6 +5880,22 @@ Log Out
 <div class="modal-actions">
 <button type="button" class="modal-cancel" onclick="closeStudentProfile()">Close</button>
 </div>
+</div>
+</div>
+
+<div id="studentAllRecordModal" class="modal-backdrop" onclick="if(event.target===this) closeStudentAllRecord()">
+<div class="modal student-all-record-modal">
+<div class="student-all-record-header">
+  <div>
+    <h3 id="studentAllRecordTitle">Student All Record</h3>
+    <div class="small">Overall student record preview • ready to download as one PDF file</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button type="button" class="primary-action" id="studentAllRecordDownloadBtn" onclick="downloadStudentAllRecordPDF()">DOWNLOAD PDF</button>
+    <button type="button" class="modal-cancel" onclick="closeStudentAllRecord()">Close</button>
+  </div>
+</div>
+<div id="studentAllRecordContent"></div>
 </div>
 </div>
 
@@ -12109,6 +12169,146 @@ const percent=packageCount?Math.min(100,Math.round((completed/packageCount)*100)
 return {purchased:packageCount,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
+function studentAllRecordSafeText(value, fallback='—'){
+  const text=String(value==null?'':value).trim();
+  return text||fallback;
+}
+
+function studentAllRecordPageShell(title, student, bodyHtml, extraClass=''){
+  const name=studentAllRecordSafeText(student?.name || student?.nickname,'Student');
+  const id=studentAllRecordSafeText(student?.id,'—');
+  return `<div class="student-all-record-pdf-page ${extraClass}">
+    <div class="student-all-record-pdf-topline"><span>Teacher Danyeal</span><span>Student Record</span></div>
+    <div class="student-all-record-pdf-title">${escapeHtml(title)}</div>
+    <div class="student-all-record-pdf-student"><b>${escapeHtml(name)}</b><span>Student ID: ${escapeHtml(id)}</span></div>
+    ${bodyHtml}
+  </div>`;
+}
+
+function buildStudentAllRecordInfoPage(student){
+  const currentPackage=getCurrentStudentPackage(student);
+  const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
+  const fields=[
+    ['Student ID',student.id],['Full Name',student.name],['Nickname',student.nickname],['Birthday',student.birthday],
+    ['Age',student.age],['Country',student.country],['Gender',student.gender],['English Level',student.level],
+    ['Status',student.status||'Active'],['Parent / Guardian',student.parentName],['Parent Gmail',student.email],
+    ['Class Duration',student.duration],['Classes',student.packageName],['Start Date',currentStart]
+  ];
+  const custom=Object.entries(normalizeCustomStudentFields(student.customFields||{}));
+  custom.forEach(([k,v])=>fields.push([k,v]));
+  const rows=fields.map(([label,value])=>`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(studentAllRecordSafeText(value))}</td></tr>`).join('');
+  return studentAllRecordPageShell('STUDENT INFO',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table>`);
+}
+
+function buildStudentAllRecordSchedulePage(student){
+  const appointments=getAppointments().filter(a=>String(a.studentId||'')===String(student.id||'')).sort((a,b)=>{
+    const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
+    return (da?da.getTime():0)-(db?db.getTime():0);
+  });
+  const rows=appointments.map(a=>{
+    const dt=getAppointmentDateTime(a);
+    const date=dt?getLocalDateString(dt):(a.date||'—');
+    const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
+    const time=a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—');
+    return `<tr><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td><td>${escapeHtml(a.status||'—')}</td></tr>`;
+  }).join('');
+  const body=appointments.length?`<table class="student-all-record-pdf-table student-all-record-schedule-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="student-all-record-empty">No class schedule or appointments recorded yet.</div>`;
+  return studentAllRecordPageShell('STUDENT CLASS SCHEDULE',student,body);
+}
+
+function buildStudentAllRecordContractPage(student){
+  const record=getStudentContracts()?.[student.id];
+  if(!record?.submittedAt){
+    return studentAllRecordPageShell('STUDENT CONTRACT',student,'<div class="student-all-record-empty">No Student Contract has been saved for this student.</div>');
+  }
+  const custom=record.customSections||{};
+  const agreementHtml=String(custom.agreementHtml||'').trim() || (custom.agreementText?escapeHtml(custom.agreementText).replace(/\n/g,'<br>'):'<em>No contract agreement / terms entered.</em>');
+  const teacherName=getTeacherContractDisplayName()||'Teacher Danyeal';
+  const parentName=studentAllRecordSafeText(student.parentName,'Parent / Guardian');
+  const signedDate=record.submittedAt?new Date(record.submittedAt).toLocaleDateString():'—';
+  const sig=(data,type,label)=> data ? (String(type||'').startsWith('image/')?`<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><img src="${data}" alt="${escapeHtml(label)}"></div>`:`<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><div class="student-all-record-sign-note">Signed PDF uploaded</div></div>`) : `<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><div class="student-all-record-sign-note">Signature not uploaded</div></div>`;
+  const body=`<div class="student-all-record-contract-page"><div class="student-all-record-contract-meta"><span>Teacher: ${escapeHtml(teacherName)}</span><span>Parent / Guardian: ${escapeHtml(parentName)}</span><span>Saved: ${escapeHtml(signedDate)}</span></div><div class="student-all-record-contract-box"><h4>CONTRACT AGREEMENT / TERMS</h4><div class="student-all-record-contract-text">${agreementHtml}</div></div><div class="student-all-record-signatures">${sig(record.teacherFileData,record.teacherFileType,'Teacher Signature')}${sig(record.parentFileData,record.parentFileType,'Parent / Guardian Signature')}</div></div>`;
+  return studentAllRecordPageShell('STUDENT CONTRACT',student,body,'student-all-record-contract-pdf-page');
+}
+
+function buildStudentAllRecordPaymentPage(student){
+  const receipts=getPaymentReceipts().filter(r=>String(r.studentId||'')===String(student.id||''));
+  const receipt=receipts.length?receipts[receipts.length-1]:null;
+  if(!receipt)return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,'<div class="student-all-record-empty">No Payment Receipt has been saved for this student.</div>');
+  const amount=receipt.amount!==''&&receipt.amount!=null?`${receipt.currency||'PHP'} ${Number(receipt.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
+  const rows=[['Receipt No.',receipt.receiptNo],['Payment Date',receipt.date],['Student Name',receipt.studentName||student.name],['Student ID',receipt.studentIdNo||receipt.studentId||student.id],['Classes',receipt.packageName||receipt.classes],['Amount Paid',amount],['Payment Method',receipt.method==='Other'?(receipt.otherMethod||''):receipt.method],['Payment Status',receipt.status],['Reference No.',receipt.reference||'—']];
+  const body=`<div class="student-all-record-receipt-image"><div class="student-all-record-receipt-banner">PAYMENT RECEIPT</div><div class="student-all-record-receipt-subtitle">Teacher Danyeal's English Class</div><table class="student-all-record-pdf-table student-all-record-receipt-table"><tbody>${rows.map(([k,v])=>`<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(studentAllRecordSafeText(v))}</td></tr>`).join('')}</tbody></table><div class="student-all-record-receipt-notes"><b>Notes</b><div>${escapeHtml(studentAllRecordSafeText(receipt.notes,'Thank you for your payment.'))}</div></div><div class="student-all-record-receipt-footer">This receipt confirms the payment recorded by the teacher.</div></div>`;
+  return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,body,'student-all-record-payment-pdf-page');
+}
+
+function studentAllRecordEvaluationPage(student,ev,index){
+  const topic=studentAllRecordSafeText(ev.lesson_topic,'Lesson Title Not Set');
+  const dateTime=ev.dateTime||ev.createdAt||ev.evaluationSavedAt||ev.date||'';
+  const stars=value=>{let count=0;const text=String(value||'');if(typeof value==='number')count=value;else if((text.match(/★/g)||[]).length)count=(text.match(/★/g)||[]).length;else if(/^\s*\d+(?:\.\d+)?\s*$/.test(text))count=Number(text);count=Math.max(0,Math.min(5,Math.round(count)));return '★★★★★'.split('').map((x,i)=>`<span class="student-all-record-star ${i<count?'on':''}">${x}</span>`).join('');};
+  const bullets=value=>{const items=String(value||'').split(/\n+/).map(x=>x.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);return items.length?`<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'<div>—</div>';};
+  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY / VOCABULARY</div><div class="student-all-record-eval-body">${bullets(ev.vocabulary)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body">${bullets(ev.improvement)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div></div></div>`;
+  return studentAllRecordPageShell(`STUDENT EVALUATION RECORD — ${index+1}`,student,body,'student-all-record-evaluation-pdf-page');
+}
+
+function buildStudentAllRecordPages(student){
+  const pages=[buildStudentAllRecordInfoPage(student),buildStudentAllRecordContractPage(student),buildStudentAllRecordPaymentPage(student),buildStudentAllRecordSchedulePage(student)];
+  const evaluations=getStudentEvaluations(student.id);
+  evaluations.forEach((ev,i)=>pages.push(studentAllRecordEvaluationPage(student,ev,i)));
+  return pages;
+}
+
+function openStudentAllRecord(id){
+  window.currentStudentAllRecordStudentId=id;
+  const student=getStudents().find(s=>String(s.id)===String(id));
+  if(!student)return;
+  const title=document.getElementById('studentAllRecordTitle');
+  const content=document.getElementById('studentAllRecordContent');
+  if(title)title.textContent=`${student.nickname||student.name||'Student'} — Student All Record`;
+  if(!content)return;
+  const pages=buildStudentAllRecordPages(student);
+  content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Info, Student Contract, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
+  const modal=document.getElementById('studentAllRecordModal');
+  if(modal)modal.classList.add('show');
+}
+
+function closeStudentAllRecord(){
+  const modal=document.getElementById('studentAllRecordModal');
+  if(modal)modal.classList.remove('show');
+  window.currentStudentAllRecordStudentId='';
+}
+
+async function downloadStudentAllRecordPDF(){
+  const studentId=window.currentStudentAllRecordStudentId;
+  const student=getStudents().find(s=>String(s.id)===String(studentId));
+  if(!student){alert('Student record could not be found.');return;}
+  if(typeof html2canvas==='undefined'||!window.jspdf||!window.jspdf.jsPDF){alert('PDF tools are still loading. Please wait a moment and try again.');return;}
+  const btn=document.getElementById('studentAllRecordDownloadBtn');
+  const oldText=btn?btn.textContent:'';
+  if(btn){btn.disabled=true;btn.textContent='CREATING PDF...';}
+  const holder=document.createElement('div');
+  holder.style.position='fixed';holder.style.left='-100000px';holder.style.top='0';holder.style.width='794px';holder.style.background='#fff';holder.style.padding='0';holder.style.zIndex='-1';
+  document.body.appendChild(holder);
+  try{
+    const pages=buildStudentAllRecordPages(student);
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    for(let i=0;i<pages.length;i++){
+      holder.innerHTML=pages[i];
+      const page=holder.firstElementChild;
+      if(!page)continue;
+      page.style.width='794px';page.style.height='1123px';page.style.minHeight='1123px';page.style.maxHeight='1123px';page.style.overflow='hidden';page.style.background='#fff';
+      await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+      const canvas=await html2canvas(page,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,imageTimeout:15000});
+      const img=canvas.toDataURL('image/png');
+      if(i>0)pdf.addPage();
+      pdf.addImage(img,'PNG',0,0,210,297,undefined,'FAST');
+    }
+    const safe=String(student.name||student.nickname||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
+    pdf.save(`Student-All-Record-${safe||'Student'}.pdf`);
+  }catch(e){console.error(e);alert(e?.message||'Unable to create the Student All Record PDF.');}
+  finally{holder.remove();if(btn){btn.disabled=false;btn.textContent=oldText||'DOWNLOAD PDF';}}
+}
+
 function openStudentProfile(id){
 window.currentStudentProfileId=id;
 window.studentProfileShowAllAppointments=false;
@@ -12156,6 +12356,7 @@ content.innerHTML=`
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
     <button type="button" class="primary-action" onclick="closeStudentProfile();openRenewPackage('${escapeAttr(student.id)}')">Renew Classes</button>
     <button type="button" class="primary-action" onclick="openStudentContractPDFViewerForStudent('${escapeAttr(student.id)}')">Student Contract</button>
+    <button type="button" class="primary-action" onclick="openStudentAllRecord('${escapeAttr(student.id)}')">Student All Record</button>
     <button type="button" class="danger-action" onclick="closeStudentProfile();openDeleteStudent('${escapeAttr(student.id)}')">Delete Student</button>
    </div>
   </div>
@@ -12214,22 +12415,6 @@ content.innerHTML=`
    </div>
   </div>
 
-  <div class="student-profile-section">
-   <h4 style="margin:0">CLASSES HISTORY</h4>
-   <div style="margin-top:10px">
-    <button type="button" class="view-record-btn" id="studentProfileHistoryToggle" onclick="toggleStudentProfileSection('history')">SHOW CLASSES HISTORY</button>
-   </div>
-   <div id="studentProfileHistoryContent" style="display:none;margin-top:10px">
-   ${(p.history||[]).slice().reverse().map(pkg=>{
-    const pkgCount=Math.max(0,parseInt(pkg.classCount,10)||getPackageClassCount(pkg.packageName));
-    const pkgCompleted=getAppointments().filter(a=>a.studentId===student.id&&a.packageId===pkg.id&&a.type==='Regular Class'&&a.status==='Completed').length;
-    const packageDone=pkgCount>0 && pkgCompleted>=pkgCount;
-    const packageStatus=packageDone?'Completed':(pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed'));
-    const locked=!packageDone;
-    return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div><div class="package-class-record-actions"><button type="button" class="primary" onclick="openPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')">VIEW CLASS RECORD</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`previewPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">PREVIEW</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`downloadPackageClassRecordPDF('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">DOWNLOAD PDF</button></div></div><span class="package-history-badge ${packageDone?'':'old'}">${escapeHtml(packageStatus)}</span></div>`;
-   }).join('')||'<div class="small">No classes history yet.</div>'}
-   </div>
-  </div>
 
   <div class="student-profile-section">
    <h4 style="margin:0">STUDENT CONTRACT</h4>
@@ -12276,7 +12461,6 @@ document.getElementById('studentProfileModal').classList.add('show');
 function toggleStudentProfileSection(type){
   const map={
     appointments:{content:'studentProfileAppointmentsContent',button:'studentProfileAppointmentsToggle',show:'SHOW CLASSES / APPOINTMENTS',hide:'HIDE CLASSES / APPOINTMENTS'},
-    history:{content:'studentProfileHistoryContent',button:'studentProfileHistoryToggle',show:'SHOW CLASSES HISTORY',hide:'HIDE CLASSES HISTORY'},
     contract:{content:'studentProfileContractContent',button:'studentProfileContractToggle',show:'SHOW STUDENT CONTRACT',hide:'HIDE STUDENT CONTRACT'},
     payment:{content:'studentProfilePaymentContent',button:'studentProfilePaymentToggle',show:'SHOW PAYMENT RECEIPT',hide:'HIDE PAYMENT RECEIPT'},
     evaluations:{content:'studentProfileEvaluationsContent',button:'studentProfileEvaluationsToggle',show:'SHOW RECORD OF EVALUATION',hide:'HIDE RECORD OF EVALUATION'}
