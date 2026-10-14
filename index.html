@@ -8058,16 +8058,16 @@ await supabaseClient.auth.signOut();
 
 async function handleSignedIn(user){
 
+/* =========================================================
+   FAST LOGIN
+   Show the dashboard immediately using the locally cached data.
+   Remote Supabase refreshes run in the background so login is not
+   blocked by slow network queries or appointment migration.
+========================================================= */
+
 currentUser=user;
 
-await loadTeacherProfileFromSupabase();
-
-await loadStudentsFromSupabase();
-await migrateExistingAppointmentsToSupabase();
-await loadAppointmentsFromSupabase();
-
-const savedProfile=
-getTeacherProfile();
+const savedProfile=getTeacherProfile();
 
 const fullName=
 savedProfile.fullName ||
@@ -8076,25 +8076,38 @@ user.user_metadata?.full_name ||
 user.email ||
 'Teacher';
 
-document.getElementById(
-'currentTeacher'
-).textContent=fullName;
+document.getElementById('currentTeacher').textContent=fullName;
 
-document.getElementById(
-'authScreen'
-).classList.add('hidden');
+document.getElementById('authScreen').classList.add('hidden');
+document.getElementById('appShell').classList.remove('hidden');
 
-document.getElementById(
-'appShell'
-).classList.remove('hidden');
-
+/* Render immediately from cached/local data. */
 loadTeacherProfile();
-
 renderDashboard();
-
 populateStudentSelect();
-
 renderRecords();
+
+/* Refresh Supabase data in the background.
+   IMPORTANT: do not await these here. */
+Promise.allSettled([
+  loadTeacherProfileFromSupabase(),
+  loadStudentsFromSupabase(),
+  loadAppointmentsFromSupabase()
+]).then(()=>{
+  try{
+    loadTeacherProfile();
+    renderDashboard();
+    populateStudentSelect();
+    renderRecords();
+  }catch(error){
+    console.warn('Background dashboard refresh skipped:',error);
+  }
+});
+
+/* Migration is deliberately separate and non-blocking. */
+Promise.resolve()
+  .then(()=>migrateExistingAppointmentsToSupabase())
+  .catch(error=>console.warn('Background appointment migration skipped:',error));
 
 }
 
