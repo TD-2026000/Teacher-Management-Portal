@@ -2583,7 +2583,7 @@ button.secondary,
 .contract-rich-editor{min-height:320px;max-height:620px;overflow:auto;padding:16px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.55;outline:none;white-space:pre-wrap}
 .contract-rich-editor:empty:before{content:attr(data-placeholder);color:#98a2b3;pointer-events:none}
 .contract-rich-editor:focus{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--global-accent) 18%,transparent)}
-.contract-rich-editor ul,.contract-rich-editor ol{padding-left:28px}.contract-rich-editor .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:18px 0 8px!important}.contract-rich-editor p{font-size:12pt;line-height:1.45;margin:0 0 6px}.contract-rich-editor li{font-size:12pt;line-height:1.45;margin:0 0 5px}.contract-rich-editor ul{margin:0 0 8px}
+.contract-rich-editor ul,.contract-rich-editor ol{padding-left:28px}.contract-rich-editor .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:18px 0 8px!important}.contract-rich-editor p{font-size:12pt;line-height:1.45;margin:0 0 6px}.contract-rich-editor li{font-size:12pt;line-height:1.45;margin:0 0 5px}.contract-rich-editor ul{margin:0 0 8px} .contract-rich-editor .contract-default-spacer{height:10px;margin:0!important;padding:0!important;line-height:1!important;font-size:1px!important}.student-all-record-contract-document{padding:18px;background:#fff;border:1px solid #ddd;border-radius:8px}.student-all-record-contract-document .contract-header{text-align:center;border-bottom:2px solid #222;padding-bottom:12px;margin-bottom:14px}.student-all-record-contract-document .contract-header h1{margin:0;font-size:22px;font-weight:900}.student-all-record-contract-document .contract-header h2{margin:5px 0 0;font-size:16px}.student-all-record-contract-student-info{margin-bottom:14px}.student-all-record-contract-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;border:1px solid #ccc;padding:10px}.student-all-record-contract-info-grid>div{display:flex;gap:6px;font-size:11px}.student-all-record-contract-info-grid b{min-width:105px}.student-all-record-contract-info-grid span{flex:1}.student-all-record-contract-rich{font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.45}.student-all-record-contract-rich .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:18px 0 8px!important}.student-all-record-contract-rich p{font-size:12pt;line-height:1.45;margin:0 0 6px}.student-all-record-contract-rich li{font-size:12pt;line-height:1.45;margin:0 0 5px}.student-all-record-contract-rich ul,.student-all-record-contract-rich ol{margin:0 0 8px;padding-left:28px}.student-all-record-contract-rich .contract-default-spacer{height:10px;margin:0!important;padding:0!important}
 
 
 /* v21 compact contract toolbar: only B, I, U and Font Size remain visible */
@@ -12077,9 +12077,10 @@ const todayCount=validAppointments.filter(x=>
  x.date.getDate()===now.getDate()
 ).length;
 
-const appointmentCountDash=document.getElementById('dashboardAppointmentCount');
-if(appointmentCountDash) appointmentCountDash.textContent=appointments.length;
-
+/* Do not overwrite the dashboard appointment count from localStorage here.
+   The dashboard summary count is authoritative from Supabase and is updated
+   by refreshDashboardSummaryCounts(). This prevents the brief stale-count
+   flicker during page reload/login. */
 const todayClassCountDash=document.getElementById('dashboardTodayClassCount');
 if(todayClassCountDash) todayClassCountDash.textContent=todayCount;
 
@@ -12254,7 +12255,7 @@ function buildStudentAllRecordInfoPage(student){
     student.duration
   );
 
-  return studentAllRecordPageShell('STUDENT INFO',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table><div style="margin-top:14px"><div style="font-weight:800;margin-bottom:6px">Preferred Class Schedule</div><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></div>`);
+  return studentAllRecordPageShell('STUDENT INFORMATION',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table><div style="margin-top:14px"><div style="font-weight:800;margin-bottom:6px">Preferred Class Schedule</div><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></div>`);
 }
 
 function buildStudentAllRecordSchedulePage(student){
@@ -12287,13 +12288,35 @@ function buildStudentAllRecordContractPage(student){
   if(!record?.submittedAt){
     return studentAllRecordPageShell('STUDENT CONTRACT',student,'<div class="student-all-record-empty">No Student Contract has been saved for this student.</div>');
   }
+
+  /* Use the same visual structure as the actual Student Contract document:
+     teacher title, student information, CONTRACT AGREEMENT / TERMS, and the
+     same Parent/Teacher signature layout. This keeps Student All Record from
+     using a different contract template. */
   const custom=record.customSections||{};
   const agreementHtml=String(custom.agreementHtml||'').trim() || (custom.agreementText?escapeHtml(custom.agreementText).replace(/\n/g,'<br>'):'<em>No contract agreement / terms entered.</em>');
-  const teacherName=getTeacherContractDisplayName()||'Teacher Danyeal';
-  const parentName=studentAllRecordSafeText(student.parentName,'Parent / Guardian');
-  const signedDate=record.submittedAt?new Date(record.submittedAt).toLocaleDateString():'—';
-  const sig=(data,type,label)=> data ? (String(type||'').startsWith('image/')?`<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><img src="${data}" alt="${escapeHtml(label)}"></div>`:`<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><div class="student-all-record-sign-note">Signed PDF uploaded</div></div>`) : `<div class="student-all-record-sign-card"><b>${escapeHtml(label)}</b><div class="student-all-record-sign-note">Signature not uploaded</div></div>`;
-  const body=`<div class="student-all-record-contract-page"><div class="student-all-record-contract-meta"><span>Teacher: ${escapeHtml(teacherName)}</span><span>Parent / Guardian: ${escapeHtml(parentName)}</span><span>Saved: ${escapeHtml(signedDate)}</span></div><div class="student-all-record-contract-box"><h4>CONTRACT AGREEMENT / TERMS</h4><div class="student-all-record-contract-text">${agreementHtml}</div></div><div class="student-all-record-signatures">${sig(record.teacherFileData,record.teacherFileType,'Teacher Signature')}${sig(record.parentFileData,record.parentFileType,'Parent / Guardian Signature')}</div></div>`;
+  const teacherName=getTeacherContractDisplayName()||'Teacher';
+  const teacherTitle=getTeacherContractTitle()||'TEACHER PRIVATE ENGLISH CLASS';
+  const parentName=studentAllRecordSafeText(student.parentName,'____________________________');
+  const studentInfo=`
+    <div class="student-all-record-contract-info-grid">
+      <div><b>Student Name</b><span>${escapeHtml(student.name||'—')}</span></div>
+      <div><b>Student ID</b><span>${escapeHtml(student.id||'—')}</span></div>
+      <div><b>Parent / Guardian</b><span>${escapeHtml(student.parentName||'—')}</span></div>
+      <div><b>Parent Email</b><span>${escapeHtml(student.email||'—')}</span></div>
+    </div>`;
+  const body=`<div class="contract-document student-all-record-contract-document">
+    <div class="contract-header"><h1>${escapeHtml(teacherTitle)}</h1><h2>STUDENT CONTRACT</h2></div>
+    <div class="contract-student-info student-all-record-contract-student-info">${studentInfo}</div>
+    <div class="contract-section contract-custom-section contract-master-agreement">
+      <h3>CONTRACT AGREEMENT / TERMS</h3>
+      <div class="contract-rich-editor student-all-record-contract-rich">${agreementHtml}</div>
+    </div>
+    <div class="contract-section"><div class="signature-grid">
+      <div><strong>Parent Name:</strong><div>${escapeHtml(parentName)}</div><strong>Signature:</strong><div>____________________________</div></div>
+      <div><strong>Teacher:</strong><div>${escapeHtml(teacherName)}</div><strong>Teacher's Signature:</strong><div>____________________________</div></div>
+    </div></div>
+  </div>`;
   return studentAllRecordPageShell('STUDENT CONTRACT',student,body,'student-all-record-contract-pdf-page');
 }
 
@@ -12332,7 +12355,7 @@ function openStudentAllRecord(id){
   if(title)title.textContent=`${student.nickname||student.name||'Student'} — Student All Record`;
   if(!content)return;
   const pages=buildStudentAllRecordPages(student);
-  content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Info, Student Contract, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
+  content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Information, Student Contract, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
   const modal=document.getElementById('studentAllRecordModal');
   if(modal)modal.classList.add('show');
 }
@@ -15497,10 +15520,19 @@ function defaultStudentContractHtml(){
   let html=''; let list=[];
   const flush=()=>{if(list.length){html+=`<ul>${list.map(x=>`<li>${x}</li>`).join('')}</ul>`;list=[];}};
   const inline=(text)=>escapeHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  let hadBlankLine=false;
   lines.forEach(line=>{
     const t=line.trim();
-    if(!t){flush();return;}
+    if(!t){
+      flush();
+      hadBlankLine=true;
+      return;
+    }
     if(t.startsWith('- ')){list.push(inline(t.slice(2)));return;}
+    if(hadBlankLine && html){
+      html+=`<p class="contract-default-spacer" aria-hidden="true">&nbsp;</p>`;
+    }
+    hadBlankLine=false;
     flush();
     if(/^\*\*.+\*\*$/.test(t)) html+=`<p class="contract-default-heading" style="font-size:14pt;font-weight:700;margin:18px 0 8px;line-height:1.35"><strong>${escapeHtml(t.slice(2,-2))}</strong></p>`;
     else html+=`<p style="font-size:12pt;line-height:1.45;margin:0 0 6px">${inline(t)}</p>`;
