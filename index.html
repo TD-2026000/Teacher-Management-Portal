@@ -10158,7 +10158,13 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
       const oldTimes=normalizeScheduleTimes(oldDetails[day]);
       if(!oldTimes.length)return false;
 
-      const oldMinutes=timeToMinutes(a.time||'');
+      /* Parse the appointment's HH:MM time locally. The previous version
+         called a helper that does not exist in this portal, which caused the
+         schedule-sync function to stop before updating any appointment. */
+      const timeMatch=String(a.time||'').match(/^(\d{1,2}):(\d{2})$/);
+      const oldMinutes=timeMatch
+        ? (parseInt(timeMatch[1],10)*60 + parseInt(timeMatch[2],10))
+        : NaN;
       return Number.isFinite(oldMinutes) && oldTimes.includes(oldMinutes);
     };
 
