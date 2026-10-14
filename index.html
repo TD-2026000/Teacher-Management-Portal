@@ -3852,6 +3852,15 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-page-header{display:none!important}
 .contract-pdf-preview-pages .contract-pdf-page:not(:first-child) .pdf-info-bullets{display:none!important}
 </style>
+<style id="td-contract-natural-pagination-fix">
+.contract-pdf-preview-pages .contract-legal-portrait-page-final{position:relative!important;}
+.contract-pdf-preview-pages .contract-legal-portrait-page-final .preview-contract-agreement-direct{display:block!important;margin:12px 0 14px!important;}
+.contract-pdf-preview-pages .contract-legal-portrait-page-final .preview-contract-agreement-body{display:block!important;overflow:hidden!important;min-height:0!important;max-height:none!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+.contract-pdf-preview-pages .contract-preview-list-item{display:block!important;position:relative!important;padding-left:18px!important;margin:0 0 3px!important;min-height:1em!important;line-height:1.25!important;}
+.contract-pdf-preview-pages .contract-preview-list-item::before{content:"•";position:absolute;left:2px;top:0;font-weight:700;}
+.contract-pdf-preview-pages .contract-preview-list-item[data-list-type="ol"]::before{content:none;}
+.contract-pdf-preview-pages .contract-continuation-page .preview-contract-agreement-direct{margin-top:0!important;}
+</style>
 <style id="v56-evaluation-preview-header">.evaluation-image-preview-modal{padding:0!important;overflow:hidden!important;border-radius:18px!important}.evaluation-image-preview-modal>.modal-header{position:relative!important;display:flex!important;align-items:center!important;justify-content:flex-start!important;min-height:76px!important;padding:16px 70px 16px 22px!important;background:var(--global-accent,#ff69b4)!important;color:var(--global-text-on-accent,#fff)!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 4px 14px rgba(0,0,0,.10)!important}.evaluation-image-preview-modal>.modal-header h3{margin:0!important;color:var(--global-text-on-accent,#fff)!important;font-size:22px!important;font-weight:800!important;line-height:1.2!important}.evaluation-preview-title-emoji{display:inline-block!important;font-size:22px!important;line-height:1!important;margin-right:5px!important;vertical-align:-2px!important}.evaluation-preview-close-btn{position:absolute!important;top:50%!important;right:16px!important;transform:translateY(-50%)!important;width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;margin:0!important;border:2px solid rgba(255,255,255,.9)!important;border-radius:12px!important;background:rgba(255,255,255,.96)!important;color:var(--global-accent-dark,#c21875)!important;font-size:27px!important;font-weight:900!important;line-height:1!important;display:flex!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;z-index:10!important;box-shadow:0 3px 10px rgba(0,0,0,.15)!important}.evaluation-preview-close-btn:hover{transform:translateY(-50%) scale(1.04)!important;background:#fff!important}.evaluation-image-preview-modal>.modal-body{border-radius:0 0 18px 18px!important}</style><style id="teacher-danyeal-subscription-css">
 /* Dashboard bottom buttons */
 #dashboardPage .dashboard-bottom-actions{
@@ -4530,12 +4539,12 @@ Dashboard
 
 <div class="dashboard-summary-grid">
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">NUMBER OF STUDENTS</div>
+<div class="dashboard-summary-label">STUDENTS</div>
 <div id="dashboardStudentCount" class="dashboard-summary-number">0</div>
 </div>
 
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">NUMBER OF APPOINTMENTS</div>
+<div class="dashboard-summary-label">APPOINTMENTS</div>
 <div id="dashboardAppointmentCount" class="dashboard-summary-number">0</div>
 </div>
 
@@ -15447,7 +15456,7 @@ const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
 
 **LESSON MATERIALS**
 
-- Learning materials will be prepared by **Teacher ______________** based on the student's learning needs, level, and/or the parent's requested topic.
+- Learning materials will be prepared by **Teacher Danyeal** based on the student's learning needs, level, and/or the parent's requested topic.
 - Parents may **communicate their preferred learning goals** or lesson topics before the class.
 - Materials may include **PPT lessons, worksheets, reading activities, vocabulary exercises, phonics, grammar, speaking practice, stories**, and other appropriate activities.
 
@@ -15727,14 +15736,18 @@ function makeContractPreviewPage(title, infoHtml, sections, includeInfo=true){
 
 async function previewStudentContract(){
  try{
-  const {info,sections}=getContractPreviewSections();
+  const {info}=getContractPreviewSections();
   let modal=document.getElementById('studentContractPreviewModal');
   if(!modal){
    modal=document.createElement('div'); modal.id='studentContractPreviewModal'; modal.className='modal-backdrop';
    modal.innerHTML=`<div class="modal contract-preview-modal"><div class="modal-header contract-preview-modal-header"><h3>STUDENT CONTRACT PREVIEW</h3><button type="button" class="student-contract-preview-download" onclick="downloadStudentContractPDF()" title="Download contract PDF">DOWNLOAD PDF</button><button type="button" class="contract-preview-close-btn" onclick="closeStudentContractPreview()" aria-label="Close preview" title="Close preview">×</button></div><div class="modal-body"><div class="small" style="margin-bottom:10px">US Legal portrait preview • automatic pages when the agreement is long • PDF-ready formatting preserved from the editable agreement</div><div id="studentContractPreviewPages" class="contract-pdf-preview-pages"></div></div></div>`;
    modal.addEventListener('click',e=>{if(e.target===modal)closeStudentContractPreview();}); document.body.appendChild(modal);
   }
-  const pages=document.getElementById('studentContractPreviewPages'); if(!pages)return; pages.innerHTML='';
+
+  const pages=document.getElementById('studentContractPreviewPages');
+  if(!pages)return;
+  pages.innerHTML='';
+
   const savedContract=contractSelectedStudentId ? (getStudentContracts()?.[contractSelectedStudentId] || null) : null;
   const editor=document.getElementById('contractAgreementEditor');
   const liveHtml=editor ? editor.innerHTML.trim() : '';
@@ -15742,112 +15755,168 @@ async function previewStudentContract(){
   const plain=String(editor ? (editor.innerText||editor.textContent||'') : (document.getElementById('contractAgreementText')?.value||savedContract?.customSections?.agreementText||'')).trim();
   const agreementHtml=liveHtml || savedHtml || (plain ? escapeHtml(plain).replace(/\n/g,'<br>') : '');
 
-  /* Build rich blocks so bold/italic/underline/font size/color/highlight/lists
-     survive into the parent-facing preview. */
+  /*
+     Build small, independently measurable blocks from the actual editor HTML.
+     Lists are split into individual LI blocks so a long list can naturally
+     continue on the next page instead of moving the entire list or cutting it.
+  */
   const source=document.createElement('div');
   source.innerHTML=agreementHtml || '<div>No contract agreement / terms entered yet.</div>';
-  const rawBlocks=[...source.childNodes].filter(n=>!(n.nodeType===3 && !n.textContent.trim()));
   const blocks=[];
-  rawBlocks.forEach(n=>{
-    if(n.nodeType===1 && /^(UL|OL)$/i.test(n.tagName)){
-      [...n.children].forEach(li=>{const wrap=document.createElement(n.tagName.toLowerCase()); wrap.innerHTML=li.outerHTML; blocks.push(wrap);});
-    }else if(n.nodeType===1){blocks.push(n.cloneNode(true));}
-    else {const d=document.createElement('div');d.textContent=n.textContent;blocks.push(d);}
+  [...source.childNodes].forEach(node=>{
+    if(node.nodeType===3){
+      if(node.textContent.trim()){
+        const d=document.createElement('div'); d.textContent=node.textContent; blocks.push(d);
+      }
+      return;
+    }
+    if(node.nodeType!==1)return;
+    if(/^(UL|OL)$/i.test(node.tagName)){
+      [...node.children].forEach(li=>{
+        const item=document.createElement('div');
+        item.className='contract-preview-list-item';
+        item.dataset.listType=node.tagName.toLowerCase();
+        item.innerHTML=li.innerHTML;
+        blocks.push(item);
+      });
+    }else if(/^(LI)$/i.test(node.tagName)){
+      const item=document.createElement('div');
+      item.className='contract-preview-list-item';
+      item.innerHTML=node.innerHTML;
+      blocks.push(item);
+    }else{
+      blocks.push(node.cloneNode(true));
+    }
   });
   if(!blocks.length){const d=document.createElement('div');d.textContent='No contract agreement / terms entered yet.';blocks.push(d);}
 
-  /*
-     IMPORTANT: paginate the actual rich agreement, not a fixed one-page estimate.
-     The old code measured each block but makeContractPreviewPage() also injected
-     the entire agreement once more, which made long agreements appear clipped.
-     We now build clean page shells and split the real agreement content by the
-     rendered height of the page.  The last page reserves space for acknowledgement
-     + signatures, so they can never be pushed outside the legal page.
-  */
-  const pageHeightPx=14*96;
-  const pagePaddingPx=43*2;
-  const headerPx=92+14;
-  const infoCount=document.querySelectorAll('#contractStudentInfo .contract-info-box').length;
-  const infoPx=info ? Math.max(1,infoCount)*24+10 : 0;
-  const firstContentLimit=pageHeightPx-pagePaddingPx-headerPx-infoPx;
-  const otherContentLimit=pageHeightPx-pagePaddingPx;
-  const finalReserve=255;
+  /* Create one real page at a time and measure the exact rendered height.
+     This uses the same page width, padding, font sizes and header as the
+     visible preview, avoiding the old fixed pixel estimate that caused
+     content to be cut or placed on the wrong page. */
+  function createPage(index){
+    const page=document.createElement('div');
+    page.className='contract-pdf-page contract-legal-portrait-page-final';
+    page.innerHTML=`<div class="pdf-page-header"><h1>${getTeacherContractTitle()}</h1><h2>STUDENT CONTRACT</h2></div>`;
 
-  function makeMeasure(){
-    const m=document.createElement('div');
-    m.style.cssText='position:absolute;left:-100000px;top:0;width:8.5in;visibility:hidden;pointer-events:none;box-sizing:border-box;padding:43px;color:#111;background:#fff;overflow:visible;';
-    document.body.appendChild(m); return m;
-  }
-  const measure=makeMeasure();
-  const chunks=[]; let chunk=[], used=0, limit=firstContentLimit;
-  blocks.forEach((block)=>{
-    const c=block.cloneNode(true);
-    const holder=document.createElement('div');
-    holder.className='preview-contract-agreement-body';
-    holder.appendChild(c);
-    measure.innerHTML=''; measure.appendChild(holder);
-    const h=Math.max(22,holder.getBoundingClientRect().height)+6;
-    const currentLimit=(limit===otherContentLimit && chunk.length===0) ? otherContentLimit : limit;
-    if(chunk.length && used+h>currentLimit){chunks.push(chunk);chunk=[];used=0;limit=otherContentLimit;}
-    chunk.push(block.cloneNode(true)); used+=h;
-  });
-  if(chunk.length)chunks.push(chunk);
-  if(!chunks.length)chunks.push([]);
-
-  /* Make sure the final page has room for the acknowledgement and signatures. */
-  if(chunks.length===1 && used > Math.max(0,firstContentLimit-finalReserve)){
-    const last=chunks[0]; let moved=[]; let u=0;
-    const firstLimit=Math.max(0,firstContentLimit-finalReserve);
-    last.forEach(block=>{
-      const holder=document.createElement('div'); holder.className='preview-contract-agreement-body'; holder.appendChild(block.cloneNode(true));
-      measure.innerHTML=''; measure.appendChild(holder);
-      const h=Math.max(22,holder.getBoundingClientRect().height)+6;
-      if(last.length-moved.length>1 && u+h>firstLimit){moved.push(block);}
-      else if(moved.length){moved.push(block);}
-      else{u+=h;}
-    });
-    if(moved.length){chunks[0]=last.slice(0,last.length-moved.length);chunks.push(moved);}
-  }
-  measure.remove();
-
-  chunks.forEach((chunk,index)=>{
-    const page=makeContractPreviewPage('Page '+(index+1), index===0?info:'', [], index===0);
-    page.classList.add('contract-legal-portrait-page-final');
-    /* Remove the old full agreement injected by the generic page builder. */
-    page.querySelectorAll('.pdf-preview-agreement').forEach(el=>el.remove());
-    /* Only the final page receives the legacy sections/signature area. */
-    page.querySelectorAll('.pdf-section, .pdf-signed-signatures').forEach(el=>el.remove());
-    const agreementBox=document.createElement('div'); agreementBox.className='preview-contract-agreement-direct';
-    if(index===0) agreementBox.innerHTML='<h3>CONTRACT AGREEMENT / TERMS</h3>';
-    const body=document.createElement('div'); body.className='preview-contract-agreement-body';
-    chunk.forEach(node=>body.appendChild(node.cloneNode(true)));
-    agreementBox.appendChild(body);
-    const header=page.querySelector('.pdf-page-header'); const infoBlock=page.querySelector('.pdf-info-bullets');
-    if(infoBlock) infoBlock.insertAdjacentElement('afterend',agreementBox); else if(header) header.insertAdjacentElement('afterend',agreementBox); else page.prepend(agreementBox);
-    if(index===chunks.length-1){
-      page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
-      const manualSignatures=document.createElement('div');
-      manualSignatures.className='pdf-signed-signatures';
-      const teacherName=getTeacherContractDisplayName()||'Teacher';
-      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
-      const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
-      manualSignatures.innerHTML=`
-        <div class="pdf-manual-signature-grid">
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Parent / Guardian Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(parentName)}</div>
-          </div>
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Teacher's Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(teacherName)}</div>
-          </div>
-        </div>`;
-      page.appendChild(manualSignatures);
+    if(index===0 && info){
+      const infoWrap=document.createElement('div'); infoWrap.className='pdf-info-bullets';
+      const temp=document.createElement('div'); temp.innerHTML=info;
+      [...temp.querySelectorAll('.contract-info-box')].forEach(box=>{
+        const label=box.querySelector('label')?.textContent?.trim()||'';
+        const value=[...box.childNodes].map(n=>n.nodeType===3?n.textContent:'').join(' ').replace(/\s+/g,' ').trim() || box.textContent.replace(label,'').replace(/\s+/g,' ').trim();
+        const row=document.createElement('div'); row.className='pdf-info-bullet';
+        row.innerHTML=`<span>•</span><strong>${escapeHtml(label)}:</strong><span>${escapeHtml(value)}</span>`;
+        infoWrap.appendChild(row);
+      });
+      page.appendChild(infoWrap);
     }
+
+    const agreement=document.createElement('div');
+    agreement.className='preview-contract-agreement-direct';
+    if(index===0)agreement.innerHTML='<h3>CONTRACT AGREEMENT / TERMS</h3>';
+    const body=document.createElement('div');
+    body.className='preview-contract-agreement-body';
+    agreement.appendChild(body);
+    page.appendChild(agreement);
+
     pages.appendChild(page);
+    if(index>0){
+      page.querySelector('.pdf-page-header')?.remove();
+      page.querySelector('.pdf-info-bullets')?.remove();
+    }
+    /* Lock the agreement body to the exact remaining height of this page. */
+    const bottomPadding=43;
+    const available=Math.max(40,page.clientHeight-body.offsetTop-bottomPadding);
+    body.style.height=available+'px';
+    body.style.maxHeight=available+'px';
+    body.style.boxSizing='border-box';
+    return {page,body};
+  }
+
+  function fits(page,body){
+    /* clientHeight is the actual visible content box after padding/header.
+       scrollHeight tells us whether the agreement overflowed that space. */
+    return body.scrollHeight <= body.clientHeight + 1;
+  }
+
+  /* Temporarily allow measurement while the page is in the DOM. */
+  const built=[];
+  let current=createPage(0);
+  built.push(current.page);
+
+  for(const originalBlock of blocks){
+    const candidate=originalBlock.cloneNode(true);
+    current.body.appendChild(candidate);
+
+    if(!fits(current.page,current.body)){
+      current.body.removeChild(candidate);
+      current=createPage(built.length);
+      built.push(current.page);
+      current.body.appendChild(candidate);
+
+      /* A single paragraph can itself be taller than one page.  Split plain
+         text progressively by words so even very long typed text continues
+         accurately instead of being clipped. Rich inline formatting remains
+         intact for normal paragraphs/lists. */
+      if(!fits(current.page,current.body)){
+        current.body.removeChild(candidate);
+        const text=(candidate.innerText||candidate.textContent||'').trim();
+        if(text){
+          const words=text.split(/\s+/);
+          let part=document.createElement('div');
+          part.className=candidate.className||'';
+          current.body.appendChild(part);
+          for(const word of words){
+            const next=(part.textContent?part.textContent+' ':'')+word;
+            part.textContent=next;
+            if(!fits(current.page,current.body) && part.textContent!==word){
+              const previous=part.textContent.slice(0,-(word.length+1)).trim();
+              part.textContent=previous;
+              current=createPage(built.length); built.push(current.page);
+              part=document.createElement('div'); part.className=candidate.className||''; part.textContent=word;
+              current.body.appendChild(part);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Put the signature lines after the agreement. If they do not fit on the
+     final page, automatically create one more page. */
+  let final=current;
+  const manualSignatures=document.createElement('div');
+  manualSignatures.className='pdf-manual-signature-grid';
+  const teacherName=getTeacherContractDisplayName()||'Teacher';
+  const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
+  const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
+  manualSignatures.innerHTML=`
+    <div class="pdf-manual-signature-card">
+      <div class="pdf-manual-signature-line"></div>
+      <div class="pdf-manual-signature-label">Parent / Guardian Signature</div>
+      <div class="pdf-manual-signature-name">${escapeHtml(parentName)}</div>
+    </div>
+    <div class="pdf-manual-signature-card">
+      <div class="pdf-manual-signature-line"></div>
+      <div class="pdf-manual-signature-label">Teacher's Signature</div>
+      <div class="pdf-manual-signature-name">${escapeHtml(teacherName)}</div>
+    </div>`;
+  final.page.appendChild(manualSignatures);
+
+  if(final.page.scrollHeight>final.page.clientHeight+1){
+    final.page.removeChild(manualSignatures);
+    final=createPage(built.length); built.push(final.page);
+    final.body.appendChild(document.createElement('div'));
+    final.page.appendChild(manualSignatures);
+  }
+
+  /* Subsequent pages intentionally show only the continuation text. */
+  built.slice(1).forEach(page=>{
+    page.querySelector('.preview-contract-agreement-direct h3')?.remove();
+    page.classList.add('contract-continuation-page');
   });
+
   modal.style.display='flex';
  }catch(err){showContractError(err.message||'Unable to create contract preview.');}
 }
