@@ -12164,15 +12164,21 @@ content.innerHTML=`
   </div>
 
   <div class="student-profile-section">
-   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <h4 style="margin:0">CLASSES / APPOINTMENTS (${appointments.length})</h4>
-    ${appointments.length?`<button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileList('appointments')">SHOW COMPLETE CLASSES</button>`:''}
+   <h4 style="margin:0">CLASSES / APPOINTMENTS (${appointments.length})</h4>
+   <div style="margin-top:10px">
+    <button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileSection('appointments')">SHOW CLASSES / APPOINTMENTS</button>
    </div>
-   ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
+   <div id="studentProfileAppointmentsContent" style="display:none">
+    ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
+   </div>
   </div>
 
   <div class="student-profile-section">
-   <h4>CLASSES HISTORY</h4>
+   <h4 style="margin:0">CLASSES HISTORY</h4>
+   <div style="margin-top:10px">
+    <button type="button" class="view-record-btn" id="studentProfileHistoryToggle" onclick="toggleStudentProfileSection('history')">SHOW CLASSES HISTORY</button>
+   </div>
+   <div id="studentProfileHistoryContent" style="display:none;margin-top:10px">
    ${(p.history||[]).slice().reverse().map(pkg=>{
     const pkgCount=Math.max(0,parseInt(pkg.classCount,10)||getPackageClassCount(pkg.packageName));
     const pkgCompleted=getAppointments().filter(a=>a.studentId===student.id&&a.packageId===pkg.id&&a.type==='Regular Class'&&a.status==='Completed').length;
@@ -12181,43 +12187,70 @@ content.innerHTML=`
     const locked=!packageDone;
     return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div><div class="package-class-record-actions"><button type="button" class="primary" onclick="openPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')">VIEW CLASS RECORD</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`previewPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">PREVIEW</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`downloadPackageClassRecordPDF('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">DOWNLOAD PDF</button></div></div><span class="package-history-badge ${packageDone?'':'old'}">${escapeHtml(packageStatus)}</span></div>`;
    }).join('')||'<div class="small">No classes history yet.</div>'}
+   </div>
   </div>
 
   <div class="student-profile-section">
-   <h4>STUDENT CONTRACT</h4>
+   <h4 style="margin:0">STUDENT CONTRACT</h4>
+   <div style="margin-top:10px">
+    <button type="button" class="view-record-btn" id="studentProfileContractToggle" onclick="toggleStudentProfileSection('contract')">SHOW STUDENT CONTRACT</button>
+   </div>
+   <div id="studentProfileContractContent" style="display:none;margin-top:10px">
    ${getStudentContracts()[student.id]?.submittedAt?`<div class="student-detail-grid"><div class="student-detail-box"><label>Status</label><b>Saved</b></div><div class="student-detail-box"><label>Saved Date</label><b>${escapeHtml(new Date(getStudentContracts()[student.id].submittedAt).toLocaleString())}</b></div></div><div class="small" style="margin-top:8px">The saved Student Contract is stored in this student's record.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="primary-action" onclick="openStudentContractPDFViewerForStudent('${escapeAttr(student.id)}')">VIEW CONTRACT PDF</button><button type="button" class="primary-action" onclick="closeStudentProfile();openStudentContract('${escapeAttr(student.id)}')">EDIT CONTRACT</button><button type="button" class="primary-action" onclick="downloadSavedStudentContract('${escapeAttr(student.id)}')">DOWNLOAD PDF</button></div>`:'<div class="small">No Student Contract saved yet.</div>'}
+   </div>
   </div>
 
   <div class="student-profile-section">
-   <h4>PAYMENT RECEIPT</h4>
+   <h4 style="margin:0">PAYMENT RECEIPT</h4>
+   <div style="margin-top:10px">
+    <button type="button" class="view-record-btn" id="studentProfilePaymentToggle" onclick="toggleStudentProfileSection('payment')">SHOW PAYMENT RECEIPT</button>
+   </div>
+   <div id="studentProfilePaymentContent" style="display:none;margin-top:10px">
    ${(()=>{
       const receipts=getPaymentReceipts().filter(r=>String(r.studentId||'')===String(student.id||''));
       return receipts.length?`<div style="display:grid;gap:8px;margin-top:10px">${receipts.slice().reverse().map((r,i)=>`<div style="border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>${escapeHtml(r.receiptNo||`Receipt ${receipts.length-i}`)}</b><div class="small" style="margin-top:3px">${escapeHtml(r.date||'No date')} · ${escapeHtml(r.packageName||'No classes')} · ${escapeHtml(r.currency||'')} ${r.amount!==''&&r.amount!=null?escapeHtml(Number(r.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})):'—'}</div></div><button type="button" class="view-record-btn" onclick="viewSavedPaymentReceipt('${escapeAttr(r.receiptNo||'')}','${escapeAttr(student.id)}')">VIEW RECEIPT IMAGE</button></div>`).join('')}</div>`:'<div class="small">No payment receipt saved yet.</div>';
    })()}
+   </div>
   </div>
 
   <div class="student-profile-section">
-   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <h4 style="margin:0">RECORD OF EVALUATION (${evaluations.length})</h4>
-    <div style="display:flex;align-items:center;gap:8px">
-    ${evaluations.length?`<button type="button" class="view-record-btn" id="studentProfileEvaluationsToggle" onclick="toggleStudentProfileList('evaluations')">SHOW EVALUATION RECORD</button>`:''}
+   <h4 style="margin:0">RECORD OF EVALUATION (${evaluations.length})</h4>
+   <div style="margin-top:10px">
+    <button type="button" class="view-record-btn" id="studentProfileEvaluationsToggle" onclick="toggleStudentProfileSection('evaluations')">SHOW RECORD OF EVALUATION</button>
+   </div>
+   <div id="studentProfileEvaluationsContent" style="display:none;margin-top:10px">
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
     ${evaluations.length?`<div class="class-record-actions"><button type="button" class="class-record-dots" aria-label="Evaluation record options" onclick="event.stopPropagation();toggleStudentProfileEvaluationTools('${escapeAttr(student.id)}')">⋮</button><div id="studentProfileEvaluationTools-${encodeURIComponent(String(student.id))}" class="class-record-menu"><button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}');setTimeout(()=>toggleEvaluationSelectMode('${escapeAttr(student.id)}'),50)">Select to Delete</button></div></div>`:''}
     </div>
-   </div>
    <div class="small" style="margin-top:6px">${evaluations.length?`This student has ${evaluations.length} saved evaluation record${evaluations.length===1?'':'s'}.`:'No evaluation records yet.'}</div>
    ${evaluations.length?`<div id="studentProfileEvaluationsList" style="display:grid;gap:8px;margin-top:10px">${evaluationRows}</div>`:''}
    <div class="student-card-actions" style="justify-content:flex-start;margin-top:10px">
     <button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View Class Records</button>
+   </div>
    </div>
   </div>
  </div>
 </div>`;
 
 document.getElementById('studentProfileModal').classList.add('show');
-setTimeout(()=>{
-  toggleStudentProfileList('appointments',true);
-  toggleStudentProfileList('evaluations',true);
-},0);
+}
+
+function toggleStudentProfileSection(type){
+  const map={
+    appointments:{content:'studentProfileAppointmentsContent',button:'studentProfileAppointmentsToggle',show:'SHOW CLASSES / APPOINTMENTS',hide:'HIDE CLASSES / APPOINTMENTS'},
+    history:{content:'studentProfileHistoryContent',button:'studentProfileHistoryToggle',show:'SHOW CLASSES HISTORY',hide:'HIDE CLASSES HISTORY'},
+    contract:{content:'studentProfileContractContent',button:'studentProfileContractToggle',show:'SHOW STUDENT CONTRACT',hide:'HIDE STUDENT CONTRACT'},
+    payment:{content:'studentProfilePaymentContent',button:'studentProfilePaymentToggle',show:'SHOW PAYMENT RECEIPT',hide:'HIDE PAYMENT RECEIPT'},
+    evaluations:{content:'studentProfileEvaluationsContent',button:'studentProfileEvaluationsToggle',show:'SHOW RECORD OF EVALUATION',hide:'HIDE RECORD OF EVALUATION'}
+  };
+  const item=map[type];
+  if(!item)return;
+  const content=document.getElementById(item.content);
+  const button=document.getElementById(item.button);
+  if(!content||!button)return;
+  const open=content.style.display==='none'||content.style.display==='';
+  content.style.display=open?'block':'none';
+  button.textContent=open?item.hide:item.show;
 }
 
 function toggleStudentProfileList(type,initial=false){
@@ -13566,11 +13599,18 @@ submitBtn.textContent='Saving...';
 const downloadBtnBeforeSave=document.getElementById('downloadEvaluationBtn');
 if(downloadBtnBeforeSave) downloadBtnBeforeSave.disabled=true;
 
-const evals=
-getEvaluations();
+let evals=getEvaluations();
+
+/* One evaluation record per completed appointment.
+   Re-saving the same appointment updates the existing record
+   instead of creating a duplicate. */
+if(currentEvaluationAppointmentId){
+  evals=evals.filter(item=>String(item.appointmentId||'')!==String(currentEvaluationAppointmentId));
+}else{
+  evals=evals.filter(item=>!(String(item.student_id||'')===String(record.student_id||'') && String(item.dateTime||'')===String(record.dateTime||'')));
+}
 
 evals.push(record);
-
 saveEvaluations(evals);
 
 const downloadBtn=document.getElementById('downloadEvaluationBtn');
@@ -14431,7 +14471,7 @@ return `
 <div style="display:flex;align-items:center;gap:9px;">
 <input type="checkbox" class="evaluation-select-box" data-evaluation-select="${escapeAttr(student.id)}" data-evaluation-index="${index}" style="display:none" onchange="updateEvaluationSelection('${escapeAttr(student.id)}')">
 <b>
-Evaluation ${records.length-index}
+${escapeHtml(topic && topic!=='N/A' ? topic : `Evaluation ${records.length-index}`)}
 </b>
 </div>
 
