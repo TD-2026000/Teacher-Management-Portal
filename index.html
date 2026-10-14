@@ -3891,6 +3891,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 <style id="subscription-qr-direct-style">.subscription-qr-option-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.subscription-qr-view-card{justify-content:center;min-height:78px;text-align:center;border:1px solid var(--global-border);}.subscription-qr-view-card:hover{transform:translateY(-1px);}.subscription-qr-view-card .subscription-check-mark{color:#111827;border-color:#cbd5e1;background:#fff;font-size:17px;}.subscription-qr-modal{z-index:100000;}.subscription-qr-modal-box{max-width:520px;text-align:center;}.subscription-qr-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.subscription-qr-modal-head h3{margin:0;}.subscription-qr-close{border:0;background:#f1f5f9;color:#111827;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;}.subscription-qr-image-wrap{margin:12px auto 8px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;min-height:300px;padding:10px;}.subscription-qr-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;}.subscription-qr-help{margin:8px 0 0;color:#6b7280;font-size:13px;}@media(max-width:1100px){.subscription-qr-option-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.subscription-qr-option-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.subscription-qr-option-grid{grid-template-columns:1fr;}}</style>
 
 <style>
+.student-lesson-flow-modal{width:95vw;max-width:1450px;max-height:92vh;overflow:auto;}
 .student-lesson-flow-grid{display:grid;gap:10px;margin-top:10px}
 .student-lesson-flow-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid #ddd;border-radius:10px;padding:9px;background:#fff}
 .student-lesson-flow-row input,.student-lesson-flow-row select{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #ccc;border-radius:8px;background:#fff}
@@ -5801,14 +5802,10 @@ Log Out
 </div>
 
 <div id="studentLessonFlowModal" class="modal-backdrop" onclick="if(event.target===this) closeStudentLessonFlow()">
-<div class="modal" style="width:min(900px,96vw);max-height:90vh;overflow:auto">
+<div class="modal student-lesson-flow-modal">
 <h3 id="studentLessonFlowTitle">Student Lesson Flow</h3>
 <p class="small" style="margin-top:0">Paste the lesson link for each class. The lesson rows are generated automatically from the student's purchased classes and links are saved automatically.</p>
 <div id="studentLessonFlowRows" class="student-lesson-flow-grid"></div>
-<div class="student-lesson-flow-actions">
-<button type="button" class="primary-action" onclick="copyStudentLessonFlowLinks()">COPY LINKS</button>
-<button type="button" class="modal-cancel" onclick="closeStudentLessonFlow()">Close</button>
-</div>
 <div class="student-lesson-flow-note">No Save button is required. Every lesson link is saved automatically after you paste or edit it.</div>
 </div>
 </div>
