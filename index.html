@@ -12203,7 +12203,16 @@ function buildStudentAllRecordInfoPage(student){
 }
 
 function buildStudentAllRecordSchedulePage(student){
-  const appointments=getAppointments().filter(a=>String(a.studentId||'')===String(student.id||'')).sort((a,b)=>{
+  /*
+    STUDENT CLASS SCHEDULE in Student All Record must contain ONLY
+    classes that have actually been completed. Do not include future,
+    booked, pending, or other unfinished appointments.
+  */
+  const appointments=getAppointments().filter(a=>
+    String(a.studentId||'')===String(student.id||'') &&
+    String(a.type||'Regular Class')==='Regular Class' &&
+    String(a.status||'')==='Completed'
+  ).sort((a,b)=>{
     const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
     return (da?da.getTime():0)-(db?db.getTime():0);
   });
