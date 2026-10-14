@@ -4312,6 +4312,8 @@ Teacher
   </div>
 </div>
 
+<button type="button" id="portalReloadBtn" class="portal-reload-btn" onclick="reloadPortalData(event)" aria-label="Reload portal" title="Reload Portal">↻</button>
+
 <button type="button" id="settingsGearBtn" class="settings-gear-btn" onclick="togglePortalSettings(event)" aria-label="Open Settings" title="Settings">⚙️</button>
 
 </div>
@@ -5801,15 +5803,13 @@ Log Out
 <div id="studentLessonFlowModal" class="modal-backdrop" onclick="if(event.target===this) closeStudentLessonFlow()">
 <div class="modal" style="width:min(900px,96vw);max-height:90vh;overflow:auto">
 <h3 id="studentLessonFlowTitle">Student Lesson Flow</h3>
-<p class="small" style="margin-top:0">Choose a lesson from the existing Lesson Materials list. Its link will be filled automatically.</p>
+<p class="small" style="margin-top:0">Paste the lesson link for each class. The lesson rows are generated automatically from the student's purchased classes and links are saved automatically.</p>
 <div id="studentLessonFlowRows" class="student-lesson-flow-grid"></div>
 <div class="student-lesson-flow-actions">
-<button type="button" class="primary-action" onclick="addStudentLessonFlowRow()">+ ADD LESSON LINK</button>
-<button type="button" class="primary-action" onclick="saveStudentLessonFlow()">SAVE LESSON FLOW</button>
 <button type="button" class="primary-action" onclick="copyStudentLessonFlowLinks()">COPY LINKS</button>
 <button type="button" class="modal-cancel" onclick="closeStudentLessonFlow()">Close</button>
 </div>
-<div class="student-lesson-flow-note">The saved lesson links belong to this student and can be updated anytime.</div>
+<div class="student-lesson-flow-note">No Save button is required. Every lesson link is saved automatically after you paste or edit it.</div>
 </div>
 </div>
 
@@ -12239,10 +12239,22 @@ function toggleStudentProfileList(type,initial=false){
 function getStudentLessonFlow(student){
   const links=Array.isArray(student?.lessonFlowLinks)?student.lessonFlowLinks:[];
   return links.map(item=>({
+    lessonNumber:Number.isInteger(Number(item.lessonNumber))?Number(item.lessonNumber):0,
     lessonIndex:Number.isInteger(Number(item.lessonIndex))?Number(item.lessonIndex):-1,
     lessonName:String(item.lessonName||''),
     url:String(item.url||'')
   }));
+}
+
+function getStudentLessonFlowClassCount(student){
+  if(!student)return 0;
+  const progress=getStudentProgress(student);
+  const count=Number.parseInt(progress?.purchased,10);
+  if(Number.isFinite(count)&&count>0)return count;
+  const current=getCurrentStudentPackage(student);
+  const currentCount=Number.parseInt(current?.classCount,10);
+  if(Number.isFinite(currentCount)&&currentCount>0)return currentCount;
+  return Math.max(0,Number.parseInt(getPackageClassCount(student.packageName),10)||0);
 }
 
 function openStudentLessonFlow(studentId){
@@ -12251,7 +12263,7 @@ function openStudentLessonFlow(studentId){
   window.currentStudentLessonFlowId=student.id;
   const title=document.getElementById('studentLessonFlowTitle');
   if(title)title.textContent=`${student.nickname||student.name||'Student'} — Lessons Link`;
-  renderStudentLessonFlowRows(getStudentLessonFlow(student));
+  renderStudentLessonFlowRows(getStudentLessonFlow(student),getStudentLessonFlowClassCount(student));
   document.getElementById('studentLessonFlowModal')?.classList.add('show');
 }
 
@@ -12259,89 +12271,75 @@ function closeStudentLessonFlow(){
   document.getElementById('studentLessonFlowModal')?.classList.remove('show');
 }
 
-function renderStudentLessonFlowRows(rows){
+function renderStudentLessonFlowRows(savedRows=[],classCount=0){
   const box=document.getElementById('studentLessonFlowRows');
   if(!box)return;
-  const items=getLessonMaterialLinks();
-  if(!rows.length){
-    box.innerHTML='<div class="small">No lesson links added yet. Click + ADD LESSON LINK to start.</div>';
+  const count=Math.max(0,Number.parseInt(classCount,10)||0);
+  if(!count){
+    box.innerHTML='<div class="small">No purchased classes found for this student.</div>';
     return;
   }
-  box.innerHTML=rows.map((row,index)=>{
-    const options=items.map((item,i)=>`<option value="${i}" ${Number(row.lessonIndex)===i?'selected':''}>${lessonMaterialEscape(item.name||`Lesson ${i+1}`)}</option>`).join('');
-    const url=row.url||((row.lessonIndex>=0&&items[row.lessonIndex])?items[row.lessonIndex].url:'');
-    return `<div class="student-lesson-flow-row" data-row-index="${index}">
-      <input type="number" min="1" value="${index+1}" aria-label="Lesson number" class="lesson-flow-number">
-      <select aria-label="Lesson link" class="lesson-flow-select" onchange="updateStudentLessonFlowRowLink(this)">
-        <option value="-1">Select lesson...</option>${options}
-      </select>
-      <button type="button" class="lesson-flow-remove" onclick="removeStudentLessonFlowRow(${index})">REMOVE</button>
-      <input type="text" value="${lessonMaterialEscape(url)}" readonly aria-label="Lesson URL" class="lesson-flow-url" style="grid-column:2 / -1;background:#f8f8f8;color:#666">
-    </div>`;
-  }).join('');
+
+  const saved=Array.isArray(savedRows)?savedRows:[];
+  const byNumber={};
+  saved.forEach(item=>{
+    const n=Number.parseInt(item.lessonNumber,10);
+    if(n>0)byNumber[n]=item;
+  });
+
+  let html=`<div style="display:grid;grid-template-columns:140px minmax(0,1fr);border:1px solid #ddd;border-radius:10px;overflow:hidden;background:#fff">`;
+  html+=`<div style="font-weight:800;padding:10px;border-right:1px solid #ddd;border-bottom:1px solid #ddd">CLASS NUMBER</div><div style="font-weight:800;padding:10px;border-bottom:1px solid #ddd">LESSON LINK</div>`;
+  for(let i=1;i<=count;i++){
+    const item=byNumber[i]||{};
+    const url=String(item.url||'');
+    html+=`<div style="padding:8px 10px;border-right:1px solid #ddd;${i<count?'border-bottom:1px solid #eee;':''}font-weight:700">Class ${i}</div>`;
+    html+=`<div style="padding:6px 8px;${i<count?'border-bottom:1px solid #eee;':''}"><input type="url" class="lesson-flow-url-input" data-lesson-number="${i}" value="${lessonMaterialEscape(url)}" placeholder="Paste lesson link here" oninput="autoSaveStudentLessonFlowLink(${i},this.value)" onchange="autoSaveStudentLessonFlowLink(${i},this.value)"></div>`;
+  }
+  html+='</div>';
+  box.innerHTML=html;
 }
 
-function updateStudentLessonFlowRowLink(select){
-  const row=select?.closest('.student-lesson-flow-row');
-  if(!row)return;
-  const index=Number(select.value);
-  const items=getLessonMaterialLinks();
-  const item=Number.isInteger(index)&&index>=0?items[index]:null;
-  const urlInput=row.querySelector('.lesson-flow-url');
-  if(urlInput)urlInput.value=item?.url||'';
-}
+let studentLessonFlowSaveTimer=null;
 
-function addStudentLessonFlowRow(){
-  const box=document.getElementById('studentLessonFlowRows');
-  if(!box)return;
-  const rows=Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>({
-    lessonIndex:Number(row.querySelector('.lesson-flow-select')?.value||-1),
-    lessonName:row.querySelector('.lesson-flow-select')?.selectedOptions?.[0]?.textContent||'',
-    url:row.querySelector('.lesson-flow-url')?.value||''
-  }));
-  rows.push({lessonIndex:-1,lessonName:'',url:''});
-  renderStudentLessonFlowRows(rows);
-}
-
-function removeStudentLessonFlowRow(index){
-  const box=document.getElementById('studentLessonFlowRows');
-  if(!box)return;
-  const rows=Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>({
-    lessonIndex:Number(row.querySelector('.lesson-flow-select')?.value||-1),
-    lessonName:row.querySelector('.lesson-flow-select')?.selectedOptions?.[0]?.textContent||'',
-    url:row.querySelector('.lesson-flow-url')?.value||''
-  })).filter((_,i)=>i!==index);
-  renderStudentLessonFlowRows(rows);
-}
-
-function collectStudentLessonFlowRows(){
+function collectStudentLessonFlowLinksFromTable(){
   const box=document.getElementById('studentLessonFlowRows');
   if(!box)return [];
-  const items=getLessonMaterialLinks();
-  return Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>{
-    const lessonIndex=Number(row.querySelector('.lesson-flow-select')?.value||-1);
-    const selected=lessonIndex>=0?items[lessonIndex]:null;
-    const number=Number(row.querySelector('.lesson-flow-number')?.value||0);
-    return {lessonNumber:number>0?number:0,lessonIndex,lessonName:selected?.name||'',url:selected?.url||row.querySelector('.lesson-flow-url')?.value||''};
-  }).filter(row=>row.lessonIndex>=0&&row.url);
+  return Array.from(box.querySelectorAll('.lesson-flow-url-input')).map(input=>({
+    lessonNumber:Number(input.dataset.lessonNumber||0),
+    lessonIndex:-1,
+    lessonName:'',
+    url:String(input.value||'').trim()
+  })).filter(item=>item.lessonNumber>0&&item.url);
 }
 
-function saveStudentLessonFlow(){
+function saveStudentLessonFlowData(){
   const id=window.currentStudentLessonFlowId;
+  if(!id)return;
   const students=getStudents();
   const index=students.findIndex(s=>String(s.id)===String(id));
   if(index<0)return;
-  const links=collectStudentLessonFlowRows().map(row=>({lessonNumber:row.lessonNumber,lessonIndex:row.lessonIndex,lessonName:row.lessonName,url:row.url}));
+
+  const links=collectStudentLessonFlowLinksFromTable();
   students[index].lessonFlowLinks=links;
   saveStudents(students);
   try{syncStudentToSupabase(students[index]);}catch(e){}
-  alert('Student lesson links saved.');
-  closeStudentLessonFlow();
-  if(window.currentStudentProfileId)openStudentProfile(window.currentStudentProfileId);
+}
+
+function autoSaveStudentLessonFlowLink(lessonNumber,value){
+  const input=document.querySelector(`.lesson-flow-url-input[data-lesson-number="${lessonNumber}"]`);
+  if(input&&input.value!==String(value??''))input.value=String(value??'');
+  clearTimeout(studentLessonFlowSaveTimer);
+  studentLessonFlowSaveTimer=setTimeout(()=>{
+    saveStudentLessonFlowData();
+  },500);
+}
+
+function saveStudentLessonFlow(){
+  saveStudentLessonFlowData();
 }
 
 async function copyStudentLessonFlowLinks(){
-  const links=collectStudentLessonFlowRows().map(row=>row.url).filter(Boolean);
+  const links=collectStudentLessonFlowLinksFromTable().map(row=>row.url).filter(Boolean);
   if(!links.length){alert('Please add at least one lesson link first.');return;}
   const text=links.join('\n');
   try{
@@ -16023,6 +16021,27 @@ function applyPortalFont(name,persist=true){
  if(persist)savePortalSettings();
 }
 function updateFontPreview(){const el=document.getElementById('fontPreview');if(!el)return;const found=PORTAL_FONTS.find(x=>x[0]===portalSettings.font)||PORTAL_FONTS[0];el.style.fontFamily=found[1];}
+async function reloadPortalData(e){
+  if(e)e.stopPropagation();
+  const btn=document.getElementById('portalReloadBtn');
+  if(btn)btn.classList.add('is-loading');
+  closePortalSettings();
+  closePortalNotifications();
+  try{
+    if(!currentUser){
+      showPortalToast('Please sign in first.');
+      return;
+    }
+    await handleSignedIn(currentUser);
+    showPortalToast('Portal reloaded successfully.');
+  }catch(err){
+    console.error('Portal reload failed:',err);
+    showPortalToast('Unable to reload the portal. Please try again.');
+  }finally{
+    if(btn)btn.classList.remove('is-loading');
+  }
+}
+
 function togglePortalSettings(e){if(e)e.stopPropagation();document.getElementById('portalSettingsPanel')?.classList.toggle('show');document.getElementById('portalSettingsPanel')?.setAttribute('aria-hidden',String(!document.getElementById('portalSettingsPanel')?.classList.contains('show')))}
 function closePortalSettings(){document.getElementById('portalSettingsPanel')?.classList.remove('show');document.getElementById('portalSettingsPanel')?.setAttribute('aria-hidden','true')}
 function setPortalNotifications(enabled){portalSettings.notifications=!!enabled;savePortalSettings();if(enabled){startClassNotificationWatcher();requestNotificationPermission();}else{stopClassNotificationWatcher();}}
@@ -16556,6 +16575,23 @@ function drawPaymentReceiptCanvas(){
 .portal-notification-item-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:0 0 34px;font-size:17px;background:var(--portal-accent-soft)}
 .portal-notification-item-content{min-width:0;flex:1}.portal-notification-item-title{font-size:12px;font-weight:900;line-height:1.35}.portal-notification-item-body{font-size:11px;line-height:1.45;margin-top:3px;color:var(--portal-muted)}.portal-notification-item-time{font-size:9px;color:var(--portal-muted);margin-top:5px}
 @media(max-width:600px){.portal-notification-panel{right:10px}.portal-notification-wrap{margin-right:6px}}
+.portal-reload-btn{
+  margin-left:8px;
+  width:42px;height:42px;
+  border:1px solid #d8e0e3;
+  border-radius:10px;
+  background:#fff;
+  color:#111;
+  font-size:25px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:.15s ease;
+}
+.portal-reload-btn:hover{background:var(--portal-accent-soft);border-color:var(--portal-accent);transform:rotate(180deg)}
+.portal-reload-btn.is-loading{animation:portalReloadSpin .75s linear infinite;pointer-events:none}
+@keyframes portalReloadSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
 .settings-gear-btn{
   margin-left:8px;
   width:42px;height:42px;
