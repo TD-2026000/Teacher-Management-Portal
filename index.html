@@ -12166,7 +12166,7 @@ content.innerHTML=`
   <div class="student-profile-section">
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
     <h4 style="margin:0">CLASSES / APPOINTMENTS (${appointments.length})</h4>
-    ${appointments.length>5?`<button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileList('appointments')">SHOW ALL</button>`:''}
+    ${appointments.length?`<button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileList('appointments')">SHOW COMPLETE CLASSES</button>`:''}
    </div>
    ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
   </div>
@@ -12200,7 +12200,7 @@ content.innerHTML=`
    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
     <h4 style="margin:0">RECORD OF EVALUATION (${evaluations.length})</h4>
     <div style="display:flex;align-items:center;gap:8px">
-    ${evaluations.length>5?`<button type="button" class="view-record-btn" id="studentProfileEvaluationsToggle" onclick="toggleStudentProfileList('evaluations')">SHOW ALL</button>`:''}
+    ${evaluations.length?`<button type="button" class="view-record-btn" id="studentProfileEvaluationsToggle" onclick="toggleStudentProfileList('evaluations')">SHOW EVALUATION RECORD</button>`:''}
     ${evaluations.length?`<div class="class-record-actions"><button type="button" class="class-record-dots" aria-label="Evaluation record options" onclick="event.stopPropagation();toggleStudentProfileEvaluationTools('${escapeAttr(student.id)}')">⋮</button><div id="studentProfileEvaluationTools-${encodeURIComponent(String(student.id))}" class="class-record-menu"><button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}');setTimeout(()=>toggleEvaluationSelectMode('${escapeAttr(student.id)}'),50)">Select to Delete</button></div></div>`:''}
     </div>
    </div>
@@ -12226,11 +12226,20 @@ function toggleStudentProfileList(type,initial=false){
   const button=document.getElementById(isAppointments?'studentProfileAppointmentsToggle':'studentProfileEvaluationsToggle');
   if(!list||!button)return;
   const rows=list.querySelectorAll(isAppointments?'.student-profile-appointment-row':'.student-profile-evaluation-row');
-  const showAll=initial?false:!(isAppointments?window.studentProfileShowAllAppointments:window.studentProfileShowAllEvaluations);
+  let showAll;
+  if(initial){
+    showAll=false;
+  }else{
+    showAll=!(isAppointments?window.studentProfileShowAllAppointments:window.studentProfileShowAllEvaluations);
+  }
   if(isAppointments)window.studentProfileShowAllAppointments=showAll;
   else window.studentProfileShowAllEvaluations=showAll;
-  rows.forEach((row,index)=>{row.style.display=showAll||index<5?'':'none';});
-  button.textContent=showAll?'SHOW LESS':'SHOW ALL';
+  rows.forEach(row=>{row.style.display=showAll?'':'none';});
+  if(isAppointments){
+    button.textContent=showAll?'HIDE COMPLETE CLASSES':'SHOW COMPLETE CLASSES';
+  }else{
+    button.textContent=showAll?'HIDE EVALUATION RECORD':'SHOW EVALUATION RECORD';
+  }
 }
 
 function getStudentLessonFlow(student){
