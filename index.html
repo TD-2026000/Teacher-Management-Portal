@@ -4027,6 +4027,24 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
   color:var(--global-text-on-accent)!important;
 }
 </style>
+<style id="td-palette-original-colors-v28">
+/* Palette choices are previews, not part of the active website theme.
+   Keep each swatch's own original color so Pink/Blue/Green/Red choices
+   remain visually distinct inside Settings. */
+#paletteGrid .palette-btn{
+  background:var(--portal-surface,#fff)!important;
+  border-color:transparent!important;
+  color:var(--portal-text,#222)!important;
+}
+#paletteGrid .palette-btn.active{
+  background:var(--portal-surface,#fff)!important;
+  border-color:var(--portal-accent)!important;
+  color:var(--portal-text,#222)!important;
+}
+#paletteGrid .palette-swatch{
+  background-image:var(--palette-preview-bg,none);
+}
+</style>
 </head>
 
 <body>
@@ -4574,12 +4592,12 @@ Dashboard
 
 <div class="dashboard-summary-grid">
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">STUDENTS</div>
+<div class="dashboard-summary-label">NUMBER OF STUDENTS</div>
 <div id="dashboardStudentCount" class="dashboard-summary-number">0</div>
 </div>
 
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">APPOINTMENTS</div>
+<div class="dashboard-summary-label">NUMBER OF APPOINTMENTS</div>
 <div id="dashboardAppointmentCount" class="dashboard-summary-number">0</div>
 </div>
 
@@ -15572,33 +15590,32 @@ setInterval(()=>{
 ========================================================= */
 const STUDENT_CONTRACTS_BASE_KEY='teacherDanyealStudentContracts_v1';
 const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
+
 - Each class is **25 minutes long**.
 - Classes are conducted as **private 1-on-1 sessions**.
 - The class schedule will be arranged by **mutual agreement** between the teacher and parent/student.
 - There is **no fixed completion period** for the purchased classes unless otherwise agreed upon.
 - The student is expected to attend the agreed class schedule **on time**.
 
-                            
-
 
 **LESSON MATERIALS**
+
 - Learning materials will be prepared by **Teacher _____________** based on the student's learning needs, level, and/or the parent's requested topic.
 - Parents may **communicate their preferred learning goals** or lesson topics before the class.
 - Materials may include **PPT lessons, worksheets, reading activities, vocabulary exercises, phonics, grammar, speaking practice, stories**, and other appropriate activities.
 
 
-  
-  
 **PACKAGE & PAYMENT POLICY**
+
 - The purchased package is intended for **one student only** and cannot be transferred to another student without the teacher's approval.
 - Once payment has been confirmed and the package has been activated, the classes are **considered purchased**.
 - Parents are encouraged to **communicate any concerns** regarding the package or lessons directly with the teacher.
 
 
-  
-  
 **STUDENT LEARNING EXPECTATIONS**
+
 **The student is encouraged to:**
+
 - Attend classes **regularly**.
 - Participate **actively** during lessons.
 - Complete assigned activities or practice **when applicable**.
@@ -15606,9 +15623,8 @@ const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
 - Practice English **outside class** when possible.
 
 
-  
-  
 **CLASS CANCELLATION & RESCHEDULING**
+
 - If the student needs to cancel or reschedule a class, the parent/student should **inform the teacher before the scheduled class** whenever possible.
 - Rescheduling is subject to the **teacher's available schedule**.
 - If the student does not attend the class without prior notice, the class **may be considered used**.
@@ -15616,17 +15632,15 @@ const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
 - Once the parent/student and teacher have agreed on a regular class schedule, the selected day and time will **remain the student's regular schedule** for the following weeks until all purchased class credits have been completed, unless a schedule change is requested and agreed upon by both parties.
 
 
-  
-
 **ASSESSMENT, PROGRESS REPORT & CERTIFICATE**
+
 - **Assessment/Test:** Every **10th lesson** will serve as an assessment, test, or review to evaluate the student's understanding and progress.
 - **Evaluation Feedback Report:** After the student completes **every 10 lessons**, the teacher will provide an Evaluation and Feedback Report summarizing the student's progress, strengths, areas for improvement, and overall performance.
 - **Certificate of Completion:** Upon successful completion of the enrolled lesson package or program, the student will receive a **Certificate of Completion** from the teacher.
 
-  
-
 
 **AGREEMENT**
+
 By signing this contract, the parent/student confirms that they have **read, understood, and agreed** to the terms and conditions of the **Teacher _____________ Private English Class**.
 `;
 
@@ -16514,7 +16528,7 @@ function loadPortalSettings(){
 function savePortalSettings(){localStorage.setItem(PORTAL_SETTINGS_KEY,JSON.stringify(portalSettings));}
 function renderPaletteButtons(){
  const grid=document.getElementById('paletteGrid'); if(!grid)return;
- grid.innerHTML=PORTAL_PALETTES.map((p,i)=>{const active=portalSettings.accent.toLowerCase()===p.accent.toLowerCase();const swatch=`linear-gradient(135deg,${p.accent},${p.dark})`;return `<button type="button" class="palette-btn ${active?'active':''}" onclick="choosePortalPalette(${i})"><div class="palette-swatch" style="background:${swatch}"></div>${p.name}</button>`}).join('');
+ grid.innerHTML=PORTAL_PALETTES.map((p,i)=>{const active=portalSettings.accent.toLowerCase()===p.accent.toLowerCase();const swatch=`linear-gradient(135deg,${p.accent},${p.dark})`;return `<button type="button" class="palette-btn ${active?'active':''}" onclick="choosePortalPalette(${i})"><div class="palette-swatch" style="background:${swatch} !important;background-image:${swatch} !important"></div>${p.name}</button>`}).join('');
 }
 function choosePortalPalette(index){const p=PORTAL_PALETTES[index];if(!p)return;applyAccent(p.accent,p.dark,p.soft,true);renderPaletteButtons();}
 
@@ -16551,7 +16565,7 @@ function applyGlobalThemeSweep(){
    el.classList.remove('td-theme-sweep-bg','td-theme-sweep-bg-light','td-theme-sweep-text','td-theme-sweep-border');
  });
  document.querySelectorAll('*').forEach(el=>{
-   if(el===document.documentElement||el===document.body||el.tagName==='IMG'||el.tagName==='SVG'||el.tagName==='VIDEO'||el.tagName==='CANVAS')return;
+   if(el===document.documentElement||el===document.body||el.tagName==='IMG'||el.tagName==='SVG'||el.tagName==='VIDEO'||el.tagName==='CANVAS'||el.closest('#paletteGrid'))return;
    const cs=getComputedStyle(el);
    const bg=cs.backgroundColor;
    const bi=cs.backgroundImage;
