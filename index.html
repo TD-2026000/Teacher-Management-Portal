@@ -12100,7 +12100,10 @@ const appointmentRows=appointments.map((a,index)=>{
  return `<tr class="student-profile-appointment-row" data-index="${index}"><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td></tr>`;
 }).join('');
 
-const evaluationRows=evaluations.map((ev,i)=>`<div class="student-profile-evaluation-row" data-index="${i}" style="border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>Evaluation ${evaluations.length-i}</b><div class="small" style="margin-top:3px">${escapeHtml(ev.lesson_topic||'N/A')} · ${escapeHtml(formatDateTime(ev.evaluationSavedAt||ev.createdAt||ev.dateTime))}</div></div><div class="class-record-actions"><button type="button" class="view-record-btn" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View</button></div></div>`).join('');
+const evaluationRows=evaluations.map((ev,i)=>{
+ const lessonTitle=String(ev.lesson_topic||'').trim()||'Lesson Title Not Set';
+ return `<div class="student-profile-evaluation-row" data-index="${i}" style="border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>${escapeHtml(lessonTitle)}</b><div class="small" style="margin-top:3px">${escapeHtml(formatDateTime(ev.evaluationSavedAt||ev.createdAt||ev.dateTime))}</div></div><div class="class-record-actions"><button type="button" class="view-record-btn" onclick="closeStudentProfile();viewEvaluationRecord('${escapeAttr(student.id)}','${i}')">View</button></div></div>`;
+}).join('');
 
 content.innerHTML=`
 <div class="student-profile-landscape">
@@ -12224,9 +12227,6 @@ content.innerHTML=`
     </div>
    <div class="small" style="margin-top:6px">${evaluations.length?`This student has ${evaluations.length} saved evaluation record${evaluations.length===1?'':'s'}.`:'No evaluation records yet.'}</div>
    ${evaluations.length?`<div id="studentProfileEvaluationsList" style="display:grid;gap:8px;margin-top:10px">${evaluationRows}</div>`:''}
-   <div class="student-card-actions" style="justify-content:flex-start;margin-top:10px">
-    <button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View Class Records</button>
-   </div>
    </div>
   </div>
  </div>
