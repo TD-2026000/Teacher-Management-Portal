@@ -2179,10 +2179,21 @@ button.secondary,
 .student-all-record-pdf-topline{display:flex;justify-content:space-between;color:#9b1f59;font-size:10px;border-bottom:2px solid #f45b9c;padding-bottom:7px;margin-bottom:14px}
 .student-all-record-pdf-title{font-size:22px;font-weight:800;color:#d92c78;margin-bottom:6px}
 .student-all-record-pdf-student{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid #f4b3d0}
+.student-all-record-info-card{border:1px solid #efb0cd;border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 8px 24px rgba(169,30,93,.08);margin-top:4px}
+.student-all-record-info-card .student-all-record-pdf-table{margin:0}
 .student-all-record-pdf-table{width:100%;border-collapse:collapse;font-size:11px}
-.student-all-record-pdf-table th,.student-all-record-pdf-table td{border:1px solid #e8a7c5;padding:7px 8px;text-align:left;vertical-align:top}
-.student-all-record-pdf-table th{background:#fff0f7;color:#a91e5d;font-weight:800;width:28%}
-.student-all-record-info-table td{font-weight:600}
+.student-all-record-pdf-table th,.student-all-record-pdf-table td{border-bottom:1px solid #f2d4e1;padding:8px 10px;text-align:left;vertical-align:top}
+.student-all-record-pdf-table tr:last-child th,.student-all-record-pdf-table tr:last-child td{border-bottom:0}
+.student-all-record-pdf-table th{background:#fff4f9;color:#a91e5d;font-weight:800;width:28%}
+.student-all-record-info-table td{font-weight:600;background:#fff}
+.student-all-record-info-table tr:nth-child(even) th{background:#fff0f7}
+.student-all-record-info-table tr:hover td{background:#fffafd}
+.student-all-record-preferred-schedule-row th{vertical-align:top}
+.student-all-record-preferred-schedule-row td{font-weight:600}
+.student-all-record-schedule-bullets{display:flex;flex-direction:column;gap:5px}
+.student-all-record-schedule-bullets > *{margin:0}
+.student-all-record-schedule-bullets ul{margin:0;padding-left:18px}
+.student-all-record-schedule-bullets li{margin:0 0 3px}
 .student-all-record-schedule-table{font-size:9.5px}
 .student-all-record-schedule-table th{width:auto}
 .student-all-record-schedule-table th,.student-all-record-schedule-table td{padding:5px 5px}
@@ -2583,7 +2594,7 @@ button.secondary,
 .contract-rich-editor{min-height:320px;max-height:620px;overflow:auto;padding:16px;background:#fff;color:#111;font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.55;outline:none;white-space:pre-wrap}
 .contract-rich-editor:empty:before{content:attr(data-placeholder);color:#98a2b3;pointer-events:none}
 .contract-rich-editor:focus{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--global-accent) 18%,transparent)}
-.contract-rich-editor ul,.contract-rich-editor ol{padding-left:28px}.contract-rich-editor .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:18px 0 8px!important}.contract-rich-editor p{font-size:12pt;line-height:1.45;margin:0 0 6px}.contract-rich-editor li{font-size:12pt;line-height:1.45;margin:0 0 5px}.contract-rich-editor ul{margin:0 0 8px} .contract-rich-editor .contract-default-spacer{height:10px;margin:0!important;padding:0!important;line-height:1!important;font-size:1px!important}.student-all-record-contract-document{padding:18px;background:#fff;border:1px solid #ddd;border-radius:8px}.student-all-record-contract-document .contract-header{text-align:center;border-bottom:2px solid #222;padding-bottom:12px;margin-bottom:14px}.student-all-record-contract-document .contract-header h1{margin:0;font-size:22px;font-weight:900}.student-all-record-contract-document .contract-header h2{margin:5px 0 0;font-size:16px}.student-all-record-contract-student-info{margin-bottom:14px}.student-all-record-contract-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;border:1px solid #ccc;padding:10px}.student-all-record-contract-info-grid>div{display:flex;gap:6px;font-size:11px}.student-all-record-contract-info-grid b{min-width:105px}.student-all-record-contract-info-grid span{flex:1}.student-all-record-contract-rich{font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.45}.student-all-record-contract-rich .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:18px 0 8px!important}.student-all-record-contract-rich p{font-size:12pt;line-height:1.45;margin:0 0 6px}.student-all-record-contract-rich li{font-size:12pt;line-height:1.45;margin:0 0 5px}.student-all-record-contract-rich ul,.student-all-record-contract-rich ol{margin:0 0 8px;padding-left:28px}.student-all-record-contract-rich .contract-default-spacer{height:10px;margin:0!important;padding:0!important}
+.contract-rich-editor ul,.contract-rich-editor ol{padding-left:28px}.contract-rich-editor .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:12px 0 6px!important}.contract-rich-editor p{font-size:12pt;line-height:1.45;margin:0 0 4px}.contract-rich-editor li{font-size:12pt;line-height:1.45;margin:0}.contract-rich-editor ul{margin:0 0 12px} .contract-rich-editor .contract-default-spacer{height:0!important;margin:0!important;padding:0!important;line-height:1!important;font-size:1px!important}.student-all-record-contract-document{padding:18px;background:#fff;border:1px solid #ddd;border-radius:8px}.student-all-record-contract-document .contract-header{text-align:center;border-bottom:2px solid #222;padding-bottom:12px;margin-bottom:14px}.student-all-record-contract-document .contract-header h1{margin:0;font-size:22px;font-weight:900}.student-all-record-contract-document .contract-header h2{margin:5px 0 0;font-size:16px}.student-all-record-contract-student-info{margin-bottom:14px}.student-all-record-contract-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;border:1px solid #ccc;padding:10px}.student-all-record-contract-info-grid>div{display:flex;gap:6px;font-size:11px}.student-all-record-contract-info-grid b{min-width:105px}.student-all-record-contract-info-grid span{flex:1}.student-all-record-contract-rich{font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.45}.student-all-record-contract-rich .contract-default-heading{font-size:14pt!important;font-weight:700!important;line-height:1.35!important;margin:12px 0 6px!important}.student-all-record-contract-rich p{font-size:12pt;line-height:1.45;margin:0 0 4px}.student-all-record-contract-rich li{font-size:12pt;line-height:1.45;margin:0}.student-all-record-contract-rich ul,.student-all-record-contract-rich ol{margin:0 0 12px;padding-left:28px}.student-all-record-contract-rich .contract-default-spacer{height:0;margin:0!important;padding:0!important}
 
 
 /* v21 compact contract toolbar: only B, I, U and Font Size remain visible */
@@ -12247,15 +12258,16 @@ function buildStudentAllRecordInfoPage(student){
     if(!builtInLabels.has(String(k).trim().toLowerCase())) fields.push([k,v]);
   });
 
-  const rows=fields.map(([label,value])=>`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(studentAllRecordSafeText(value))}</td></tr>`).join('');
-
   const preferredScheduleHtml=renderStudentProfileScheduleList(
     student.scheduleDetails,
     student.preferredSchedule,
     student.duration
   );
 
-  return studentAllRecordPageShell('STUDENT INFORMATION',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table><div style="margin-top:14px"><div style="font-weight:800;margin-bottom:6px">Preferred Class Schedule</div><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></div>`);
+  const rows=fields.map(([label,value])=>`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(studentAllRecordSafeText(value))}</td></tr>`).join('');
+  const preferredRow=`<tr class="student-all-record-preferred-schedule-row"><th>Preferred Class Schedule</th><td><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></td></tr>`;
+
+  return studentAllRecordPageShell('STUDENT INFORMATION',student,`<div class="student-all-record-info-card"><table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}${preferredRow}</tbody></table></div>`);
 }
 
 function buildStudentAllRecordSchedulePage(student){
@@ -12289,37 +12301,38 @@ function buildStudentAllRecordContractPage(student){
     return studentAllRecordPageShell('STUDENT CONTRACT',student,'<div class="student-all-record-empty">No Student Contract has been saved for this student.</div>');
   }
 
-  /* Use the same visual structure as the actual Student Contract document:
-     teacher title, student information, CONTRACT AGREEMENT / TERMS, and the
-     same Parent/Teacher signature layout. This keeps Student All Record from
-     using a different contract template. */
+  /* IMPORTANT: Student All Record uses the SAME visual contract template as
+     the downloadable Student Contract PDF: same header, info bullets,
+     agreement box, typography, spacing, and signature layout. */
   const custom=record.customSections||{};
   const agreementHtml=String(custom.agreementHtml||'').trim() || (custom.agreementText?escapeHtml(custom.agreementText).replace(/\n/g,'<br>'):'<em>No contract agreement / terms entered.</em>');
-  const teacherName=getTeacherContractDisplayName()||'Teacher';
   const teacherTitle=getTeacherContractTitle()||'TEACHER PRIVATE ENGLISH CLASS';
-  const parentName=studentAllRecordSafeText(student.parentName,'____________________________');
-  const studentInfo=`
-    <div class="student-all-record-contract-info-grid">
-      <div><b>Student Name</b><span>${escapeHtml(student.name||'—')}</span></div>
-      <div><b>Student ID</b><span>${escapeHtml(student.id||'—')}</span></div>
-      <div><b>Parent / Guardian</b><span>${escapeHtml(student.parentName||'—')}</span></div>
-      <div><b>Parent Email</b><span>${escapeHtml(student.email||'—')}</span></div>
-    </div>`;
-  const body=`<div class="contract-document student-all-record-contract-document">
-    <div class="contract-header"><h1>${escapeHtml(teacherTitle)}</h1><h2>STUDENT CONTRACT</h2></div>
-    <div class="contract-student-info student-all-record-contract-student-info">${studentInfo}</div>
-    <div class="contract-section contract-custom-section contract-master-agreement">
+  const teacherName=getTeacherContractDisplayName()||'Teacher';
+
+  const infoBoxes=[
+    ['Student Name',student.name||'—'],
+    ['Student ID',student.id||'—'],
+    ['Parent / Guardian',student.parentName||'—'],
+    ['Parent Email',student.email||'—']
+  ];
+  const infoHtml=`<div class="pdf-info-bullets">${infoBoxes.map(([label,value])=>`<div class="pdf-info-bullet"><span>•</span><strong>${escapeHtml(label)}:</strong><span>${escapeHtml(value)}</span></div>`).join('')}</div>`;
+
+  const body=`<div class="contract-pdf-page contract-legal-portrait-page contract-legal-portrait-page-final student-all-record-contract-pdf-page">
+    <div class="pdf-page-header"><h1>${escapeHtml(teacherTitle)}</h1><h2>STUDENT CONTRACT</h2></div>
+    ${infoHtml}
+    <div class="pdf-section pdf-preview-agreement">
       <h3>CONTRACT AGREEMENT / TERMS</h3>
-      <div class="contract-rich-editor student-all-record-contract-rich">${agreementHtml}</div>
+      <div class="pdf-custom-text preview-contract-agreement-body">${agreementHtml}</div>
     </div>
-    <div class="contract-section"><div class="signature-grid">
-      <div><strong>Parent Name:</strong><div>${escapeHtml(parentName)}</div><strong>Signature:</strong><div>____________________________</div></div>
-      <div><strong>Teacher:</strong><div>${escapeHtml(teacherName)}</div><strong>Teacher's Signature:</strong><div>____________________________</div></div>
-    </div></div>
+    <div class="pdf-section">
+      <div class="pdf-signed-signatures">
+        <div><strong>Parent Name:</strong><div>${escapeHtml(student.parentName||'____________________________')}</div><strong>Signature:</strong><div>____________________________</div></div>
+        <div><strong>Teacher:</strong><div>${escapeHtml(teacherName)}</div><strong>Teacher's Signature:</strong><div>____________________________</div></div>
+      </div>
+    </div>
   </div>`;
   return studentAllRecordPageShell('STUDENT CONTRACT',student,body,'student-all-record-contract-pdf-page');
 }
-
 function buildStudentAllRecordPaymentPage(student){
   const receipts=getPaymentReceipts().filter(r=>String(r.studentId||'')===String(student.id||''));
   const receipt=receipts.length?receipts[receipts.length-1]:null;
@@ -15520,19 +15533,24 @@ function defaultStudentContractHtml(){
   let html=''; let list=[];
   const flush=()=>{if(list.length){html+=`<ul>${list.map(x=>`<li>${x}</li>`).join('')}</ul>`;list=[];}};
   const inline=(text)=>escapeHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  let hadBlankLine=false;
+  let blankLines=0;
   lines.forEach(line=>{
     const t=line.trim();
     if(!t){
       flush();
-      hadBlankLine=true;
+      blankLines++;
       return;
     }
-    if(t.startsWith('- ')){list.push(inline(t.slice(2)));return;}
-    if(hadBlankLine && html){
-      html+=`<p class="contract-default-spacer" aria-hidden="true">&nbsp;</p>`;
+    if(t.startsWith('- ')){
+      if(blankLines && html){ for(let i=0;i<blankLines;i++) html+=`<p class="contract-default-spacer" aria-hidden="true">&nbsp;</p>`; }
+      blankLines=0;
+      list.push(inline(t.slice(2)));
+      return;
     }
-    hadBlankLine=false;
+    if(blankLines && html){
+      for(let i=0;i<blankLines;i++) html+=`<p class="contract-default-spacer" aria-hidden="true">&nbsp;</p>`;
+    }
+    blankLines=0;
     flush();
     if(/^\*\*.+\*\*$/.test(t)) html+=`<p class="contract-default-heading" style="font-size:14pt;font-weight:700;margin:18px 0 8px;line-height:1.35"><strong>${escapeHtml(t.slice(2,-2))}</strong></p>`;
     else html+=`<p style="font-size:12pt;line-height:1.45;margin:0 0 6px">${inline(t)}</p>`;
