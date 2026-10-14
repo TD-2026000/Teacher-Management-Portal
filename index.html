@@ -2224,6 +2224,7 @@ button.secondary,
 .student-all-record-eval-body ul{margin:0;padding-left:18px}
 .student-all-record-performance-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .student-all-record-star{font-size:17px;color:#ddd}.student-all-record-star.on{color:#f65ba1}
+.student-all-record-schedule-table .student-all-record-attendance-present{font-weight:800;color:#176b2c}.student-all-record-schedule-table .student-all-record-attendance-absent{font-weight:800;color:#a40000}
 @media(max-width:900px){.student-all-record-pdf-page{transform-origin:top center;transform:scale(.8);margin-bottom:-220px}.student-all-record-modal{width:94vw}.student-all-record-preview-pages{overflow-x:hidden}}
 @media(max-width:560px){.student-all-record-pdf-page{transform:scale(.58);margin-bottom:-470px}.student-all-record-header{align-items:flex-start}}
 .student-profile-modal{width:95vw;max-width:1450px;max-height:92vh;overflow:auto}
@@ -12284,14 +12285,32 @@ function buildStudentAllRecordSchedulePage(student){
     const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
     return (da?da.getTime():0)-(db?db.getTime():0);
   });
+
+  const parseDurationMinutes=value=>{
+    const text=String(value||'').trim().toLowerCase();
+    const m=text.match(/(\d+(?:\.\d+)?)\s*(?:minutes?|mins?|min|m)\b/);
+    if(m)return Math.max(1,Math.round(Number(m[1])));
+    const n=Number(text.replace(/[^0-9.]/g,''));
+    return Number.isFinite(n)&&n>0?Math.round(n):25;
+  };
+  const formatTime=dt=>dt?dt.toLocaleTimeString([], {hour:'numeric',minute:'2-digit',hour12:true}):'—';
+  const getEndTime=(dt,duration)=>{
+    if(!dt)return '—';
+    return formatTime(new Date(dt.getTime()+parseDurationMinutes(duration)*60000));
+  };
+
   const rows=appointments.map(a=>{
     const dt=getAppointmentDateTime(a);
     const date=dt?getLocalDateString(dt):(a.date||'—');
     const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
-    const time=a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—');
-    return `<tr><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td><td>${escapeHtml(a.status||'—')}</td></tr>`;
+    const start=dt?formatTime(dt):(a.time||'—');
+    const end=dt?getEndTime(dt,a.duration||student.duration):'—';
+    const time=`${start} – ${end}`;
+    const attendance=String(a.attendance||'').trim();
+    const attendanceText=/^present$/i.test(attendance)?'Present':/^absent$/i.test(attendance)?'Absent':(attendance||'—');
+    return `<tr><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td><td class="student-all-record-attendance-${attendanceText.toLowerCase()}">${escapeHtml(attendanceText)}</td></tr>`;
   }).join('');
-  const body=appointments.length?`<table class="student-all-record-pdf-table student-all-record-schedule-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="student-all-record-empty">No class schedule or appointments recorded yet.</div>`;
+  const body=appointments.length?`<table class="student-all-record-pdf-table student-all-record-schedule-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th><th>Attendance</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="student-all-record-empty">No class schedule or appointments recorded yet.</div>`;
   return studentAllRecordPageShell('STUDENT CLASS SCHEDULE',student,body);
 }
 
@@ -12352,14 +12371,50 @@ function studentAllRecordEvaluationPage(student,ev,index){
   return studentAllRecordPageShell(`STUDENT EVALUATION RECORD — ${index+1}`,student,body,'student-all-record-evaluation-pdf-page');
 }
 
-function buildStudentAllRecordPages(student){
-  const pages=[buildStudentAllRecordInfoPage(student),buildStudentAllRecordContractPage(student),buildStudentAllRecordPaymentPage(student),buildStudentAllRecordSchedulePage(student)];
+async function buildStudentAllRecordContractPages(student){
+  const record=getStudentContracts()?.[student.id];
+  if(!record?.submittedAt){
+    return [buildStudentAllRecordContractPage(student)];
+  }
+
+  /*
+    IMPORTANT: Reuse the exact same Student Contract preview renderer used by
+    the downloadable Student Contract PDF. This keeps the number of pages,
+    pagination, spacing, agreement layout, and signature page exactly the same.
+  */
+  const previousSelectedId=contractSelectedStudentId;
+  try{
+    contractSelectedStudentId=student.id;
+    loadStudentContractDetails(student.id,{viewSaved:true});
+    await previewStudentContract();
+    const modal=document.getElementById('studentContractPreviewModal');
+    const pageEls=[...(modal?.querySelectorAll('.contract-legal-portrait-page-final')||[])];
+    if(pageEls.length){
+      const pages=pageEls.map(page=>page.outerHTML);
+      if(modal)modal.style.display='none';
+      return pages;
+    }
+  }catch(error){
+    console.warn('Student All Record contract preview reuse failed:',error);
+  }finally{
+    contractSelectedStudentId=previousSelectedId;
+    const modal=document.getElementById('studentContractPreviewModal');
+    if(modal)modal.style.display='none';
+  }
+  return [buildStudentAllRecordContractPage(student)];
+}
+
+async function buildStudentAllRecordPages(student){
+  const pages=[buildStudentAllRecordInfoPage(student)];
+  const contractPages=await buildStudentAllRecordContractPages(student);
+  pages.push(...contractPages);
+  pages.push(buildStudentAllRecordPaymentPage(student),buildStudentAllRecordSchedulePage(student));
   const evaluations=getStudentEvaluations(student.id);
   evaluations.forEach((ev,i)=>pages.push(studentAllRecordEvaluationPage(student,ev,i)));
   return pages;
 }
 
-function openStudentAllRecord(id){
+async function openStudentAllRecord(id){
   window.currentStudentAllRecordStudentId=id;
   const student=getStudents().find(s=>String(s.id)===String(id));
   if(!student)return;
@@ -12367,7 +12422,8 @@ function openStudentAllRecord(id){
   const content=document.getElementById('studentAllRecordContent');
   if(title)title.textContent=`${student.nickname||student.name||'Student'} — Student All Record`;
   if(!content)return;
-  const pages=buildStudentAllRecordPages(student);
+  content.innerHTML='<div class="student-all-record-preview-note">Preparing Student All Record preview...</div>';
+  const pages=await buildStudentAllRecordPages(student);
   content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Information, Student Contract, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
   const modal=document.getElementById('studentAllRecordModal');
   if(modal)modal.classList.add('show');
@@ -12391,19 +12447,30 @@ async function downloadStudentAllRecordPDF(){
   holder.style.position='fixed';holder.style.left='-100000px';holder.style.top='0';holder.style.width='794px';holder.style.background='#fff';holder.style.padding='0';holder.style.zIndex='-1';
   document.body.appendChild(holder);
   try{
-    const pages=buildStudentAllRecordPages(student);
+    const pages=await buildStudentAllRecordPages(student);
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    let currentFormat='a4';
     for(let i=0;i<pages.length;i++){
       holder.innerHTML=pages[i];
       const page=holder.firstElementChild;
       if(!page)continue;
-      page.style.width='794px';page.style.height='1123px';page.style.minHeight='1123px';page.style.maxHeight='1123px';page.style.overflow='hidden';page.style.background='#fff';
+      const isContractPage=page.classList.contains('contract-legal-portrait-page-final');
+      const format=isContractPage?'legal':'a4';
+      const pageWidth=isContractPage?8.5*96:794;
+      const pageHeight=isContractPage?14*96:1123;
+      page.style.width=`${pageWidth}px`;page.style.height=`${pageHeight}px`;page.style.minHeight=`${pageHeight}px`;page.style.maxHeight=`${pageHeight}px`;page.style.overflow='hidden';page.style.background='#fff';
       await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
       const canvas=await html2canvas(page,{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false,imageTimeout:15000});
       const img=canvas.toDataURL('image/png');
-      if(i>0)pdf.addPage();
-      pdf.addImage(img,'PNG',0,0,210,297,undefined,'FAST');
+      if(i>0){
+        if(format==='legal')pdf.addPage('legal','portrait');
+        else pdf.addPage('a4','portrait');
+      }
+      const mmWidth=isContractPage?215.9:210;
+      const mmHeight=isContractPage?355.6:297;
+      pdf.addImage(img,'PNG',0,0,mmWidth,mmHeight,undefined,'FAST');
+      currentFormat=format;
     }
     const safe=String(student.name||student.nickname||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
     pdf.save(`Student-All-Record-${safe||'Student'}.pdf`);
