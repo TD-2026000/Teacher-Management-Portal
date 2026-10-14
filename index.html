@@ -3889,6 +3889,17 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 
 </style>
 <style id="subscription-qr-direct-style">.subscription-qr-option-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.subscription-qr-view-card{justify-content:center;min-height:78px;text-align:center;border:1px solid var(--global-border);}.subscription-qr-view-card:hover{transform:translateY(-1px);}.subscription-qr-view-card .subscription-check-mark{color:#111827;border-color:#cbd5e1;background:#fff;font-size:17px;}.subscription-qr-modal{z-index:100000;}.subscription-qr-modal-box{max-width:520px;text-align:center;}.subscription-qr-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.subscription-qr-modal-head h3{margin:0;}.subscription-qr-close{border:0;background:#f1f5f9;color:#111827;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;}.subscription-qr-image-wrap{margin:12px auto 8px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;min-height:300px;padding:10px;}.subscription-qr-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;}.subscription-qr-help{margin:8px 0 0;color:#6b7280;font-size:13px;}@media(max-width:1100px){.subscription-qr-option-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.subscription-qr-option-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.subscription-qr-option-grid{grid-template-columns:1fr;}}</style>
+
+<style>
+.student-lesson-flow-grid{display:grid;gap:10px;margin-top:10px}
+.student-lesson-flow-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid #ddd;border-radius:10px;padding:9px;background:#fff}
+.student-lesson-flow-row input,.student-lesson-flow-row select{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #ccc;border-radius:8px;background:#fff}
+.student-lesson-flow-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.student-lesson-flow-note{font-size:12px;color:#777;margin-top:6px;line-height:1.4}
+.student-list-more{margin-top:10px;display:flex;justify-content:center}
+.student-list-more button{border:1px solid #bbb;border-radius:8px;padding:8px 14px;background:#f5f5f5;font-weight:800;cursor:pointer}
+@media(max-width:700px){.student-lesson-flow-row{grid-template-columns:1fr}.student-lesson-flow-row .lesson-flow-remove{width:100%}}
+</style>
 </head>
 
 <body>
@@ -5784,6 +5795,21 @@ Log Out
 <div class="modal-actions">
 <button type="button" class="modal-cancel" onclick="closeStudentProfile()">Close</button>
 </div>
+</div>
+</div>
+
+<div id="studentLessonFlowModal" class="modal-backdrop" onclick="if(event.target===this) closeStudentLessonFlow()">
+<div class="modal" style="width:min(900px,96vw);max-height:90vh;overflow:auto">
+<h3 id="studentLessonFlowTitle">Student Lesson Flow</h3>
+<p class="small" style="margin-top:0">Choose a lesson from the existing Lesson Materials list. Its link will be filled automatically.</p>
+<div id="studentLessonFlowRows" class="student-lesson-flow-grid"></div>
+<div class="student-lesson-flow-actions">
+<button type="button" class="primary-action" onclick="addStudentLessonFlowRow()">+ ADD LESSON LINK</button>
+<button type="button" class="primary-action" onclick="saveStudentLessonFlow()">SAVE LESSON FLOW</button>
+<button type="button" class="primary-action" onclick="copyStudentLessonFlowLinks()">COPY LINKS</button>
+<button type="button" class="modal-cancel" onclick="closeStudentLessonFlow()">Close</button>
+</div>
+<div class="student-lesson-flow-note">The saved lesson links belong to this student and can be updated anytime.</div>
 </div>
 </div>
 
@@ -12050,6 +12076,8 @@ return {purchased:packageCount,completed,remaining,percent,currentPackage:curren
 
 function openStudentProfile(id){
 window.currentStudentProfileId=id;
+window.studentProfileShowAllAppointments=false;
+window.studentProfileShowAllEvaluations=false;
 const student=getStudents().find(s=>s.id===id);
 if(!student)return;
 const p=getStudentProgress(student);
@@ -12064,10 +12092,18 @@ const appointments=getAppointments().filter(a=>a.studentId===student.id).sort((a
  const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
  return (db?db.getTime():0)-(da?da.getTime():0);
 });
-const recentAppointments=appointments.slice(0,30);
 const currentPackage=getCurrentStudentPackage(student);
 const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
 const evaluations=getStudentEvaluations(student.id);
+
+const appointmentRows=appointments.map((a,index)=>{
+ const dt=getAppointmentDateTime(a); const date=dt?getLocalDateString(dt):a.date||'—';
+ const time=a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—');
+ const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
+ return `<tr class="student-profile-appointment-row" data-index="${index}"><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td></tr>`;
+}).join('');
+
+const evaluationRows=evaluations.map((ev,i)=>`<div class="student-profile-evaluation-row" data-index="${i}" style="border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>Evaluation ${evaluations.length-i}</b><div class="small" style="margin-top:3px">${escapeHtml(ev.lesson_topic||'N/A')} · ${escapeHtml(formatDateTime(ev.evaluationSavedAt||ev.createdAt||ev.dateTime))}</div></div><div class="class-record-actions"><button type="button" class="view-record-btn" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View</button></div></div>`).join('');
 
 content.innerHTML=`
 <div class="student-profile-landscape">
@@ -12110,6 +12146,14 @@ content.innerHTML=`
   </div>
 
   <div class="student-profile-section">
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <h4 style="margin:0">STUDENT LESSON FLOW</h4>
+    <button type="button" class="primary-action" onclick="openStudentLessonFlow('${escapeAttr(student.id)}')">SHOW LESSONS LINK</button>
+   </div>
+   <div class="small" style="margin-top:8px">Add the lesson links once, then use the saved links instead of typing them one by one.</div>
+  </div>
+
+  <div class="student-profile-section">
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
@@ -12123,13 +12167,11 @@ content.innerHTML=`
   </div>
 
   <div class="student-profile-section">
-   <h4>CLASSES / APPOINTMENTS (${appointments.length})</h4>
-   ${recentAppointments.length?`<div style="overflow:auto"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody>${recentAppointments.map(a=>{
-     const dt=getAppointmentDateTime(a); const date=dt?getLocalDateString(dt):a.date||'—';
-     const time=a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—');
-     const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
-     return `<tr><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td></tr>`;
-   }).join('')}</tbody></table></div>`:'<div class="small">No classes or appointments recorded yet.</div>'}
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <h4 style="margin:0">CLASSES / APPOINTMENTS (${appointments.length})</h4>
+    ${appointments.length>5?`<button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileList('appointments')">SHOW ALL</button>`:''}
+   </div>
+   ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
   </div>
 
   <div class="student-profile-section">
@@ -12137,11 +12179,10 @@ content.innerHTML=`
    ${(p.history||[]).slice().reverse().map(pkg=>{
     const pkgCount=Math.max(0,parseInt(pkg.classCount,10)||getPackageClassCount(pkg.packageName));
     const pkgCompleted=getAppointments().filter(a=>a.studentId===student.id&&a.packageId===pkg.id&&a.type==='Regular Class'&&a.status==='Completed').length;
-    const pkgStatus=pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed');
     const packageDone=pkgCount>0 && pkgCompleted>=pkgCount;
-     const packageStatus=packageDone?'Completed':(pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed'));
-     const locked=!packageDone;
-     return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div><div class="package-class-record-actions"><button type="button" class="primary" onclick="openPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')">VIEW CLASS RECORD</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`previewPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">PREVIEW</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`downloadPackageClassRecordPDF('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">DOWNLOAD PDF</button></div></div><span class="package-history-badge ${packageDone?'':'old'}">${escapeHtml(packageStatus)}</span></div>`;
+    const packageStatus=packageDone?'Completed':(pkg.id===student.currentPackageId?'Active':(pkg.status||'Completed'));
+    const locked=!packageDone;
+    return `<div class="package-history-item"><div><b>${escapeHtml(pkg.packageName||`${pkgCount} Classes`)}</b><div class="package-history-meta">${pkgCompleted} / ${pkgCount} completed · Started ${escapeHtml(pkg.startDate||'—')}${pkg.renewalDate?` · Renewed ${escapeHtml(pkg.renewalDate)}`:''}</div><div class="package-class-record-actions"><button type="button" class="primary" onclick="openPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')">VIEW CLASS RECORD</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`previewPackageClassRecord('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">PREVIEW</button><button type="button" class="${locked?'locked':''}" ${locked?'disabled title="Available after this package is completed"':''} onclick="${locked?'return false;':`downloadPackageClassRecordPDF('${escapeAttr(student.id)}','${escapeAttr(pkg.id)}')`}">DOWNLOAD PDF</button></div></div><span class="package-history-badge ${packageDone?'':'old'}">${escapeHtml(packageStatus)}</span></div>`;
    }).join('')||'<div class="small">No classes history yet.</div>'}
   </div>
 
@@ -12159,12 +12200,15 @@ content.innerHTML=`
   </div>
 
   <div class="student-profile-section">
-   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-   <h4 style="margin:0">RECORD OF EVALUATION (${evaluations.length})</h4>
-   ${evaluations.length?`<div class="class-record-actions"><button type="button" class="class-record-dots" aria-label="Evaluation record options" onclick="event.stopPropagation();toggleStudentProfileEvaluationTools('${escapeAttr(student.id)}')">⋮</button><div id="studentProfileEvaluationTools-${encodeURIComponent(String(student.id))}" class="class-record-menu"><button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}');setTimeout(()=>toggleEvaluationSelectMode('${escapeAttr(student.id)}'),50)">Select to Delete</button></div></div>`:''}
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+    <h4 style="margin:0">RECORD OF EVALUATION (${evaluations.length})</h4>
+    <div style="display:flex;align-items:center;gap:8px">
+    ${evaluations.length>5?`<button type="button" class="view-record-btn" id="studentProfileEvaluationsToggle" onclick="toggleStudentProfileList('evaluations')">SHOW ALL</button>`:''}
+    ${evaluations.length?`<div class="class-record-actions"><button type="button" class="class-record-dots" aria-label="Evaluation record options" onclick="event.stopPropagation();toggleStudentProfileEvaluationTools('${escapeAttr(student.id)}')">⋮</button><div id="studentProfileEvaluationTools-${encodeURIComponent(String(student.id))}" class="class-record-menu"><button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}');setTimeout(()=>toggleEvaluationSelectMode('${escapeAttr(student.id)}'),50)">Select to Delete</button></div></div>`:''}
+    </div>
    </div>
-   <div class="small">${evaluations.length?`This student has ${evaluations.length} saved evaluation record${evaluations.length===1?'':'s'}.`:'No evaluation records yet.'}</div>
-   ${evaluations.length?`<div style="display:grid;gap:8px;margin-top:10px">${evaluations.slice(0,10).map((ev,i)=>`<div style="border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:10px"><div><b>Evaluation ${evaluations.length-i}</b><div class="small" style="margin-top:3px">${escapeHtml(ev.lesson_topic||'N/A')} · ${escapeHtml(formatDateTime(ev.evaluationSavedAt||ev.createdAt||ev.dateTime))}</div></div><div class="class-record-actions"><button type="button" class="view-record-btn" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View</button></div></div>`).join('')}</div>`:''}
+   <div class="small" style="margin-top:6px">${evaluations.length?`This student has ${evaluations.length} saved evaluation record${evaluations.length===1?'':'s'}.`:'No evaluation records yet.'}</div>
+   ${evaluations.length?`<div id="studentProfileEvaluationsList" style="display:grid;gap:8px;margin-top:10px">${evaluationRows}</div>`:''}
    <div class="student-card-actions" style="justify-content:flex-start;margin-top:10px">
     <button type="button" onclick="closeStudentProfile();openStudentClassRecord('${escapeAttr(student.id)}')">View Class Records</button>
    </div>
@@ -12173,7 +12217,145 @@ content.innerHTML=`
 </div>`;
 
 document.getElementById('studentProfileModal').classList.add('show');
+setTimeout(()=>{
+  toggleStudentProfileList('appointments',true);
+  toggleStudentProfileList('evaluations',true);
+},0);
 }
+
+function toggleStudentProfileList(type,initial=false){
+  const isAppointments=type==='appointments';
+  const list=document.getElementById(isAppointments?'studentProfileAppointmentsList':'studentProfileEvaluationsList');
+  const button=document.getElementById(isAppointments?'studentProfileAppointmentsToggle':'studentProfileEvaluationsToggle');
+  if(!list||!button)return;
+  const rows=list.querySelectorAll(isAppointments?'.student-profile-appointment-row':'.student-profile-evaluation-row');
+  const showAll=initial?false:!(isAppointments?window.studentProfileShowAllAppointments:window.studentProfileShowAllEvaluations);
+  if(isAppointments)window.studentProfileShowAllAppointments=showAll;
+  else window.studentProfileShowAllEvaluations=showAll;
+  rows.forEach((row,index)=>{row.style.display=showAll||index<5?'':'none';});
+  button.textContent=showAll?'SHOW LESS':'SHOW ALL';
+}
+
+function getStudentLessonFlow(student){
+  const links=Array.isArray(student?.lessonFlowLinks)?student.lessonFlowLinks:[];
+  return links.map(item=>({
+    lessonIndex:Number.isInteger(Number(item.lessonIndex))?Number(item.lessonIndex):-1,
+    lessonName:String(item.lessonName||''),
+    url:String(item.url||'')
+  }));
+}
+
+function openStudentLessonFlow(studentId){
+  const student=getStudents().find(s=>String(s.id)===String(studentId));
+  if(!student)return;
+  window.currentStudentLessonFlowId=student.id;
+  const title=document.getElementById('studentLessonFlowTitle');
+  if(title)title.textContent=`${student.nickname||student.name||'Student'} — Lessons Link`;
+  renderStudentLessonFlowRows(getStudentLessonFlow(student));
+  document.getElementById('studentLessonFlowModal')?.classList.add('show');
+}
+
+function closeStudentLessonFlow(){
+  document.getElementById('studentLessonFlowModal')?.classList.remove('show');
+}
+
+function renderStudentLessonFlowRows(rows){
+  const box=document.getElementById('studentLessonFlowRows');
+  if(!box)return;
+  const items=getLessonMaterialLinks();
+  if(!rows.length){
+    box.innerHTML='<div class="small">No lesson links added yet. Click + ADD LESSON LINK to start.</div>';
+    return;
+  }
+  box.innerHTML=rows.map((row,index)=>{
+    const options=items.map((item,i)=>`<option value="${i}" ${Number(row.lessonIndex)===i?'selected':''}>${lessonMaterialEscape(item.name||`Lesson ${i+1}`)}</option>`).join('');
+    const url=row.url||((row.lessonIndex>=0&&items[row.lessonIndex])?items[row.lessonIndex].url:'');
+    return `<div class="student-lesson-flow-row" data-row-index="${index}">
+      <input type="number" min="1" value="${index+1}" aria-label="Lesson number" class="lesson-flow-number">
+      <select aria-label="Lesson link" class="lesson-flow-select" onchange="updateStudentLessonFlowRowLink(this)">
+        <option value="-1">Select lesson...</option>${options}
+      </select>
+      <button type="button" class="lesson-flow-remove" onclick="removeStudentLessonFlowRow(${index})">REMOVE</button>
+      <input type="text" value="${lessonMaterialEscape(url)}" readonly aria-label="Lesson URL" class="lesson-flow-url" style="grid-column:2 / -1;background:#f8f8f8;color:#666">
+    </div>`;
+  }).join('');
+}
+
+function updateStudentLessonFlowRowLink(select){
+  const row=select?.closest('.student-lesson-flow-row');
+  if(!row)return;
+  const index=Number(select.value);
+  const items=getLessonMaterialLinks();
+  const item=Number.isInteger(index)&&index>=0?items[index]:null;
+  const urlInput=row.querySelector('.lesson-flow-url');
+  if(urlInput)urlInput.value=item?.url||'';
+}
+
+function addStudentLessonFlowRow(){
+  const box=document.getElementById('studentLessonFlowRows');
+  if(!box)return;
+  const rows=Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>({
+    lessonIndex:Number(row.querySelector('.lesson-flow-select')?.value||-1),
+    lessonName:row.querySelector('.lesson-flow-select')?.selectedOptions?.[0]?.textContent||'',
+    url:row.querySelector('.lesson-flow-url')?.value||''
+  }));
+  rows.push({lessonIndex:-1,lessonName:'',url:''});
+  renderStudentLessonFlowRows(rows);
+}
+
+function removeStudentLessonFlowRow(index){
+  const box=document.getElementById('studentLessonFlowRows');
+  if(!box)return;
+  const rows=Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>({
+    lessonIndex:Number(row.querySelector('.lesson-flow-select')?.value||-1),
+    lessonName:row.querySelector('.lesson-flow-select')?.selectedOptions?.[0]?.textContent||'',
+    url:row.querySelector('.lesson-flow-url')?.value||''
+  })).filter((_,i)=>i!==index);
+  renderStudentLessonFlowRows(rows);
+}
+
+function collectStudentLessonFlowRows(){
+  const box=document.getElementById('studentLessonFlowRows');
+  if(!box)return [];
+  const items=getLessonMaterialLinks();
+  return Array.from(box.querySelectorAll('.student-lesson-flow-row')).map(row=>{
+    const lessonIndex=Number(row.querySelector('.lesson-flow-select')?.value||-1);
+    const selected=lessonIndex>=0?items[lessonIndex]:null;
+    const number=Number(row.querySelector('.lesson-flow-number')?.value||0);
+    return {lessonNumber:number>0?number:0,lessonIndex,lessonName:selected?.name||'',url:selected?.url||row.querySelector('.lesson-flow-url')?.value||''};
+  }).filter(row=>row.lessonIndex>=0&&row.url);
+}
+
+function saveStudentLessonFlow(){
+  const id=window.currentStudentLessonFlowId;
+  const students=getStudents();
+  const index=students.findIndex(s=>String(s.id)===String(id));
+  if(index<0)return;
+  const links=collectStudentLessonFlowRows().map(row=>({lessonNumber:row.lessonNumber,lessonIndex:row.lessonIndex,lessonName:row.lessonName,url:row.url}));
+  students[index].lessonFlowLinks=links;
+  saveStudents(students);
+  try{syncStudentToSupabase(students[index]);}catch(e){}
+  alert('Student lesson links saved.');
+  closeStudentLessonFlow();
+  if(window.currentStudentProfileId)openStudentProfile(window.currentStudentProfileId);
+}
+
+async function copyStudentLessonFlowLinks(){
+  const links=collectStudentLessonFlowRows().map(row=>row.url).filter(Boolean);
+  if(!links.length){alert('Please add at least one lesson link first.');return;}
+  const text=links.join('\n');
+  try{
+    await navigator.clipboard.writeText(text);
+    alert('Lesson links copied.');
+  }catch(e){
+    const temp=document.createElement('textarea');
+    temp.value=text;temp.style.position='fixed';temp.style.opacity='0';
+    document.body.appendChild(temp);temp.select();
+    try{document.execCommand('copy');alert('Lesson links copied.');}catch(err){alert('Unable to copy the lesson links.');}
+    temp.remove();
+  }
+}
+
 function getRenewalStartDate(student, renewalDate){
 if(!student||!renewalDate)return '';
 const current=getCurrentStudentPackage(student);
