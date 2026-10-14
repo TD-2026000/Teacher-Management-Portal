@@ -10106,14 +10106,16 @@ document.getElementById('editStudentModal').classList.remove('show');
 function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
   try{
     let appointments=getAppointments();
-    if(!Array.isArray(appointments))return;
+    if(!Array.isArray(appointments))return false;
 
     const now=new Date();
     const newDetails=newStudent?.scheduleDetails||{};
+    const newDuration=String(newStudent?.duration||'30 Minutes');
 
     /*
-      Only future Scheduled Regular Classes are synchronized.
-      Completed, cancelled, past, and one-time/manual appointments are preserved.
+      Synchronize future preferred Regular Class appointments that already
+      belong to this student. Completed, cancelled, past, and manual classes
+      are intentionally preserved.
     */
     const targets=appointments
       .filter(a=>{
@@ -10129,31 +10131,12 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
         return (da?da.getTime():0)-(db?db.getTime():0);
       });
 
-    if(!targets.length)return;
+    if(!targets.length)return false;
 
-    const newDuration=String(newStudent?.duration||'30 Minutes');
-
-    /*
-      First try the least disruptive update:
-      keep each existing appointment on its current date and move only
-      its start time to the new preferred time for that same weekday.
-      This directly handles cases such as 10:00 AM -> 11:00 AM.
-    */
-    const directTargets=[];
-    const needsRebuild=[];
-
-    targets.forEach(a=>{
-      const dt=getAppointmentDateTime(a);
-      const date=a.date || (dt?getLocalDateString(dt):'');
-      const day=appointmentDateDayName(date);
-      const times=normalizeScheduleTimes(newDetails[day]);
-
-      if(date && times.length){
-        directTargets.push({appointment:a,date,day,times});
-      }else{
-        needsRebuild.push(a);
-      }
-    });
+    const newPreferredDays=SCHEDULE_DAYS.filter(day=>
+      normalizeScheduleTimes(newDetails[day]).length
+    );
+    if(!newPreferredDays.length)return false;
 
     const targetIds=new Set(targets.map(a=>a.id));
     const occupiedByOthers=appointments.filter(a=>{
@@ -10163,10 +10146,10 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
       return dt && dt>=now;
     });
 
-    const isConflict=(date,time,duration)=>{
+    const isConflict=(date,time,durationMinutes)=>{
       const start=parseAppointmentDate(date,time);
       if(!start)return true;
-      const end=new Date(start.getTime()+duration*60000);
+      const end=new Date(start.getTime()+durationMinutes*60000);
       return occupiedByOthers.some(a=>{
         const otherStart=getAppointmentDateTime(a);
         if(!otherStart)return false;
@@ -10177,132 +10160,71 @@ function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
       });
     };
 
-    const pickPreferredTime=(times,oldTime)=>{
-      if(!times.length)return '';
-      const oldMins=timeToMinutes(oldTime);
-      if(Number.isFinite(oldMins)){
-        return times
-          .slice()
-          .sort((a,b)=>Math.abs(a-oldMins)-Math.abs(b-oldMins))[0];
-      }
-      return times[0];
-    };
-
+    const durationMinutes=durationToMinutes(newDuration);
     const updatedById=new Map();
+    let cursor=new Date(now);
+    cursor.setHours(0,0,0,0);
 
     /*
-      For each appointment, use the closest new preferred time for the
-      same weekday. If that exact move conflicts with another student's
-      class, leave that appointment untouched instead of deleting/moving it.
+      Build the new recurring schedule from today forward and assign the
+      existing future appointments to those new slots in order. This means
+      Saturday 10:30 -> Sunday 10:00 is handled automatically without
+      requiring the teacher to rebook the class.
     */
-    directTargets.forEach(({appointment,date,times})=>{
-      const preferredMins=pickPreferredTime(times,appointment.time);
-      if(!preferredMins)return;
+    for(const appointment of targets){
+      let found=null;
 
-      const newTime=`${String(Math.floor(preferredMins/60)).padStart(2,'0')}:${String(preferredMins%60).padStart(2,'0')}`;
-      const duration=durationToMinutes(newDuration);
+      for(let i=0;i<1095 && !found;i++){
+        const date=getLocalDateString(cursor);
+        const day=appointmentDateDayName(date);
+        const dayTimes=normalizeScheduleTimes(newDetails[day]);
 
-      if(isConflict(date,newTime,duration)){
+        for(const mins of dayTimes){
+          const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+          const candidate=parseAppointmentDate(date,time);
+          if(!candidate || candidate<now)continue;
+          if(isConflict(date,time,durationMinutes))continue;
+
+          found={date,time};
+          break;
+        }
+
+        cursor.setDate(cursor.getDate()+1);
+      }
+
+      if(found){
+        updatedById.set(appointment.id,{
+          ...appointment,
+          studentName:newStudent.name,
+          date:found.date,
+          time:found.time,
+          duration:newDuration,
+          scheduleMode:'preferred',
+          updatedAt:new Date().toISOString()
+        });
+
+        /* Do not reuse the same new slot for another appointment. */
+        cursor=new Date(parseAppointmentDate(found.date,found.time));
+        cursor.setDate(cursor.getDate()+1);
+        cursor.setHours(0,0,0,0);
+      }else{
+        /* Keep the existing appointment if no conflict-free new slot exists. */
         updatedById.set(appointment.id,{
           ...appointment,
           studentName:newStudent.name,
           duration:newDuration,
           updatedAt:new Date().toISOString()
         });
-        return;
-      }
-
-      updatedById.set(appointment.id,{
-        ...appointment,
-        studentName:newStudent.name,
-        date,
-        time:newTime,
-        duration:newDuration,
-        scheduleMode:'preferred',
-        updatedAt:new Date().toISOString()
-      });
-    });
-
-    /*
-      If a weekday was removed from the preferred schedule, rebuild only
-      those unmatched appointments using the new preferred schedule.
-    */
-    if(needsRebuild.length){
-      const newPreferredDays=SCHEDULE_DAYS.filter(day=>
-        normalizeScheduleTimes(newDetails[day]).length
-      );
-
-      if(newPreferredDays.length){
-        const occupiedForRebuild=()=>{
-          return appointments.filter(a=>{
-            if(targetIds.has(a.id))return false;
-            if(String(a.status||'Scheduled').toLowerCase()==='cancelled')return false;
-            const dt=getAppointmentDateTime(a);
-            return dt && dt>=now;
-          });
-        };
-
-        const isRebuildConflict=(date,time)=>{
-          const start=parseAppointmentDate(date,time);
-          if(!start)return true;
-          const end=new Date(start.getTime()+durationToMinutes(newDuration)*60000);
-          return occupiedForRebuild().some(a=>{
-            const otherStart=getAppointmentDateTime(a);
-            if(!otherStart)return false;
-            const otherEnd=new Date(otherStart.getTime()+durationToMinutes(a.duration||'30 Minutes')*60000);
-            return start<otherEnd&&end>otherStart;
-          });
-        };
-
-        let cursor=new Date();
-        cursor.setHours(0,0,0,0);
-
-        for(const appointment of needsRebuild){
-          let found=null;
-
-          for(let i=0;i<1095&&!found;i++){
-            const date=getLocalDateString(cursor);
-            const day=appointmentDateDayName(date);
-            const dayTimes=normalizeScheduleTimes(newDetails[day]);
-
-            for(const mins of dayTimes){
-              const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-              const candidate=parseAppointmentDate(date,time);
-              if(!candidate||candidate<now)continue;
-              if(isRebuildConflict(date,time))continue;
-              found={date,time};
-              break;
-            }
-            cursor.setDate(cursor.getDate()+1);
-          }
-
-          if(found){
-            updatedById.set(appointment.id,{
-              ...appointment,
-              studentName:newStudent.name,
-              date:found.date,
-              time:found.time,
-              duration:newDuration,
-              scheduleMode:'preferred',
-              updatedAt:new Date().toISOString()
-            });
-          }else{
-            updatedById.set(appointment.id,{
-              ...appointment,
-              studentName:newStudent.name,
-              duration:newDuration,
-              updatedAt:new Date().toISOString()
-            });
-          }
-        }
       }
     }
 
     const updated=appointments.map(a=>updatedById.get(a.id)||a);
     saveAppointments(updated);
+    return true;
 
   }catch(error){
     console.warn('Student schedule sync warning:',error);
+    return false;
   }
 }
 function saveEditedStudent(){
@@ -10392,8 +10314,14 @@ const oldScheduleJSON=JSON.stringify(originalStudentSnapshot?.scheduleDetails||{
 const newScheduleJSON=JSON.stringify(editedStudent.scheduleDetails||{});
 const oldDuration=String(originalStudentSnapshot?.duration||'30 Minutes');
 const newDuration=String(editedStudent.duration||'30 Minutes');
-if(oldScheduleJSON!==newScheduleJSON || oldDuration!==newDuration || String(originalStudentSnapshot?.name||'')!==String(editedStudent.name||'')){
-  syncStudentScheduleToAppointments(id,originalStudentSnapshot,editedStudent);
+const scheduleChanged=oldScheduleJSON!==newScheduleJSON || oldDuration!==newDuration;
+const nameChanged=String(originalStudentSnapshot?.name||'')!==String(editedStudent.name||'');
+let scheduleAutoUpdated=false;
+
+if(scheduleChanged || nameChanged){
+  /* Use the original Student ID so existing appointments are always found,
+     even if the Student ID itself was edited at the same time. */
+  scheduleAutoUpdated=syncStudentScheduleToAppointments(originalId,originalStudentSnapshot,editedStudent);
 }
 
 closeEditStudent();
@@ -10402,7 +10330,12 @@ populateStudentSelect(id);
 renderRecords();
 renderStudents();
 renderAppointments();
-showStudentStatus('Student record updated successfully. Future scheduled classes were updated to the new preferred schedule.',true);
+
+if(scheduleChanged && scheduleAutoUpdated){
+  showStudentStatus('Schedule updated successfully. Future appointments were automatically moved to the new day and time. No rebooking is needed.',true);
+}else{
+  showStudentStatus('Student record updated successfully.',true);
+}
 }
 
 
