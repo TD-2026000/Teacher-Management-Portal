@@ -4787,8 +4787,7 @@ onclick="if(event.target===this) closeAddStudent()"
         </div>
       </div>
 
-      <div class="contract-section"><h3>AGREEMENT &amp; SIGNATURES</h3>
-        <p>By signing this contract, the parent/student confirms that they have read, understood, and agreed to the teacher's Private English Class agreement written above.</p>
+      <div class="contract-section">
         <div class="signature-grid">
           <div><strong>Parent Name:</strong><div id="contractParentName">____________________________</div><strong>Signature:</strong><div>____________________________</div></div>
           <div><strong>Teacher:</strong><div id="contractTeacherName">Teacher</div><strong>Teacher's Signature:</strong><div>____________________________</div></div>
@@ -10005,7 +10004,36 @@ function handleStudentEditPicture(event){
    return;
  }
  const reader=new FileReader();
- reader.onload=()=>{editStudentPendingPicture=reader.result||'';renderEditStudentPicture();};
+ reader.onload=()=>{
+   const source=reader.result||'';
+   const img=new Image();
+   img.onload=()=>{
+     /* Compress/rescale the uploaded picture before saving it in localStorage.
+        Large original photos can exceed browser storage limits and make
+        Save Changes appear to do nothing. */
+     const maxSize=600;
+     const scale=Math.min(1,maxSize/Math.max(img.naturalWidth||img.width||1,img.naturalHeight||img.height||1));
+     const width=Math.max(1,Math.round((img.naturalWidth||img.width)*scale));
+     const height=Math.max(1,Math.round((img.naturalHeight||img.height)*scale));
+     const canvas=document.createElement('canvas');
+     canvas.width=width;
+     canvas.height=height;
+     const ctx=canvas.getContext('2d');
+     if(!ctx){
+       editStudentPendingPicture=source;
+       renderEditStudentPicture();
+       return;
+     }
+     ctx.drawImage(img,0,0,width,height);
+     editStudentPendingPicture=canvas.toDataURL('image/jpeg',0.82);
+     renderEditStudentPicture();
+   };
+   img.onerror=()=>{
+     editStudentPendingPicture=source;
+     renderEditStudentPicture();
+   };
+   img.src=source;
+ };
  reader.readAsDataURL(file);
 }
 
@@ -12197,9 +12225,22 @@ function buildStudentAllRecordInfoPage(student){
     ['Class Duration',student.duration],['Classes',student.packageName],['Start Date',currentStart]
   ];
   const custom=Object.entries(normalizeCustomStudentFields(student.customFields||{}));
-  custom.forEach(([k,v])=>fields.push([k,v]));
+  const builtInLabels=new Set(fields.map(([label])=>String(label).trim().toLowerCase()));
+  custom.forEach(([k,v])=>{
+    /* Keep every user-created field in Student All Record, while avoiding
+       duplicate rows when a custom field has the same name as a built-in field. */
+    if(!builtInLabels.has(String(k).trim().toLowerCase())) fields.push([k,v]);
+  });
+
   const rows=fields.map(([label,value])=>`<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(studentAllRecordSafeText(value))}</td></tr>`).join('');
-  return studentAllRecordPageShell('STUDENT INFO',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table>`);
+
+  const preferredScheduleHtml=renderStudentProfileScheduleList(
+    student.scheduleDetails,
+    student.preferredSchedule,
+    student.duration
+  );
+
+  return studentAllRecordPageShell('STUDENT INFO',student,`<table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}</tbody></table><div style="margin-top:14px"><div style="font-weight:800;margin-bottom:6px">Preferred Class Schedule</div><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></div>`);
 }
 
 function buildStudentAllRecordSchedulePage(student){
@@ -15382,6 +15423,77 @@ setInterval(()=>{
    STUDENT CONTRACT
 ========================================================= */
 const STUDENT_CONTRACTS_BASE_KEY='teacherDanyealStudentContracts_v1';
+const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
+
+- Each class is **25 minutes long**.
+- Classes are conducted as **private 1-on-1 sessions**.
+- The class schedule will be arranged by **mutual agreement** between the teacher and parent/student.
+- There is **no fixed completion period** for the purchased classes unless otherwise agreed upon.
+- The student is expected to attend the agreed class schedule **on time**.
+
+
+**LESSON MATERIALS**
+
+- Learning materials will be prepared by **Teacher Danyeal** based on the student's learning needs, level, and/or the parent's requested topic.
+- Parents may **communicate their preferred learning goals** or lesson topics before the class.
+- Materials may include **PPT lessons, worksheets, reading activities, vocabulary exercises, phonics, grammar, speaking practice, stories**, and other appropriate activities.
+
+
+**PACKAGE & PAYMENT POLICY**
+
+- The purchased package is intended for **one student only** and cannot be transferred to another student without the teacher's approval.
+- Once payment has been confirmed and the package has been activated, the classes are **considered purchased**.
+- Parents are encouraged to **communicate any concerns** regarding the package or lessons directly with the teacher.
+
+
+**STUDENT LEARNING EXPECTATIONS**
+
+**The student is encouraged to:**
+
+- Attend classes **regularly**.
+- Participate **actively** during lessons.
+- Complete assigned activities or practice **when applicable**.
+- **Ask questions** whenever they do not understand the lesson.
+- Practice English **outside class** when possible.
+
+
+**CLASS CANCELLATION & RESCHEDULING**
+
+- If the student needs to cancel or reschedule a class, the parent/student should **inform the teacher before the scheduled class** whenever possible.
+- Rescheduling is subject to the **teacher's available schedule**.
+- If the student does not attend the class without prior notice, the class **may be considered used**.
+- If the teacher needs to cancel a class due to an emergency or technical problem, the class will be **rescheduled and will not be deducted** from the student's package.
+- Once the parent/student and teacher have agreed on a regular class schedule, the selected day and time will **remain the student's regular schedule** for the following weeks until all purchased class credits have been completed, unless a schedule change is requested and agreed upon by both parties.
+
+
+**ASSESSMENT, PROGRESS REPORT & CERTIFICATE**
+
+- **Assessment/Test:** Every **10th lesson** will serve as an assessment, test, or review to evaluate the student's understanding and progress.
+- **Evaluation Feedback Report:** After the student completes **every 10 lessons**, the teacher will provide an Evaluation and Feedback Report summarizing the student's progress, strengths, areas for improvement, and overall performance.
+- **Certificate of Completion:** Upon successful completion of the enrolled lesson package or program, the student will receive a **Certificate of Completion** from the teacher.
+
+
+**AGREEMENT**
+
+By signing this contract, the parent/student confirms that they have **read, understood, and agreed** to the terms and conditions of the **Teacher Danyeal Private English Class**.
+`;
+
+function defaultStudentContractHtml(){
+  const lines=DEFAULT_STUDENT_CONTRACT_AGREEMENT.trim().split(/\r?\n/);
+  let html=''; let list=[];
+  const flush=()=>{if(list.length){html+=`<ul>${list.map(x=>`<li>${x}</li>`).join('')}</ul>`;list=[];}};
+  const inline=(text)=>escapeHtml(text).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  lines.forEach(line=>{
+    const t=line.trim();
+    if(!t){flush();return;}
+    if(t.startsWith('- ')){list.push(inline(t.slice(2)));return;}
+    flush();
+    if(/^\*\*.+\*\*$/.test(t)) html+=`<p><strong>${escapeHtml(t.slice(2,-2))}</strong></p>`;
+    else html+=`<p>${inline(t)}</p>`;
+  });
+  flush();
+  return html;
+}
 let contractSelectedStudentId='';
 let contractFileData={teacher:null,parent:null};
 let contractSavedForStudentId="";
@@ -15451,7 +15563,11 @@ function loadStudentContractDetails(id, options={}){
  const renewalPending=false; const savedContract=getStudentContracts()[id];
  const custom=savedContract?.customSections||{};
  const agreementEl=document.getElementById('contractAgreementText');
- if(agreementEl) agreementEl.value=custom.agreementText || [custom.classArrangement,custom.lessonMaterials,custom.packagePayment].filter(Boolean).join('\n\n') || ''; const agreementEditor=document.getElementById('contractAgreementEditor'); if(agreementEditor) agreementEditor.innerHTML=custom.agreementHtml || (agreementEl?.value ? escapeHtml(agreementEl.value).replace(/\n/g,'<br>') : '');
+ const defaultAgreementText=DEFAULT_STUDENT_CONTRACT_AGREEMENT.trim();
+ const savedAgreementText=custom.agreementText || [custom.classArrangement,custom.lessonMaterials,custom.packagePayment].filter(Boolean).join('\n\n') || '';
+ if(agreementEl) agreementEl.value=savedAgreementText || defaultAgreementText;
+ const agreementEditor=document.getElementById('contractAgreementEditor');
+ if(agreementEditor) agreementEditor.innerHTML=custom.agreementHtml || (savedAgreementText ? escapeHtml(savedAgreementText).replace(/\n/g,'<br>') : defaultStudentContractHtml());
  if(status)status.textContent=(student.name||'Selected');
  if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const pn=document.getElementById('contractParentName');if(pn)pn.textContent=student.parentName||'____________________________';const record=getStudentContracts()[id];
@@ -15602,7 +15718,7 @@ async function previewStudentContract(){
   let modal=document.getElementById('studentContractPreviewModal');
   if(!modal){
    modal=document.createElement('div'); modal.id='studentContractPreviewModal'; modal.className='modal-backdrop';
-   modal.innerHTML=`<div class="modal contract-preview-modal"><div class="modal-header contract-preview-modal-header"><h3>STUDENT CONTRACT PREVIEW</h3><button type="button" class="student-contract-preview-download" onclick="downloadStudentContractPDF()" title="Download contract PDF">DOWNLOAD PDF</button><button type="button" class="contract-preview-close-btn" onclick="closeStudentContractPreview()" aria-label="Close preview" title="Close preview">×</button></div><div class="modal-body"><div class="small" style="margin-bottom:10px">US Legal portrait preview • automatic pages when the agreement is long • PDF-ready formatting preserved from the editor</div><div id="studentContractPreviewPages" class="contract-pdf-preview-pages"></div></div></div>`;
+   modal.innerHTML=`<div class="modal contract-preview-modal"><div class="modal-header contract-preview-modal-header"><h3>STUDENT CONTRACT PREVIEW</h3><button type="button" class="student-contract-preview-download" onclick="downloadStudentContractPDF()" title="Download contract PDF">DOWNLOAD PDF</button><button type="button" class="contract-preview-close-btn" onclick="closeStudentContractPreview()" aria-label="Close preview" title="Close preview">×</button></div><div class="modal-body"><div class="small" style="margin-bottom:10px">US Legal portrait preview • automatic pages when the agreement is long • PDF-ready formatting preserved from the editable agreement</div><div id="studentContractPreviewPages" class="contract-pdf-preview-pages"></div></div></div>`;
    modal.addEventListener('click',e=>{if(e.target===modal)closeStudentContractPreview();}); document.body.appendChild(modal);
   }
   const pages=document.getElementById('studentContractPreviewPages'); if(!pages)return; pages.innerHTML='';
@@ -15696,8 +15812,6 @@ async function previewStudentContract(){
     const header=page.querySelector('.pdf-page-header'); const infoBlock=page.querySelector('.pdf-info-bullets');
     if(infoBlock) infoBlock.insertAdjacentElement('afterend',agreementBox); else if(header) header.insertAdjacentElement('afterend',agreementBox); else page.prepend(agreementBox);
     if(index===chunks.length-1){
-      const ack=document.createElement('div'); ack.className='preview-contract-agreement-signatures-note';
-      ack.innerHTML='<h3>AGREEMENT &amp; SIGNATURES</h3><p>By signing this contract, the parent/student confirms that they have read, understood, and agreed to the teacher\'s Private English Class agreement written above.</p>'; page.appendChild(ack);
       page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
       const manualSignatures=document.createElement('div');
       manualSignatures.className='pdf-signed-signatures';
