@@ -2639,6 +2639,44 @@ button.secondary,
   .evaluation-preview-modal-actions button{width:100%}
 }
 </style>
+
+<style id="evaluation-view-large-theme-fix">
+/* Individual Evaluation View: large desktop/tablet modal + current portal theme */
+#evaluationViewModal .record-view-modal{
+  width:92vw !important;
+  max-width:92vw !important;
+  height:92vh !important;
+  max-height:92vh !important;
+  box-sizing:border-box !important;
+  overflow-y:auto !important;
+}
+#evaluationViewModal .record-detail-section{
+  border-color:var(--global-border,#ffb3d9) !important;
+}
+#evaluationViewModal .record-detail-section-title{
+  background:var(--global-accent,#ff69b4) !important;
+  color:var(--global-text-on-accent,#fff) !important;
+}
+#evaluationViewModal .record-detail-box{
+  border-color:var(--global-border,#ffb3d9) !important;
+}
+#evaluationViewModal .modal-cancel{
+  background:var(--global-accent,#ff69b4) !important;
+  color:var(--global-text-on-accent,#fff) !important;
+  border:1px solid var(--global-accent-dark,#c21875) !important;
+}
+#evaluationViewModal .modal-cancel:hover{
+  background:var(--global-accent-dark,#c21875) !important;
+}
+@media(max-width:700px){
+  #evaluationViewModal .record-view-modal{
+    width:96vw !important;
+    max-width:96vw !important;
+    height:94vh !important;
+    max-height:94vh !important;
+  }
+}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
