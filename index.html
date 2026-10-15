@@ -4070,6 +4070,31 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-image-controls button{font-size:11px;padding:3px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;}
 .contract-rich-editor .contract-inline-image-wrap:not(.selected) .contract-image-controls{display:none;}
 </style>
+
+<style id="contract-image-preview-alignment-v31">
+/* Keep Picture directly visible in the main contract toolbar. */
+#contractRichToolbar > #contractInsertImageBtn{display:inline-flex!important;}
+/* Full contract remains scrollable vertically. */
+#contractAgreementEditor{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  max-height:620px!important;
+  min-height:420px;
+  scrollbar-width:auto!important;
+}
+/* Preview/PDF image wrappers use the same stored editor-relative position. */
+.pdf-custom-text .contract-inline-image-wrap{
+  position:absolute!important;
+  box-sizing:border-box;
+  pointer-events:none;
+}
+.pdf-custom-text .contract-inline-image{
+  display:block;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+}
+</style>
 </head>
 
 <body>
@@ -4866,7 +4891,7 @@ onclick="if(event.target===this) closeAddStudent()"
             <select id="contractAlignment" class="rich-select" title="Alignment"><option value="" disabled selected>Alignment</option><option value="justifyLeft">Left</option><option value="justifyCenter">Center</option><option value="justifyRight">Right</option><option value="justifyFull">Justify</option></select>
             <button type="button" class="rich-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
             <button type="button" class="rich-btn" data-cmd="insertOrderedList" title="Numbered List">1. List</button>
-            <button type="button" class="rich-btn" onclick="insertContractImage()" title="Insert Picture">🖼 Picture</button>
+            <button type="button" class="rich-btn" id="contractInsertImageBtn" onclick="insertContractImage()" title="Insert Picture">🖼 Picture</button>
             <button type="button" class="rich-btn" onclick="insertContractSignatureBlock()" title="Insert Parent & Teacher Signature Block">✍ Signatures</button>
             <button type="button" class="rich-btn" data-cmd="undo" title="Undo">↶</button>
             <button type="button" class="rich-btn" data-cmd="redo" title="Redo">↷</button>
@@ -15772,9 +15797,9 @@ function handleContractInlineImage(event){
 function insertContractImageData(dataUrl){
  const editor=document.getElementById('contractAgreementEditor'); if(!editor)return;
  const wrap=document.createElement('div'); wrap.className='contract-inline-image-wrap in-front selected'; wrap.contentEditable='false';
- wrap.style.left=Math.max(0,Math.round((editor.scrollLeft||0)+24))+'px'; wrap.style.top=Math.max(0,Math.round((editor.scrollTop||0)+24))+'px'; wrap.style.width='180px';
+ wrap.style.left=Math.max(0,Math.round((editor.scrollLeft||0)+24))+'px'; wrap.style.top=Math.max(0,Math.round((editor.scrollTop||0)+24))+'px'; wrap.style.width='180px'; wrap.dataset.editorPositioned='1';
  wrap.innerHTML=`<img class="contract-inline-image" src="${dataUrl}" alt="Inserted contract picture" style="width:100%;height:auto"><div class="contract-image-controls"><button type="button" onclick="setContractImageLayer(this,'front')">In front</button><button type="button" onclick="setContractImageLayer(this,'behind')">Behind text</button><button type="button" onclick="removeContractInlineImage(this)">Remove</button></div><span class="contract-image-resize-handle nw" data-resize="nw"></span><span class="contract-image-resize-handle ne" data-resize="ne"></span><span class="contract-image-resize-handle sw" data-resize="sw"></span><span class="contract-image-resize-handle se" data-resize="se"></span>`;
- editor.appendChild(wrap); makeContractImageDraggable(wrap); makeContractImageResizable(wrap); selectContractInlineImage(wrap);
+ editor.appendChild(wrap); makeContractImageDraggable(wrap); makeContractImageResizable(wrap); syncContractImagePosition(wrap); selectContractInlineImage(wrap);
 }
 function selectContractInlineImage(wrap){document.querySelectorAll('.contract-inline-image-wrap.selected').forEach(x=>x.classList.remove('selected'));if(wrap)wrap.classList.add('selected');}
 function setContractImageLayer(btn,mode){const wrap=btn.closest('.contract-inline-image-wrap');if(!wrap)return;wrap.classList.toggle('behind-text',mode==='behind');wrap.classList.toggle('in-front',mode!=='behind');selectContractInlineImage(wrap);}
@@ -15783,7 +15808,22 @@ function makeContractImageDraggable(wrap){
  let dragging=false,startX=0,startY=0,startL=0,startT=0;
  wrap.addEventListener('mousedown',e=>{if(e.target.closest('.contract-image-controls,.contract-image-resize-handle'))return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;selectContractInlineImage(wrap);dragging=true;startX=e.clientX;startY=e.clientY;startL=parseFloat(wrap.style.left)||0;startT=parseFloat(wrap.style.top)||0;e.preventDefault();});
  document.addEventListener('mousemove',e=>{if(!dragging)return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;let l=startL+(e.clientX-startX),t=startT+(e.clientY-startY);l=Math.max(0,Math.min(l,Math.max(0,editor.scrollWidth-wrap.offsetWidth)));t=Math.max(0,Math.min(t,Math.max(0,editor.scrollHeight-wrap.offsetHeight)));wrap.style.left=l+'px';wrap.style.top=t+'px';});
- document.addEventListener('mouseup',()=>{dragging=false;}); wrap.addEventListener('click',()=>selectContractInlineImage(wrap));
+ document.addEventListener('mouseup',()=>{dragging=false; syncContractImagePosition(wrap);}); wrap.addEventListener('click',()=>selectContractInlineImage(wrap));
+}
+function syncContractImagePosition(wrap){
+ const editor=document.getElementById('contractAgreementEditor'); if(!editor||!wrap)return;
+ const ew=Math.max(1,editor.scrollWidth||editor.clientWidth||1), eh=Math.max(1,editor.scrollHeight||editor.clientHeight||1);
+ wrap.dataset.posX=((parseFloat(wrap.style.left)||0)/ew).toString();
+ wrap.dataset.posY=((parseFloat(wrap.style.top)||0)/eh).toString();
+ wrap.dataset.posW=((parseFloat(wrap.style.width)||wrap.offsetWidth||180)/ew).toString();
+}
+function applyContractImageRelativePosition(wrap,target){
+ if(!wrap||!target)return;
+ const tw=Math.max(1,target.clientWidth||target.scrollWidth||1), th=Math.max(1,target.scrollHeight||target.clientHeight||1);
+ const x=parseFloat(wrap.dataset.posX), y=parseFloat(wrap.dataset.posY), w=parseFloat(wrap.dataset.posW);
+ if(Number.isFinite(x))wrap.style.left=Math.max(0,x*tw)+'px';
+ if(Number.isFinite(y))wrap.style.top=Math.max(0,y*th)+'px';
+ if(Number.isFinite(w))wrap.style.width=Math.max(40,w*tw)+'px';
 }
 function makeContractImageResizable(wrap){
  if(wrap.dataset.resizeReady==='1')return; wrap.dataset.resizeReady='1';
@@ -15806,7 +15846,7 @@ function makeContractImageResizable(wrap){
        l=Math.max(0,Math.min(l,Math.max(0,editor.scrollWidth-w))); t=Math.max(0,t);
        wrap.style.left=l+'px';wrap.style.top=t+'px';wrap.style.width=w+'px';
      };
-     const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);};
+     const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);syncContractImagePosition(wrap);};
      document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
    });
  });
@@ -16116,28 +16156,13 @@ async function previewStudentContract(){
     agreementBox.appendChild(body);
     const header=page.querySelector('.pdf-page-header'); const infoBlock=page.querySelector('.pdf-info-bullets');
     if(infoBlock) infoBlock.insertAdjacentElement('afterend',agreementBox); else if(header) header.insertAdjacentElement('afterend',agreementBox); else page.prepend(agreementBox);
-    if(index===chunks.length-1){
-      page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
-      const manualSignatures=document.createElement('div');
-      manualSignatures.className='pdf-signed-signatures';
-      const teacherName=getTeacherContractDisplayName()||'Teacher';
-      const studentForSignature=contractSelectedStudentId?getStudents().find(st=>st.id===contractSelectedStudentId):null;
-      const parentName=String(studentForSignature?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
-      manualSignatures.innerHTML=`
-        <div class="pdf-manual-signature-grid">
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Parent / Guardian Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(parentName)}</div>
-          </div>
-          <div class="pdf-manual-signature-card">
-            <div class="pdf-manual-signature-line"></div>
-            <div class="pdf-manual-signature-label">Teacher's Signature</div>
-            <div class="pdf-manual-signature-name">${escapeHtml(teacherName)}</div>
-          </div>
-        </div>`;
-      page.appendChild(manualSignatures);
-    }
+    /* The signature block must come only from the editable contract content.
+       Do not add a second automatic signature block to Preview/PDF. */
+    page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
+    const previewImages=body.querySelectorAll('.contract-inline-image-wrap');
+    previewImages.forEach(imgWrap=>{
+      applyContractImageRelativePosition(imgWrap, body);
+    });
     pages.appendChild(page);
   });
   modal.style.display='flex';
