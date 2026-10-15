@@ -4210,6 +4210,15 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 }
 #studentContractPreviewPages .contract-image-controls,
 #studentContractPreviewPages .contract-image-resize-handle{display:none!important;}
+
+<style id="contract-signature-image-visibility-v35">
+/* Signature images must remain visible in the Preview/PDF and may overlap the
+   underline/name exactly as they do in the editable contract. */
+#studentContractPreviewPages .preview-contract-agreement-body{position:relative!important;overflow:visible!important;}
+#studentContractPreviewPages .contract-signature-block{position:relative!important;z-index:1!important;}
+#studentContractPreviewPages .contract-inline-image-wrap{z-index:50!important;visibility:visible!important;opacity:1!important;}
+#studentContractPreviewPages .contract-inline-image{visibility:visible!important;opacity:1!important;}
+</style>
 </style>
 </head>
 
@@ -16042,10 +16051,12 @@ function cancelStudentContract(){
 }
 async function setStudentContractActionState(saved){
  const hasStudent=!!String(contractSelectedStudentId||'');
+ const saveBtn=document.getElementById('saveStudentContractBtn');
  const b=document.getElementById('downloadStudentContractBtn');
  const p=document.getElementById('previewStudentContractBtn');
- if(b)b.disabled=!hasStudent;
- if(p)p.disabled=!hasStudent;
+ /* Selecting a student is enough to use all contract actions. The presence of
+    an inserted signature image must never disable Save/Preview/Download. */
+ [saveBtn,b,p].forEach(btn=>{if(btn){btn.disabled=!hasStudent;btn.removeAttribute('aria-disabled');}});
 }
 
 async function buildStudentContractImage(){
@@ -16160,8 +16171,18 @@ function makeContractPreviewPage(title, infoHtml, sections, includeInfo=true){
  return page;
 }
 
+function syncContractEditorBeforeAction(){
+ const editor=document.getElementById('contractAgreementEditor');
+ if(!editor)return false;
+ editor.querySelectorAll('.contract-inline-image-wrap').forEach(img=>syncContractImagePosition(img));
+ const hidden=document.getElementById('contractAgreementText');
+ if(hidden)hidden.value=(editor.innerText||editor.textContent||'').trim();
+ return true;
+}
+
 async function previewStudentContract(){
  try{
+  syncContractEditorBeforeAction();
   const {info,sections}=getContractPreviewSections();
   let modal=document.getElementById('studentContractPreviewModal');
   if(!modal){
@@ -16320,8 +16341,16 @@ async function previewStudentContract(){
     },0);
   });
 
+  const signatureSourceBlock=source.querySelector('.contract-signature-block');
+  const signatureSourceIndex=signatureSourceBlock ? blocks.indexOf(signatureSourceBlock) : -1;
+  const signaturePageIndex=signatureSourceIndex>=0 ? Math.max(0,chunks.findIndex(chunk=>chunk.includes(signatureSourceBlock))) : -1;
+
   function findImagePage(image){
     if(!chunks.length)return 0;
+    /* Signature images belong to the signature template, not to a text-flow
+       coordinate. Always place them on the exact Preview page containing the
+       signature block. */
+    if(image.signatureAnchor && signaturePageIndex>=0)return signaturePageIndex;
     const y=Math.max(0,Number(image.y)||0);
     let pageIndex=0;
     for(let i=0;i<chunkOffsets.length;i++){
@@ -16395,8 +16424,10 @@ async function previewStudentContract(){
         const br=body.getBoundingClientRect();
         const sr=previewSignature.getBoundingClientRect();
         const scale=body.clientWidth/Math.max(1,image.editorWidth);
-        imgWrap.style.left=Math.max(0,(sr.left-br.left)+(image.signatureDx*scale))+'px';
-        imgWrap.style.top=Math.max(0,(sr.top-br.top)+(image.signatureDy*scale))+'px';
+        const dx=Number.isFinite(image.signatureDx)?image.signatureDx:0;
+        const dy=Number.isFinite(image.signatureDy)?image.signatureDy:0;
+        imgWrap.style.left=Math.max(0,(sr.left-br.left)+(dx*scale))+'px';
+        imgWrap.style.top=Math.max(0,(sr.top-br.top)+(dy*scale))+'px';
         imgWrap.style.width=Math.max(40,image.w*scale)+'px';
       }else{
         applyContractImageRelativePosition(imgWrap,body,chunkStartOffset);
@@ -16460,6 +16491,7 @@ async function openStudentContractPDFViewerForStudent(studentId){
 }
 
 async function downloadStudentContractPDF(){
+ syncContractEditorBeforeAction();
  const selectedId=String(contractSelectedStudentId||'');
  if(!selectedId){showContractError('Please select a student first.');return;}
  try{
@@ -16515,6 +16547,7 @@ async function downloadSavedStudentContract(studentId){
 
 function saveStudentContract(){
  try{
+ syncContractEditorBeforeAction();
  updateContractTeacherIdentity();
  const e=document.getElementById('contractError');if(e){e.textContent='';e.style.padding='';}
  const student=getStudents().find(s=>s.id===contractSelectedStudentId);
