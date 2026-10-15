@@ -3856,6 +3856,13 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-pdf-page.contract-legal-portrait-page-final .pdf-info-bullets{font-size:12pt!important;line-height:1.25!important}
 .contract-pdf-page.contract-legal-portrait-page-final .pdf-signed-signatures{font-size:12pt!important}
 @media(max-width:900px){.contract-pdf-page.contract-legal-portrait-page-final{transform-origin:top center;transform:scale(.78);margin-bottom:-120px!important}}
+
+.contract-preview-final-signatures{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:38px;page-break-inside:avoid;}
+.contract-preview-signature-item{text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:12pt;line-height:1.35;}
+.contract-preview-signature-line{white-space:nowrap;font-size:12pt;line-height:1.2;margin-bottom:4px;}
+.contract-preview-signature-name{font-size:12pt;font-weight:700;min-height:18px;}
+.contract-preview-signature-label{font-size:11pt;margin-top:1px;}
+@media(max-width:700px){.contract-preview-final-signatures{grid-template-columns:1fr;gap:24px;}}
 </style>
 
 <style id="td-contract-auto-pagination">
@@ -15812,18 +15819,32 @@ function makeContractImageDraggable(wrap){
 }
 function syncContractImagePosition(wrap){
  const editor=document.getElementById('contractAgreementEditor'); if(!editor||!wrap)return;
- const ew=Math.max(1,editor.scrollWidth||editor.clientWidth||1), eh=Math.max(1,editor.scrollHeight||editor.clientHeight||1);
- wrap.dataset.posX=((parseFloat(wrap.style.left)||0)/ew).toString();
- wrap.dataset.posY=((parseFloat(wrap.style.top)||0)/eh).toString();
- wrap.dataset.posW=((parseFloat(wrap.style.width)||wrap.offsetWidth||180)/ew).toString();
+ const ew=Math.max(1,editor.scrollWidth||editor.clientWidth||1);
+ const left=Math.max(0,parseFloat(wrap.style.left)||0);
+ const top=Math.max(0,parseFloat(wrap.style.top)||0);
+ const width=Math.max(40,parseFloat(wrap.style.width)||wrap.offsetWidth||180);
+ /* Store the REAL editor coordinates. Ratios based on the whole editor
+    height caused Preview/PDF images to drift because Preview is paginated. */
+ wrap.dataset.absX=String(left);
+ wrap.dataset.absY=String(top);
+ wrap.dataset.absW=String(width);
+ wrap.dataset.editorWidth=String(ew);
+ /* Keep the old values for compatibility with previously saved contracts. */
+ const eh=Math.max(1,editor.scrollHeight||editor.clientHeight||1);
+ wrap.dataset.posX=(left/ew).toString();
+ wrap.dataset.posY=(top/eh).toString();
+ wrap.dataset.posW=(width/ew).toString();
 }
-function applyContractImageRelativePosition(wrap,target){
+function applyContractImageRelativePosition(wrap,target,pageContentOffset=0){
  if(!wrap||!target)return;
- const tw=Math.max(1,target.clientWidth||target.scrollWidth||1), th=Math.max(1,target.scrollHeight||target.clientHeight||1);
- const x=parseFloat(wrap.dataset.posX), y=parseFloat(wrap.dataset.posY), w=parseFloat(wrap.dataset.posW);
- if(Number.isFinite(x))wrap.style.left=Math.max(0,x*tw)+'px';
- if(Number.isFinite(y))wrap.style.top=Math.max(0,y*th)+'px';
- if(Number.isFinite(w))wrap.style.width=Math.max(40,w*tw)+'px';
+ const tw=Math.max(1,target.clientWidth||target.scrollWidth||1);
+ const sourceWidth=parseFloat(wrap.dataset.editorWidth)||1;
+ const x=Number.isFinite(parseFloat(wrap.dataset.absX)) ? parseFloat(wrap.dataset.absX) : (parseFloat(wrap.dataset.posX)||0)*sourceWidth;
+ const y=Number.isFinite(parseFloat(wrap.dataset.absY)) ? parseFloat(wrap.dataset.absY) : (parseFloat(wrap.dataset.posY)||0)*Math.max(1,target.scrollHeight||target.clientHeight||1);
+ const w=Number.isFinite(parseFloat(wrap.dataset.absW)) ? parseFloat(wrap.dataset.absW) : (parseFloat(wrap.dataset.posW)||0)*sourceWidth;
+ wrap.style.left=Math.max(0,(x/sourceWidth)*tw)+'px';
+ wrap.style.top=Math.max(0,y-pageContentOffset)+'px';
+ if(w>0)wrap.style.width=Math.max(40,(w/sourceWidth)*tw)+'px';
 }
 function makeContractImageResizable(wrap){
  if(wrap.dataset.resizeReady==='1')return; wrap.dataset.resizeReady='1';
@@ -16136,6 +16157,18 @@ async function previewStudentContract(){
     }
   }
 
+  const signatureStudent=contractSelectedStudentId ? getStudents().find(s=>s.id===contractSelectedStudentId) : null;
+  const parentName=String(signatureStudent?.parentName||'Parent / Guardian').trim() || 'Parent / Guardian';
+  const chunkOffsets=[];
+  let runningChunkOffset=0;
+  chunks.forEach((chunk)=>{
+    chunkOffsets.push(runningChunkOffset);
+    runningChunkOffset += chunk.reduce((total,node)=>{
+      const cloneText=node.outerHTML||node.textContent||'';
+      const sourceIndex=blocks.findIndex(b=>(b.outerHTML||b.textContent||'')===cloneText);
+      return total+(sourceIndex>=0?(blockHeights[sourceIndex]||measureBlock(node)):measureBlock(node));
+    },0);
+  });
   chunks.forEach((chunk,index)=>{
     const page=makeContractPreviewPage('Page '+(index+1), index===0?info:'', [], index===0);
     page.classList.add('contract-legal-portrait-page-final');
@@ -16156,12 +16189,23 @@ async function previewStudentContract(){
     agreementBox.appendChild(body);
     const header=page.querySelector('.pdf-page-header'); const infoBlock=page.querySelector('.pdf-info-bullets');
     if(infoBlock) infoBlock.insertAdjacentElement('afterend',agreementBox); else if(header) header.insertAdjacentElement('afterend',agreementBox); else page.prepend(agreementBox);
-    /* The signature block must come only from the editable contract content.
-       Do not add a second automatic signature block to Preview/PDF. */
-    page.querySelectorAll('.pdf-signed-signatures').forEach(el=>el.remove());
+    /* Keep the editable signature block EXACTLY as it appears in the typing
+       box. Do not generate another signature block here, otherwise the
+       Preview gets duplicate Teacher/Parent names. */
+    body.querySelectorAll('.signature-grid, .pdf-signatures, .pdf-signed-signatures').forEach(el=>el.remove());
+    const signatureBlockInBody=body.querySelector('.contract-signature-block');
+    if(signatureBlockInBody){
+      signatureBlockInBody.style.breakInside='avoid';
+      signatureBlockInBody.style.pageBreakInside='avoid';
+    }
+
+    /* Images use their REAL coordinates from the editable typing box.
+       Because pages are paginated, map the image to the page containing its
+       original Y coordinate, then subtract that page's content start. */
+    const chunkStartOffset=chunkOffsets[index]||0;
     const previewImages=body.querySelectorAll('.contract-inline-image-wrap');
     previewImages.forEach(imgWrap=>{
-      applyContractImageRelativePosition(imgWrap, body);
+      applyContractImageRelativePosition(imgWrap, body, chunkStartOffset);
     });
     pages.appendChild(page);
   });
