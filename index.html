@@ -5016,12 +5016,9 @@ onclick="if(event.target===this) closeAddStudent()"
             <select id="contractAlignment" class="rich-select" title="Alignment"><option value="" disabled selected>Alignment</option><option value="justifyLeft">Left</option><option value="justifyCenter">Center</option><option value="justifyRight">Right</option><option value="justifyFull">Justify</option></select>
             <button type="button" class="rich-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
             <button type="button" class="rich-btn" data-cmd="insertOrderedList" title="Numbered List">1. List</button>
-            <button type="button" class="rich-btn" id="contractInsertImageBtn" onclick="insertContractImage()" title="Add Signature Image">ADD SIGNATURE</button>
-            <button type="button" class="rich-btn" onclick="insertContractSignatureBlock()" title="Insert Parent & Teacher Signature Block">✍ Signatures</button>
             <button type="button" class="rich-btn" data-cmd="undo" title="Undo">↶</button>
             <button type="button" class="rich-btn" data-cmd="redo" title="Redo">↷</button>
           </div>
-          <input id="contractInlineImageInput" type="file" accept="image/*" style="display:none" onchange="handleContractInlineImage(event)">
           <div id="contractAgreementEditor" class="contract-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type your complete contract agreement here. You can include CLASS ARRANGEMENT, LESSON MATERIALS, CLASSES & PAYMENT POLICY, WORKING STUDENT arrangements, CANCELLATION & RESCHEDULING, ASSESSMENT, CERTIFICATE, and any other terms you want to include."></div>
           <textarea class="contract-editable-textarea contract-master-textarea" id="contractAgreementText" aria-hidden="true" tabindex="-1" style="display:none"></textarea>
         </div>
@@ -5036,7 +5033,7 @@ onclick="if(event.target===this) closeAddStudent()"
       <div class="contract-actions">
         <button type="button" class="modal-cancel" onclick="cancelStudentContract()">CANCEL</button>
         <button id="saveStudentContractBtn" type="button" class="modal-save" onclick="saveStudentContract()">SAVE CONTRACT</button>
-        <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()">DOWNLOAD IMAGE</button>
+        <button id="downloadStudentContractBtn" type="button" class="primary-action" onclick="downloadStudentContractPDF()">DOWNLOAD PDF</button>
         <button id="previewStudentContractBtn" type="button" class="primary-action" onclick="previewStudentContract()">PREVIEW CONTRACT</button>
       </div>
       <div id="contractError" class="modal-error"></div>
@@ -16050,13 +16047,18 @@ function cancelStudentContract(){
   renderContractStudentLists();
 }
 async function setStudentContractActionState(saved){
- const hasStudent=!!String(contractSelectedStudentId||'');
  const saveBtn=document.getElementById('saveStudentContractBtn');
  const b=document.getElementById('downloadStudentContractBtn');
  const p=document.getElementById('previewStudentContractBtn');
- /* Selecting a student is enough to use all contract actions. The presence of
-    an inserted signature image must never disable Save/Preview/Download. */
- [saveBtn,b,p].forEach(btn=>{if(btn){btn.disabled=!hasStudent;btn.removeAttribute('aria-disabled');}});
+ /* Contract actions are controlled by the selected-student checks inside the
+    actions themselves. Never disable them because of signature/image state. */
+ [saveBtn,b,p].forEach(btn=>{
+   if(btn){
+     btn.disabled=false;
+     btn.removeAttribute('disabled');
+     btn.removeAttribute('aria-disabled');
+   }
+ });
 }
 
 async function buildStudentContractImage(){
@@ -16559,6 +16561,10 @@ function saveStudentContract(){
  const record={studentId:student.id,studentName:student.name,parentEmail:student.email,customSections:getContractCustomSectionValues(),submittedAt:savedAt,savedAt,status:'Completed',packageId:getCurrentStudentPackage(student)?.id||student.currentPackageId||'',packageName:student.packageName||''};
  contracts[student.id]=record;
  saveStudentContracts(contracts);
+ /* Immediately keep the saved contract available to Student All Record.
+    The Student All Record contract renderer reuses the same saved agreement
+    HTML/template used by the Student Contract preview/PDF. */
+ try{saveStudentContracts(getStudentContracts());}catch(e){console.warn('Student Contract record refresh warning:',e);}
  const students=getStudents();
  const idx=students.findIndex(s=>s.id===student.id);
  if(idx>=0){students[idx].contractStatus='Completed';students[idx].contractSavedAt=savedAt;students[idx].contractRenewalRequired=false;students[idx].contractRenewalRequestedAt='';students[idx].contractRenewalPackageId='';students[idx].contractRenewalPackageName='';saveStudents(students);}
