@@ -4053,7 +4053,16 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-rich-editor .contract-signature-line{border-bottom:1.5px solid #222;height:28px;margin:0 8px 4px;}
 .contract-rich-editor .contract-signature-name{font-weight:700;min-height:22px;margin-bottom:2px;}
 .contract-rich-editor .contract-signature-label{font-size:11pt;font-weight:600;}
-.contract-rich-editor .contract-inline-image-wrap{position:absolute;z-index:10;display:block;cursor:move;user-select:none;touch-action:none;}
+.contract-rich-editor{position:relative;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-width:auto;}
+.contract-rich-editor .contract-inline-image-wrap{position:absolute;z-index:10;display:block;cursor:move;user-select:none;touch-action:none;box-sizing:border-box;}
+.contract-rich-editor .contract-inline-image-wrap.selected{outline:1px solid #2f80ed;outline-offset:1px;}
+.contract-rich-editor .contract-inline-image-wrap .contract-image-resize-handle{position:absolute;width:9px;height:9px;background:#fff;border:1px solid #2f80ed;border-radius:2px;z-index:35;box-sizing:border-box;}
+.contract-rich-editor .contract-inline-image-wrap .contract-image-resize-handle.nw{left:-5px;top:-5px;cursor:nwse-resize}.contract-rich-editor .contract-inline-image-wrap .contract-image-resize-handle.ne{right:-5px;top:-5px;cursor:nesw-resize}.contract-rich-editor .contract-inline-image-wrap .contract-image-resize-handle.sw{left:-5px;bottom:-5px;cursor:nesw-resize}.contract-rich-editor .contract-inline-image-wrap .contract-image-resize-handle.se{right:-5px;bottom:-5px;cursor:nwse-resize}
+.pdf-custom-text .contract-inline-image-wrap{position:absolute;z-index:10;display:block;box-sizing:border-box;}
+.pdf-custom-text .contract-inline-image{display:block;max-width:none;pointer-events:none;}
+.pdf-custom-text .contract-image-controls,.pdf-custom-text .contract-image-resize-handle{display:none!important;}
+.pdf-custom-text{position:relative;}
+
 .contract-rich-editor .contract-inline-image-wrap.behind-text{z-index:0;opacity:.98;}
 .contract-rich-editor .contract-inline-image-wrap.in-front{z-index:20;}
 .contract-rich-editor .contract-inline-image{display:block;max-width:none;pointer-events:none;}
@@ -15625,8 +15634,8 @@ const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
 - Practice English **outside class** when possible.
 
 
-
   
+
 **CLASS CANCELLATION & RESCHEDULING**
 - If the student needs to cancel or reschedule a class, the parent/student should **inform the teacher before the scheduled class** whenever possible.
 - Rescheduling is subject to the **teacher's available schedule**.
@@ -15762,21 +15771,47 @@ function handleContractInlineImage(event){
 }
 function insertContractImageData(dataUrl){
  const editor=document.getElementById('contractAgreementEditor'); if(!editor)return;
- const wrap=document.createElement('div'); wrap.className='contract-inline-image-wrap in-front selected'; wrap.contentEditable='false'; wrap.style.left='24px'; wrap.style.top='24px'; wrap.style.width='180px';
- wrap.innerHTML=`<img class="contract-inline-image" src="${dataUrl}" alt="Inserted contract picture" style="width:100%;height:auto"><div class="contract-image-controls"><button type="button" onclick="setContractImageLayer(this,'front')">In front</button><button type="button" onclick="setContractImageLayer(this,'behind')">Behind text</button><button type="button" onclick="removeContractInlineImage(this)">Remove</button></div>`;
- editor.appendChild(wrap); makeContractImageDraggable(wrap); selectContractInlineImage(wrap);
+ const wrap=document.createElement('div'); wrap.className='contract-inline-image-wrap in-front selected'; wrap.contentEditable='false';
+ wrap.style.left=Math.max(0,Math.round((editor.scrollLeft||0)+24))+'px'; wrap.style.top=Math.max(0,Math.round((editor.scrollTop||0)+24))+'px'; wrap.style.width='180px';
+ wrap.innerHTML=`<img class="contract-inline-image" src="${dataUrl}" alt="Inserted contract picture" style="width:100%;height:auto"><div class="contract-image-controls"><button type="button" onclick="setContractImageLayer(this,'front')">In front</button><button type="button" onclick="setContractImageLayer(this,'behind')">Behind text</button><button type="button" onclick="removeContractInlineImage(this)">Remove</button></div><span class="contract-image-resize-handle nw" data-resize="nw"></span><span class="contract-image-resize-handle ne" data-resize="ne"></span><span class="contract-image-resize-handle sw" data-resize="sw"></span><span class="contract-image-resize-handle se" data-resize="se"></span>`;
+ editor.appendChild(wrap); makeContractImageDraggable(wrap); makeContractImageResizable(wrap); selectContractInlineImage(wrap);
 }
 function selectContractInlineImage(wrap){document.querySelectorAll('.contract-inline-image-wrap.selected').forEach(x=>x.classList.remove('selected'));if(wrap)wrap.classList.add('selected');}
 function setContractImageLayer(btn,mode){const wrap=btn.closest('.contract-inline-image-wrap');if(!wrap)return;wrap.classList.toggle('behind-text',mode==='behind');wrap.classList.toggle('in-front',mode!=='behind');selectContractInlineImage(wrap);}
 function removeContractInlineImage(btn){const wrap=btn.closest('.contract-inline-image-wrap');if(wrap)wrap.remove();}
 function makeContractImageDraggable(wrap){
  let dragging=false,startX=0,startY=0,startL=0,startT=0;
- wrap.addEventListener('mousedown',e=>{if(e.target.closest('.contract-image-controls'))return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;selectContractInlineImage(wrap);dragging=true;startX=e.clientX;startY=e.clientY;startL=parseFloat(wrap.style.left)||0;startT=parseFloat(wrap.style.top)||0;e.preventDefault();});
- document.addEventListener('mousemove',e=>{if(!dragging)return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;const r=editor.getBoundingClientRect();let l=startL+(e.clientX-startX),t=startT+(e.clientY-startY);l=Math.max(0,Math.min(l,Math.max(0,editor.clientWidth-wrap.offsetWidth)));t=Math.max(0,t);wrap.style.left=l+'px';wrap.style.top=t+'px';});
- document.addEventListener('mouseup',()=>{dragging=false;});
- wrap.addEventListener('click',()=>selectContractInlineImage(wrap));
+ wrap.addEventListener('mousedown',e=>{if(e.target.closest('.contract-image-controls,.contract-image-resize-handle'))return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;selectContractInlineImage(wrap);dragging=true;startX=e.clientX;startY=e.clientY;startL=parseFloat(wrap.style.left)||0;startT=parseFloat(wrap.style.top)||0;e.preventDefault();});
+ document.addEventListener('mousemove',e=>{if(!dragging)return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;let l=startL+(e.clientX-startX),t=startT+(e.clientY-startY);l=Math.max(0,Math.min(l,Math.max(0,editor.scrollWidth-wrap.offsetWidth)));t=Math.max(0,Math.min(t,Math.max(0,editor.scrollHeight-wrap.offsetHeight)));wrap.style.left=l+'px';wrap.style.top=t+'px';});
+ document.addEventListener('mouseup',()=>{dragging=false;}); wrap.addEventListener('click',()=>selectContractInlineImage(wrap));
 }
-function wireContractInlineImages(){document.querySelectorAll('#contractAgreementEditor .contract-inline-image-wrap').forEach(makeContractImageDraggable);}
+function makeContractImageResizable(wrap){
+ if(wrap.dataset.resizeReady==='1')return; wrap.dataset.resizeReady='1';
+ wrap.querySelectorAll('.contract-image-resize-handle').forEach(handle=>{
+   handle.addEventListener('mousedown',e=>{
+     e.preventDefault();e.stopPropagation();
+     const editor=document.getElementById('contractAgreementEditor'); if(!editor)return;
+     selectContractInlineImage(wrap);
+     const dir=handle.dataset.resize; const startX=e.clientX,startY=e.clientY,startL=parseFloat(wrap.style.left)||0,startT=parseFloat(wrap.style.top)||0,startW=wrap.offsetWidth,startH=wrap.offsetHeight;
+     const ratio=startH/startW||1;
+     const move=ev=>{
+       let dx=ev.clientX-startX,dy=ev.clientY-startY;
+       let w=startW;
+       if(dir.includes('e')) w=startW+dx; else if(dir.includes('w')) w=startW-dx;
+       if(dir.includes('n')) w=Math.max(40,startW-dy/ratio); else if(dir.includes('s')) w=Math.max(40,startW+dy/ratio);
+       w=Math.max(40,Math.min(w,Math.max(40,editor.scrollWidth-(dir.includes('w')?0:startL))));
+       let l=startL,t=startT;
+       if(dir.includes('w')) l=startL+(startW-w);
+       if(dir.includes('n')) t=startT+(startH-w*ratio);
+       l=Math.max(0,Math.min(l,Math.max(0,editor.scrollWidth-w))); t=Math.max(0,t);
+       wrap.style.left=l+'px';wrap.style.top=t+'px';wrap.style.width=w+'px';
+     };
+     const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);};
+     document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
+   });
+ });
+}
+function wireContractInlineImages(){document.querySelectorAll('#contractAgreementEditor .contract-inline-image-wrap').forEach(w=>{makeContractImageDraggable(w);makeContractImageResizable(w);});}
 function loadStudentContractDetails(id, options={}){
  contractSelectedStudentId=id||'';contractFileData={teacher:null,parent:null};const w=document.getElementById('contractWorkspace'),e=document.getElementById('contractError'),input=document.getElementById('contractFileInput'),preview=document.getElementById('contractPreview'),name=document.getElementById('contractFileName'),status=document.getElementById('contractStatusText');
  if(e)e.textContent='';
@@ -16362,7 +16397,7 @@ function showContractSuccess(msg){const e=document.getElementById('contractError
    if(bar.dataset.moreReady==='1')return;
    const controls=[...bar.children];
    const visible=[]; const extra=[];
-   controls.forEach((el,i)=>{if(i<5)visible.push(el);else extra.push(el);});
+   controls.forEach((el,i)=>{const keepVisible=i<5 || el.querySelector?.('[onclick*=\"insertContractImage\"]'); if(keepVisible)visible.push(el);else extra.push(el);});
    if(!extra.length){bar.dataset.moreReady='1';return;}
    const wrap=document.createElement('div');wrap.className='rich-overflow-wrap';
    const more=document.createElement('button');more.type='button';more.className='rich-more-btn';more.textContent='MORE';more.setAttribute('aria-expanded','false');more.setAttribute('aria-label','More formatting options');
