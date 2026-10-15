@@ -4101,6 +4101,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
   height:auto!important;
   max-width:none!important;
 }
+</style>
 
 <style id="contract-preview-signature-template-v32">
 /* Student Contract preview must use the exact same editable signature template. */
@@ -4150,6 +4151,65 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
   height:auto!important;
   max-width:none!important;
 }
+</style>
+
+<style id="contract-signature-image-exact-alignment-v34">
+/* Preview signature block: exactly two short side-by-side signature columns. */
+#studentContractPreviewPages .contract-signature-block{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  column-gap:60px!important;
+  row-gap:0!important;
+  width:100%!important;
+  margin:28px 0 8px!important;
+  padding:8px 0 0!important;
+  box-sizing:border-box!important;
+}
+#studentContractPreviewPages .contract-signature-column{
+  display:block!important;
+  width:auto!important;
+  min-width:0!important;
+  text-align:center!important;
+}
+#studentContractPreviewPages .contract-signature-line{
+  display:block!important;
+  width:auto!important;
+  height:28px!important;
+  margin:0 8px 4px!important;
+  border-bottom:1.5px solid #222!important;
+  box-sizing:border-box!important;
+}
+#studentContractPreviewPages .contract-signature-name{
+  display:block!important;
+  min-height:22px!important;
+  margin:0 0 2px!important;
+  font-size:12pt!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  text-align:center!important;
+}
+#studentContractPreviewPages .contract-signature-label{
+  display:block!important;
+  font-size:11pt!important;
+  line-height:1.3!important;
+  font-weight:600!important;
+  text-align:center!important;
+}
+#studentContractPreviewPages .contract-inline-image-wrap{
+  position:absolute!important;
+  z-index:20!important;
+  pointer-events:none!important;
+  outline:none!important;
+  box-sizing:border-box!important;
+}
+#studentContractPreviewPages .contract-inline-image{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+}
+#studentContractPreviewPages .contract-image-controls,
+#studentContractPreviewPages .contract-image-resize-handle{display:none!important;}
 </style>
 </head>
 
@@ -4947,7 +5007,7 @@ onclick="if(event.target===this) closeAddStudent()"
             <select id="contractAlignment" class="rich-select" title="Alignment"><option value="" disabled selected>Alignment</option><option value="justifyLeft">Left</option><option value="justifyCenter">Center</option><option value="justifyRight">Right</option><option value="justifyFull">Justify</option></select>
             <button type="button" class="rich-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
             <button type="button" class="rich-btn" data-cmd="insertOrderedList" title="Numbered List">1. List</button>
-            <button type="button" class="rich-btn" id="contractInsertImageBtn" onclick="insertContractImage()" title="Insert Picture">🖼 Picture</button>
+            <button type="button" class="rich-btn" id="contractInsertImageBtn" onclick="insertContractImage()" title="Add Signature Image">ADD SIGNATURE</button>
             <button type="button" class="rich-btn" onclick="insertContractSignatureBlock()" title="Insert Parent & Teacher Signature Block">✍ Signatures</button>
             <button type="button" class="rich-btn" data-cmd="undo" title="Undo">↶</button>
             <button type="button" class="rich-btn" data-cmd="redo" title="Redo">↷</button>
@@ -15872,17 +15932,31 @@ function syncContractImagePosition(wrap){
  const left=Math.max(0,parseFloat(wrap.style.left)||0);
  const top=Math.max(0,parseFloat(wrap.style.top)||0);
  const width=Math.max(40,parseFloat(wrap.style.width)||wrap.offsetWidth||180);
- /* Store the REAL editor coordinates. Ratios based on the whole editor
-    height caused Preview/PDF images to drift because Preview is paginated. */
  wrap.dataset.absX=String(left);
  wrap.dataset.absY=String(top);
  wrap.dataset.absW=String(width);
  wrap.dataset.editorWidth=String(ew);
- /* Keep the old values for compatibility with previously saved contracts. */
  const eh=Math.max(1,editor.scrollHeight||editor.clientHeight||1);
  wrap.dataset.posX=(left/ew).toString();
  wrap.dataset.posY=(top/eh).toString();
  wrap.dataset.posW=(width/ew).toString();
+
+ /* Store the real visual offset from the editable signature block.
+    This keeps a dragged signature image locked to the same underline/name
+    area even when the Preview page wraps text differently. */
+ const sig=editor.querySelector('.contract-signature-block');
+ if(sig){
+   const er=editor.getBoundingClientRect();
+   const ir=wrap.getBoundingClientRect();
+   const sr=sig.getBoundingClientRect();
+   wrap.dataset.signatureAnchor='1';
+   wrap.dataset.signatureDx=String(ir.left-sr.left);
+   wrap.dataset.signatureDy=String(ir.top-sr.top);
+ }else{
+   delete wrap.dataset.signatureAnchor;
+   delete wrap.dataset.signatureDx;
+   delete wrap.dataset.signatureDy;
+ }
 }
 function applyContractImageRelativePosition(wrap,target,pageContentOffset=0){
  if(!wrap||!target)return;
@@ -16111,7 +16185,15 @@ async function previewStudentContract(){
   */
   const source=document.createElement('div');
   source.innerHTML=agreementHtml || '<div>No contract agreement / terms entered yet.</div>';
+  /* Refresh image coordinates from the live editor before cloning. */
+  editor?.querySelectorAll('.contract-inline-image-wrap').forEach(img=>syncContractImagePosition(img));
+  const liveImageMap=[...editor?.querySelectorAll('.contract-inline-image-wrap')||[]];
   const inlineImages=[...source.querySelectorAll('.contract-inline-image-wrap')].map(img=>{
+    const liveImg=liveImageMap.find(x=>{
+      const src=x.querySelector('.contract-inline-image')?.getAttribute('src')||'';
+      const cur=img.querySelector('.contract-inline-image')?.getAttribute('src')||'';
+      return src===cur && String(x.dataset.absX||'')===String(img.dataset.absX||'');
+    }) || liveImageMap.find(x=>(x.querySelector('.contract-inline-image')?.getAttribute('src')||'')===(img.querySelector('.contract-inline-image')?.getAttribute('src')||''));
     const clone=img.cloneNode(true);
     clone.querySelectorAll('.contract-image-controls,.contract-image-resize-handle').forEach(el=>el.remove());
     return {
@@ -16119,7 +16201,10 @@ async function previewStudentContract(){
       x:Number.isFinite(parseFloat(img.dataset.absX)) ? parseFloat(img.dataset.absX) : (parseFloat(img.style.left)||0),
       y:Number.isFinite(parseFloat(img.dataset.absY)) ? parseFloat(img.dataset.absY) : (parseFloat(img.style.top)||0),
       w:Number.isFinite(parseFloat(img.dataset.absW)) ? parseFloat(img.dataset.absW) : (parseFloat(img.style.width)||img.offsetWidth||180),
-      editorWidth:parseFloat(img.dataset.editorWidth)||Math.max(1,editor?.scrollWidth||editor?.clientWidth||1)
+      editorWidth:parseFloat(img.dataset.editorWidth)||Math.max(1,editor?.scrollWidth||editor?.clientWidth||1),
+      signatureAnchor:!!(liveImg?.dataset.signatureAnchor||img.dataset.signatureAnchor),
+      signatureDx:parseFloat(liveImg?.dataset.signatureDx||img.dataset.signatureDx||'0')||0,
+      signatureDy:parseFloat(liveImg?.dataset.signatureDy||img.dataset.signatureDy||'0')||0
     };
   });
   source.querySelectorAll('.contract-inline-image-wrap').forEach(img=>img.remove());
@@ -16305,7 +16390,17 @@ async function previewStudentContract(){
       imgWrap.dataset.absW=String(image.w);
       imgWrap.dataset.editorWidth=String(image.editorWidth);
       body.appendChild(imgWrap);
-      applyContractImageRelativePosition(imgWrap,body,chunkStartOffset);
+      const previewSignature=body.querySelector('.contract-signature-block');
+      if(image.signatureAnchor && previewSignature){
+        const br=body.getBoundingClientRect();
+        const sr=previewSignature.getBoundingClientRect();
+        const scale=body.clientWidth/Math.max(1,image.editorWidth);
+        imgWrap.style.left=Math.max(0,(sr.left-br.left)+(image.signatureDx*scale))+'px';
+        imgWrap.style.top=Math.max(0,(sr.top-br.top)+(image.signatureDy*scale))+'px';
+        imgWrap.style.width=Math.max(40,image.w*scale)+'px';
+      }else{
+        applyContractImageRelativePosition(imgWrap,body,chunkStartOffset);
+      }
     });
 
     pages.appendChild(page);
