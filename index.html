@@ -3796,20 +3796,6 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 .contract-legal-landscape-page .pdf-signatures{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:7px!important;font-size:11px!important}
 @media(max-width:900px){.contract-pdf-page.contract-legal-landscape-page{width:900px!important;max-width:none!important}.contract-preview-modal .modal-body{overflow:auto!important}}
 </style>
-<style id="td-contract-editable-signature-image">
-.contract-rich-editor{position:relative!important;overflow:hidden;}
-.contract-rich-editor .td-auto-signatures{display:grid;grid-template-columns:1fr 1fr;gap:54px;margin-top:28px;padding-top:12px;width:100%;break-inside:avoid;page-break-inside:avoid;}
-.contract-rich-editor .td-auto-signature-card{text-align:center;break-inside:avoid;page-break-inside:avoid;}
-.contract-rich-editor .td-auto-signature-line{border-bottom:1.5px solid #111;height:34px;margin-bottom:6px;}
-.contract-rich-editor .td-auto-signature-name{font-weight:800!important;font-size:12pt;line-height:1.35;min-height:18px;}
-.contract-rich-editor .td-auto-signature-label{font-weight:700;font-size:11pt;line-height:1.35;margin-top:2px;}
-.contract-rich-editor .td-contract-floating-image{max-width:45%;height:auto;cursor:move;user-select:none;touch-action:none;box-sizing:border-box;}
-.contract-rich-editor .td-contract-floating-image[data-wrap-mode="behind"]{position:absolute;z-index:0;}
-.contract-rich-editor .td-contract-floating-image[data-wrap-mode="front"]{position:absolute;z-index:20;}
-.contract-rich-editor .td-contract-floating-image[data-wrap-mode="inline"]{position:relative;display:inline-block;max-width:100%;vertical-align:middle;cursor:move;}
-.contract-rich-editor .td-contract-image-selected{outline:2px solid var(--global-accent,#00bcbc)!important;outline-offset:2px;}
-@media(max-width:700px){.contract-rich-editor .td-auto-signatures{grid-template-columns:1fr;gap:24px;}}
-</style>
 <style id="td-contract-preview-portrait-final">
 /* FINAL STUDENT CONTRACT PREVIEW: US Legal portrait, single column, one page. */
 .contract-preview-modal{width:min(1050px,96vw)!important;max-width:1050px!important}
@@ -4058,6 +4044,22 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #paletteGrid .palette-swatch{
   background-image:var(--palette-preview-bg,none);
 }
+</style>
+
+<style id="contract-inline-editor-v29">
+.contract-rich-editor{position:relative;overflow:hidden;}
+.contract-rich-editor .contract-signature-block{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin:28px 0 8px;padding-top:8px;}
+.contract-rich-editor .contract-signature-column{min-width:0;text-align:center;}
+.contract-rich-editor .contract-signature-line{border-bottom:1.5px solid #222;height:28px;margin:0 8px 4px;}
+.contract-rich-editor .contract-signature-name{font-weight:700;min-height:22px;margin-bottom:2px;}
+.contract-rich-editor .contract-signature-label{font-size:11pt;font-weight:600;}
+.contract-rich-editor .contract-inline-image-wrap{position:absolute;z-index:10;display:block;cursor:move;user-select:none;touch-action:none;}
+.contract-rich-editor .contract-inline-image-wrap.behind-text{z-index:0;opacity:.98;}
+.contract-rich-editor .contract-inline-image-wrap.in-front{z-index:20;}
+.contract-rich-editor .contract-inline-image{display:block;max-width:none;pointer-events:none;}
+.contract-image-controls{display:flex;gap:4px;position:absolute;top:-30px;left:0;background:#fff;border:1px solid #ccc;border-radius:6px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:30;}
+.contract-image-controls button{font-size:11px;padding:3px 6px;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;}
+.contract-rich-editor .contract-inline-image-wrap:not(.selected) .contract-image-controls{display:none;}
 </style>
 </head>
 
@@ -4606,12 +4608,12 @@ Dashboard
 
 <div class="dashboard-summary-grid">
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">NUMBER OF STUDENTS</div>
+<div class="dashboard-summary-label">STUDENTS</div>
 <div id="dashboardStudentCount" class="dashboard-summary-number">0</div>
 </div>
 
 <div class="dashboard-summary-card">
-<div class="dashboard-summary-label">NUMBER OF APPOINTMENTS</div>
+<div class="dashboard-summary-label">APPOINTMENTS</div>
 <div id="dashboardAppointmentCount" class="dashboard-summary-number">0</div>
 </div>
 
@@ -4855,20 +4857,17 @@ onclick="if(event.target===this) closeAddStudent()"
             <select id="contractAlignment" class="rich-select" title="Alignment"><option value="" disabled selected>Alignment</option><option value="justifyLeft">Left</option><option value="justifyCenter">Center</option><option value="justifyRight">Right</option><option value="justifyFull">Justify</option></select>
             <button type="button" class="rich-btn" data-cmd="insertUnorderedList" title="Bullet List">• List</button>
             <button type="button" class="rich-btn" data-cmd="insertOrderedList" title="Numbered List">1. List</button>
+            <button type="button" class="rich-btn" onclick="insertContractImage()" title="Insert Picture">🖼 Picture</button>
+            <button type="button" class="rich-btn" onclick="insertContractSignatureBlock()" title="Insert Parent & Teacher Signature Block">✍ Signatures</button>
             <button type="button" class="rich-btn" data-cmd="undo" title="Undo">↶</button>
             <button type="button" class="rich-btn" data-cmd="redo" title="Redo">↷</button>
-            <button type="button" class="rich-btn" id="contractInsertImageBtn" title="Insert Picture">🖼 Insert Picture</button>
-            <select id="contractImageWrapMode" class="rich-select" title="Picture Wrapping">
-              <option value="inline">Inline</option>
-              <option value="behind">Behind Text</option>
-              <option value="front">In front of Text</option>
-            </select>
-            <input id="contractInsertImageInput" type="file" accept="image/*" style="display:none">
           </div>
+          <input id="contractInlineImageInput" type="file" accept="image/*" style="display:none" onchange="handleContractInlineImage(event)">
           <div id="contractAgreementEditor" class="contract-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type your complete contract agreement here. You can include CLASS ARRANGEMENT, LESSON MATERIALS, CLASSES & PAYMENT POLICY, WORKING STUDENT arrangements, CANCELLATION & RESCHEDULING, ASSESSMENT, CERTIFICATE, and any other terms you want to include."></div>
           <textarea class="contract-editable-textarea contract-master-textarea" id="contractAgreementText" aria-hidden="true" tabindex="-1" style="display:none"></textarea>
         </div>
       </div>
+
     </div>
 
     <div class="contract-upload-panel">
@@ -12406,12 +12405,6 @@ function buildStudentAllRecordContractPage(student){
       <h3>CONTRACT AGREEMENT / TERMS</h3>
       <div class="pdf-custom-text preview-contract-agreement-body">${agreementHtml}</div>
     </div>
-    <div class="pdf-section">
-      <div class="pdf-signed-signatures">
-        <div><strong>Parent Name:</strong><div>${escapeHtml(student.parentName||'____________________________')}</div><strong>Signature:</strong><div>____________________________</div></div>
-        <div><strong>Teacher:</strong><div>${escapeHtml(teacherName)}</div><strong>Teacher's Signature:</strong><div>____________________________</div></div>
-      </div>
-    </div>
   </div>`;
   return studentAllRecordPageShell('STUDENT CONTRACT',student,body,'student-all-record-contract-pdf-page');
 }
@@ -15632,8 +15625,8 @@ const DEFAULT_STUDENT_CONTRACT_AGREEMENT = `**CLASS ARRANGEMENT**
 - Practice English **outside class** when possible.
 
 
-  
 
+  
 **CLASS CANCELLATION & RESCHEDULING**
 - If the student needs to cancel or reschedule a class, the parent/student should **inform the teacher before the scheduled class** whenever possible.
 - Rescheduling is subject to the **teacher's available schedule**.
@@ -15737,6 +15730,53 @@ function openContractStudentPicker(){
 function closeContractStudentPicker(){const m=document.getElementById('contractStudentPickerModal');if(m)m.classList.remove('show');}
 function loadStudentContractById(id){contractSelectedStudentId=id||'';const student=getStudents().find(s=>s.id===id);if(!student)return;loadStudentContractDetails(id);setTimeout(()=>{const w=document.getElementById('contractWorkspace');if(w)w.scrollIntoView({behavior:'smooth',block:'start'});},80);}
 function loadStudentContract(){loadStudentContractDetails(contractSelectedStudentId);}
+function contractSignatureBlockHtml(student,parentNameOverride='',teacherNameOverride=''){
+ const parent=String(parentNameOverride||student?.parentName||'').trim()||'Parent Name';
+ const teacher=String(teacherNameOverride||getTeacherContractDisplayName()||'Teacher').trim()||'Teacher';
+ return `<div class="contract-signature-block" contenteditable="true" data-contract-signatures="true"><div class="contract-signature-column"><div class="contract-signature-line"></div><div class="contract-signature-name"><strong>${escapeHtml(parent)}</strong></div><div class="contract-signature-label">Parent's Name &amp; Signature</div></div><div class="contract-signature-column"><div class="contract-signature-line"></div><div class="contract-signature-name"><strong>${escapeHtml(teacher)}</strong></div><div class="contract-signature-label">Teacher's Name &amp; Signature</div></div></div>`;
+}
+function ensureContractSignatureBlock(student){
+ const editor=document.getElementById('contractAgreementEditor'); if(!editor||!student)return;
+ let block=editor.querySelector('.contract-signature-block');
+ if(!block){ editor.insertAdjacentHTML('beforeend',contractSignatureBlockHtml(student)); block=editor.querySelector('.contract-signature-block'); }
+ if(block && !block.dataset.contractUserEdited){
+   const cols=block.querySelectorAll('.contract-signature-column');
+   if(cols[0]){const n=cols[0].querySelector('.contract-signature-name');if(n)n.innerHTML=`<strong>${escapeHtml(student.parentName||'Parent Name')}</strong>`;}
+   if(cols[1]){const n=cols[1].querySelector('.contract-signature-name');if(n)n.innerHTML=`<strong>${escapeHtml(getTeacherContractDisplayName()||'Teacher')}</strong>`;}
+ }
+}
+function insertContractSignatureBlock(){
+ const editor=document.getElementById('contractAgreementEditor'); if(!editor)return;
+ editor.focus();
+ const student=getStudents().find(s=>s.id===contractSelectedStudentId); if(!student)return;
+ if(editor.querySelector('.contract-signature-block')){editor.querySelector('.contract-signature-block').scrollIntoView({behavior:'smooth',block:'center'});return;}
+ editor.insertAdjacentHTML('beforeend',contractSignatureBlockHtml(student));
+}
+function insertContractImage(){
+ const input=document.getElementById('contractInlineImageInput'); if(input)input.click();
+}
+function handleContractInlineImage(event){
+ const file=event.target.files?.[0]; if(!file)return;
+ if(!file.type.startsWith('image/')){event.target.value='';return;}
+ const reader=new FileReader(); reader.onload=()=>insertContractImageData(reader.result); reader.readAsDataURL(file); event.target.value='';
+}
+function insertContractImageData(dataUrl){
+ const editor=document.getElementById('contractAgreementEditor'); if(!editor)return;
+ const wrap=document.createElement('div'); wrap.className='contract-inline-image-wrap in-front selected'; wrap.contentEditable='false'; wrap.style.left='24px'; wrap.style.top='24px'; wrap.style.width='180px';
+ wrap.innerHTML=`<img class="contract-inline-image" src="${dataUrl}" alt="Inserted contract picture" style="width:100%;height:auto"><div class="contract-image-controls"><button type="button" onclick="setContractImageLayer(this,'front')">In front</button><button type="button" onclick="setContractImageLayer(this,'behind')">Behind text</button><button type="button" onclick="removeContractInlineImage(this)">Remove</button></div>`;
+ editor.appendChild(wrap); makeContractImageDraggable(wrap); selectContractInlineImage(wrap);
+}
+function selectContractInlineImage(wrap){document.querySelectorAll('.contract-inline-image-wrap.selected').forEach(x=>x.classList.remove('selected'));if(wrap)wrap.classList.add('selected');}
+function setContractImageLayer(btn,mode){const wrap=btn.closest('.contract-inline-image-wrap');if(!wrap)return;wrap.classList.toggle('behind-text',mode==='behind');wrap.classList.toggle('in-front',mode!=='behind');selectContractInlineImage(wrap);}
+function removeContractInlineImage(btn){const wrap=btn.closest('.contract-inline-image-wrap');if(wrap)wrap.remove();}
+function makeContractImageDraggable(wrap){
+ let dragging=false,startX=0,startY=0,startL=0,startT=0;
+ wrap.addEventListener('mousedown',e=>{if(e.target.closest('.contract-image-controls'))return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;selectContractInlineImage(wrap);dragging=true;startX=e.clientX;startY=e.clientY;startL=parseFloat(wrap.style.left)||0;startT=parseFloat(wrap.style.top)||0;e.preventDefault();});
+ document.addEventListener('mousemove',e=>{if(!dragging)return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;const r=editor.getBoundingClientRect();let l=startL+(e.clientX-startX),t=startT+(e.clientY-startY);l=Math.max(0,Math.min(l,Math.max(0,editor.clientWidth-wrap.offsetWidth)));t=Math.max(0,t);wrap.style.left=l+'px';wrap.style.top=t+'px';});
+ document.addEventListener('mouseup',()=>{dragging=false;});
+ wrap.addEventListener('click',()=>selectContractInlineImage(wrap));
+}
+function wireContractInlineImages(){document.querySelectorAll('#contractAgreementEditor .contract-inline-image-wrap').forEach(makeContractImageDraggable);}
 function loadStudentContractDetails(id, options={}){
  contractSelectedStudentId=id||'';contractFileData={teacher:null,parent:null};const w=document.getElementById('contractWorkspace'),e=document.getElementById('contractError'),input=document.getElementById('contractFileInput'),preview=document.getElementById('contractPreview'),name=document.getElementById('contractFileName'),status=document.getElementById('contractStatusText');
  if(e)e.textContent='';
@@ -15755,7 +15795,8 @@ function loadStudentContractDetails(id, options={}){
  const savedAgreementText=custom.agreementText || [custom.classArrangement,custom.lessonMaterials,custom.packagePayment].filter(Boolean).join('\n\n') || '';
  if(agreementEl) agreementEl.value=savedAgreementText || defaultAgreementText;
  const agreementEditor=document.getElementById('contractAgreementEditor');
- if(agreementEditor){ agreementEditor.innerHTML=custom.agreementHtml || (savedAgreementText ? escapeHtml(savedAgreementText).replace(/\n/g,'<br>') : defaultStudentContractHtml()); syncContractEditorAutoSignatures(student); bindContractImageEditing(agreementEditor); }
+ if(agreementEditor) agreementEditor.innerHTML=custom.agreementHtml || (savedAgreementText ? escapeHtml(savedAgreementText).replace(/\n/g,'<br>') : defaultStudentContractHtml());
+ if(agreementEditor){ensureContractSignatureBlock(student);wireContractInlineImages();}
  if(status)status.textContent=(student.name||'Selected');
  if(info)info.innerHTML=`<div class="contract-info-box"><label>Student Name</label><div>${escapeHtml(student.name||'—')}</div></div><div class="contract-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div><div class="contract-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'—')}</div></div><div class="contract-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'—')}</div></div><div class="contract-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'—')}</div></div><div class="contract-info-box"><label>Start Date</label><div>${escapeHtml((current&&current.startDate)||student.startDate||'—')}</div></div><div class="contract-info-box"><label>Class Duration</label><div>${escapeHtml(['25 Minutes','50 Minutes'].includes(student.duration)?student.duration:(student.duration==='30 Minutes'?'25 Minutes':(student.duration||'25 Minutes')))}</div></div>`;
  const record=getStudentContracts()[id];
@@ -15803,70 +15844,16 @@ function getTeacherContractDisplayName(){
  return username.replace(/\s+/g,' ').trim();
 }
 function getTeacherContractTitle(){return getTeacherContractDisplayName().toUpperCase()+' PRIVATE ENGLISH CLASS';}
-function getTeacherContractSignatureName(){return getTeacherContractDisplayName()||'Teacher';}
-function buildEditableContractSignatureHtml(student){
- const parentName=String(student?.parentName||'Parent / Guardian').trim()||'Parent / Guardian';
- const teacherName=getTeacherContractSignatureName();
- return `<div class="td-auto-signatures" data-auto-contract-signatures="1">
-   <div class="td-auto-signature-card"><div class="td-auto-signature-line"></div><div class="td-auto-signature-name" data-auto-parent-name="1"><strong>${escapeHtml(parentName)}</strong></div><div class="td-auto-signature-label">Parent's Name &amp; Signature</div></div>
-   <div class="td-auto-signature-card"><div class="td-auto-signature-line"></div><div class="td-auto-signature-name" data-auto-teacher-name="1"><strong>${escapeHtml(teacherName)}</strong></div><div class="td-auto-signature-label">Teacher's Name &amp; Signature</div></div>
- </div>`;
-}
-function syncContractEditorAutoSignatures(student){
- const editor=document.getElementById('contractAgreementEditor'); if(!editor||!student)return;
- let block=editor.querySelector('[data-auto-contract-signatures="1"]');
- if(!block){editor.insertAdjacentHTML('beforeend',buildEditableContractSignatureHtml(student));block=editor.querySelector('[data-auto-contract-signatures="1"]');}
- const parent=block?.querySelector('[data-auto-parent-name="1"]'),teacher=block?.querySelector('[data-auto-teacher-name="1"]');
- if(parent&&!parent.querySelector('strong'))parent.innerHTML=`<strong>${escapeHtml(String(parent.textContent||student.parentName||'Parent / Guardian').trim()||'Parent / Guardian')}</strong>`;
- if(teacher)teacher.innerHTML=`<strong>${escapeHtml(getTeacherContractSignatureName())}</strong>`;
-}
 function updateContractTeacherIdentity(){
  const title=document.getElementById('contractTeacherTitle'); if(title)title.textContent=getTeacherContractTitle();
  const name=document.getElementById('contractTeacherName'); if(name)name.textContent=getTeacherContractDisplayName();
- const teacher=document.querySelector('#contractAgreementEditor [data-auto-teacher-name="1"]');
- if(teacher)teacher.innerHTML=`<strong>${escapeHtml(getTeacherContractSignatureName())}</strong>`;
 }
 function getContractCustomSectionValues(){
  const editor=document.getElementById('contractAgreementEditor');
  const html=editor ? editor.innerHTML.trim() : '';
  const plain=editor ? (editor.innerText||editor.textContent||'').trim() : (document.getElementById('contractAgreementText')?.value||'');
- const hidden=document.getElementById('contractAgreementText'); if(hidden)hidden.value=plain;
- return {agreementText:plain,agreementHtml:html};
-}
-function selectContractImage(img){
- const editor=document.getElementById('contractAgreementEditor');editor?.querySelectorAll('.td-contract-image-selected').forEach(x=>x.classList.remove('td-contract-image-selected'));
- if(img){img.classList.add('td-contract-image-selected');const m=document.getElementById('contractImageWrapMode');if(m)m.value=img.dataset.wrapMode||'inline';}
-}
-function applyContractImageWrapMode(mode){
- const img=document.querySelector('#contractAgreementEditor .td-contract-image-selected');if(!img)return;
- img.dataset.wrapMode=mode||'inline';
- if(img.dataset.wrapMode==='inline'){img.style.position='relative';img.style.left='';img.style.top='';img.style.zIndex='';img.style.maxWidth='100%';}
- else{img.style.position='absolute';img.style.maxWidth='45%';img.style.zIndex=img.dataset.wrapMode==='behind'?'0':'20';}
- syncContractAgreement();
-}
-function makeContractImageDraggable(img){
- if(!img||img.dataset.dragBound==='1')return;img.dataset.dragBound='1';
- img.addEventListener('click',e=>{e.stopPropagation();selectContractImage(img);});
- img.addEventListener('pointerdown',e=>{
-   if((img.dataset.wrapMode||'inline')==='inline')return;
-   e.preventDefault();e.stopPropagation();selectContractImage(img);const editor=document.getElementById('contractAgreementEditor');if(!editor)return;
-   const er=editor.getBoundingClientRect(),ir=img.getBoundingClientRect(),sx=e.clientX,sy=e.clientY,sl=ir.left-er.left+editor.scrollLeft,st=ir.top-er.top+editor.scrollTop;
-   img.setPointerCapture?.(e.pointerId);
-   const move=ev=>{let left=sl+ev.clientX-sx,top=st+ev.clientY-sy;left=Math.max(0,Math.min(left,Math.max(0,editor.clientWidth-img.offsetWidth)));top=Math.max(0,top);img.style.left=Math.round(left)+'px';img.style.top=Math.round(top)+'px';};
-   const up=()=>{img.releasePointerCapture?.(e.pointerId);img.removeEventListener('pointermove',move);img.removeEventListener('pointerup',up);syncContractAgreement();};
-   img.addEventListener('pointermove',move);img.addEventListener('pointerup',up);
- });
-}
-function insertContractImageFile(file){
- if(!file||!file.type.startsWith('image/'))return;const editor=document.getElementById('contractAgreementEditor');if(!editor)return;
- const reader=new FileReader();reader.onload=()=>{editor.focus();restoreSelection();const mode=document.getElementById('contractImageWrapMode')?.value||'inline';const id='tdimg_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);const style=mode==='inline'?'position:relative;max-width:100%;vertical-align:middle;':'position:absolute;max-width:45%;left:24px;top:24px;z-index:'+(mode==='behind'?'0':'20')+';';document.execCommand('insertHTML',false,`<img id="${id}" class="td-contract-floating-image" data-wrap-mode="${mode}" src="${reader.result}" alt="Inserted picture" draggable="false" style="${style}height:auto;cursor:move">`);const img=document.getElementById(id);if(img)makeContractImageDraggable(img);syncContractAgreement();};reader.readAsDataURL(file);
-}
-function bindContractImageEditing(editor){
- if(!editor||editor.dataset.imageEditingBound==='1')return;editor.dataset.imageEditingBound='1';editor.querySelectorAll('img.td-contract-floating-image').forEach(makeContractImageDraggable);
- editor.addEventListener('dragover',e=>{if([...e.dataTransfer.files].some(f=>f.type.startsWith('image/')))e.preventDefault();});
- editor.addEventListener('drop',e=>{const files=[...e.dataTransfer.files].filter(f=>f.type.startsWith('image/'));if(!files.length)return;e.preventDefault();e.stopPropagation();saveSelection();files.forEach(insertContractImageFile);});
- editor.addEventListener('paste',e=>{const image=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(!image)return;e.preventDefault();saveSelection();insertContractImageFile(image);});
- editor.addEventListener('click',e=>{if(!e.target.closest('img.td-contract-floating-image'))editor.querySelectorAll('.td-contract-image-selected').forEach(x=>x.classList.remove('td-contract-image-selected'));});
+ const hidden=document.getElementById('contractAgreementText'); if(hidden) hidden.value=plain;
+ return {agreementText:plain, agreementHtml:html};
 }
 function getContractPreviewSections(){
  const doc=document.querySelector('#contractWorkspace .contract-document');
@@ -16401,11 +16388,6 @@ function showContractSuccess(msg){const e=document.getElementById('contractError
   if(inc){inc.addEventListener('pointerdown',e=>{e.preventDefault();saveSelection();});inc.addEventListener('mousedown',e=>{e.preventDefault();saveSelection();});inc.addEventListener('click',e=>{e.preventDefault();adjustSize(1);});}
   const dec=document.getElementById('contractFontDecrease');
   if(dec){dec.addEventListener('pointerdown',e=>{e.preventDefault();saveSelection();});dec.addEventListener('mousedown',e=>{e.preventDefault();saveSelection();});dec.addEventListener('click',e=>{e.preventDefault();adjustSize(-1);});}
-  const imgBtn=document.getElementById('contractInsertImageBtn');
-  const imgInput=document.getElementById('contractInsertImageInput');
-  if(imgBtn&&imgInput){imgBtn.addEventListener('pointerdown',()=>saveSelection());imgBtn.addEventListener('mousedown',e=>{e.preventDefault();saveSelection();});imgBtn.addEventListener('click',e=>{e.preventDefault();imgInput.click();});imgInput.addEventListener('change',()=>{const file=imgInput.files?.[0];if(file)insertContractImageFile(file);imgInput.value='';});}
-  const wrapMode=document.getElementById('contractImageWrapMode');
-  if(wrapMode){wrapMode.addEventListener('pointerdown',()=>saveSelection());wrapMode.addEventListener('mousedown',e=>{e.preventDefault();saveSelection();});wrapMode.addEventListener('change',()=>applyContractImageWrapMode(wrapMode.value));}
   const color=document.getElementById('contractTextColor');
   if(color){
     color.addEventListener('pointerdown',()=>saveSelection(),true);
