@@ -278,6 +278,8 @@ body{
 .dashboard-todo-completed .dashboard-todo-card{background:#f3f3f3;border-left-color:#aaa;opacity:.88;}
 .dashboard-todo-completed .dashboard-todo-card-name{text-decoration:line-through;color:#666;}
 .dashboard-todo-completed-badge{display:inline-block;margin-left:8px;padding:3px 7px;border-radius:999px;background:#e1e1e1;color:#555;font-size:11px;font-weight:900;text-decoration:none;}
+.dashboard-todo-card-reason{flex:0 1 42%;min-width:180px;text-align:right;color:#666;font-size:13px;line-height:1.35;}
+@media(max-width:700px){.dashboard-todo-card-reason{flex:1 1 100%;min-width:0;text-align:left;}}
 @media(max-width:700px){.dashboard-todo-card{align-items:flex-start;}.dashboard-todo-card-time{font-size:14px;}}
 .dashboard-todo-title{
   padding:13px 16px;
@@ -12149,95 +12151,6 @@ function createCancellationReplacement(cancelledItem, appointments){
   const studentId=String(cancelledItem.studentId||'');
   if(!studentId) return null;
 
-  /*
-    Find the latest scheduled class for this student.
-    The replacement will be booked on the next available day
-    after the student's current last scheduled class.
-  */
-  const studentAppointments=appointments
-    .filter(a=>
-      String(a.studentId||'')===studentId &&
-      String(a.status||'Scheduled').toLowerCase()!=='cancelled'
-    )
-    .filter(a=>a.date);
-
-  if(!studentAppointments.length) return null;
-
-  let latestDate=studentAppointments
-    .map(a=>new Date(`${a.date}T00:00:00`))
-    .filter(d=>!isNaN(d.getTime()))
-    .sort((a,b)=>b-a)[0];
-
-  if(!latestDate) return null;
-
-  /*
-    Start with the day immediately after the student's
-    current last class, then move forward if that date/time
-    is already occupied.
-  */
-  let replacementDate=new Date(latestDate);
-  replacementDate.setDate(replacementDate.getDate()+1);
-
-  const time=cancelledItem.time||'';
-  const duration=cancelledItem.duration||'30 Minutes';
-
-  let safety=0;
-
-  while(safety<60){
-    const dateString=getLocalDateString(replacementDate);
-
-    const conflict=appointments.some(a=>
-      String(a.studentId||'')===studentId &&
-      String(a.status||'Scheduled').toLowerCase()!=='cancelled' &&
-      String(a.date||'')===dateString &&
-      String(a.time||'')===String(time||'')
-    );
-
-    if(!conflict) break;
-
-    replacementDate.setDate(replacementDate.getDate()+1);
-    safety++;
-  }
-
-  if(safety>=60) return null;
-
-  /*
-    Prevent duplicate replacement classes.
-  */
-  const replacementAlreadyExists=appointments.some(a=>
-    String(a.studentId||'')===studentId &&
-    String(a.date||'')===getLocalDateString(replacementDate) &&
-    String(a.time||'')===String(time||'') &&
-    a.isCancellationReplacement===true &&
-    String(a.replacementFor||'')===String(cancelledItem.id||'')
-  );
-
-  if(replacementAlreadyExists) return null;
-
-  const now=new Date().toISOString();
-
-  return {
-    ...cancelledItem,
-    id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-    date:getLocalDateString(replacementDate),
-    time:time,
-    status:'Scheduled',
-    attendance:'',
-    cancelReason:'',
-    cancelledAt:'',
-    isCancellationReplacement:true,
-    replacementFor:cancelledItem.id,
-    createdAt:now,
-    updatedAt:now
-  };
-}
-
-function createCancellationReplacement(cancelledItem, appointments){
-  if(!cancelledItem || !Array.isArray(appointments)) return null;
-
-  const studentId=String(cancelledItem.studentId||'');
-  if(!studentId) return null;
-
   const studentAppointments=appointments
     .filter(a=>
       String(a.studentId||'')===studentId &&
@@ -12319,75 +12232,68 @@ function createCancellationReplacement(cancelledItem, appointments){
 }
 
 function saveAppointmentReason(){
- const id=document.getElementById('appointmentReasonId').value;
- const action=document.getElementById('appointmentReasonAction').value;
- const reason=(document.getElementById('appointmentReasonText').value||'').trim();
- const statusBox=document.getElementById('appointmentReasonStatus');
+const id=document.getElementById('appointmentReasonId').value;
+const action=document.getElementById('appointmentReasonAction').value;
+const reason=(document.getElementById('appointmentReasonText').value||'').trim();
+const statusBox=document.getElementById('appointmentReasonStatus');
 
- if(!reason){
-   statusBox.className='status error';
-   statusBox.textContent='Reason is required.';
-   return;
- }
+if(!reason){
+statusBox.className='status error';
+statusBox.textContent='Reason is required.';
+return;
+}
 
- if(action==='cancel'){
-   const confirmed=window.confirm(
-     'Are you sure you want to cancel this class?'
-   );
+if(action==='cancel'){
+  const confirmed=window.confirm('Are you sure you want to cancel this class?');
+  if(!confirmed)return;
+}
 
-   if(!confirmed)return;
- }
+const appointments=getAppointments();
+const index=appointments.findIndex(a=>a.id===id);
 
- const appointments=getAppointments();
- const index=appointments.findIndex(a=>a.id===id);
+if(index<0){
+  statusBox.className='status error';
+  statusBox.textContent='The appointment could not be found.';
+  return;
+}
 
- if(index<0){
-   statusBox.className='status error';
-   statusBox.textContent='The appointment could not be found.';
-   return;
- }
+const now=new Date().toISOString();
 
- const now=new Date().toISOString();
+if(action==='cancel'){
+  const cancelledItem=appointments[index];
 
- if(action==='cancel'){
-   const cancelledItem=appointments[index];
+  appointments[index]={
+    ...cancelledItem,
+    status:'Cancelled',
+    cancelReason:reason,
+    cancelledAt:now,
+    updatedAt:now
+  };
 
-   appointments[index]={
-     ...cancelledItem,
-     status:'Cancelled',
-     cancelReason:reason,
-     cancelledAt:now,
-     updatedAt:now
-   };
+  const replacement=createCancellationReplacement(
+    cancelledItem,
+    appointments
+  );
 
-   const replacement=createCancellationReplacement(
-     cancelledItem,
-     appointments
-   );
+  if(replacement){
+    appointments.push(replacement);
+  }
 
-   if(replacement){
-     appointments.push(replacement);
-   }
+}else{
+  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
+  appointments[index]={
+    ...appointments[index],
+    status:'Completed',
+    attendance:'Absent',
+    absentReason:reason,
+    absentAt:now,
+    updatedAt:now
+  };
+}
 
- }else{
-   appointments[index]={
-     ...appointments[index],
-     status:'Completed',
-     attendance:'Absent',
-     absentReason:reason,
-     absentAt:now,
-     updatedAt:now
-   };
- }
-
- saveAppointments(appointments);
- closeAppointmentReasonModal();
-
- refreshLiveUI({
-   students:false,
-   records:false,
-   contracts:false
- });
+saveAppointments(appointments);
+closeAppointmentReasonModal();
+refreshLiveUI({students:false,records:false,contracts:false});
 }
 
 function cancelAppointment(id){
@@ -12514,7 +12420,8 @@ async function refreshDashboardSummaryCounts(){
         .from('appointments')
         .select('id',{count:'exact',head:true})
         .eq('user_id',currentUser.id)
-        .eq('class_date',today);
+        .eq('class_date',today)
+        .neq('status','Cancelled');
 
     if(todayError) throw todayError;
 
@@ -12583,7 +12490,8 @@ const validAppointments=appointments
 const todayCount=validAppointments.filter(x=>
  x.date.getFullYear()===now.getFullYear() &&
  x.date.getMonth()===now.getMonth() &&
- x.date.getDate()===now.getDate()
+ x.date.getDate()===now.getDate() &&
+ String(x.item.status||'Scheduled').toLowerCase()!=='cancelled'
 ).length;
 
 /* Do not overwrite the dashboard appointment count from localStorage here.
@@ -12612,7 +12520,18 @@ const activeToday=dashboardClasses.filter(x=>!x.completed);
 const completedToday=dashboardClasses.filter(x=>x.completed).sort((a,b)=>b.date-a.date);
 const activeToShow=dashboardShowAllClasses?activeToday:activeToday.slice(0,2);
 const completedToShow=dashboardShowAllCompleted?completedToday:completedToday.slice(0,0);
+const cancelledToday=validAppointments
+.filter(x=>{
+  const d=x.date;
+  return d.getFullYear()===now.getFullYear() &&
+    d.getMonth()===now.getMonth() &&
+    d.getDate()===now.getDate() &&
+    String(x.item.status||'Scheduled').toLowerCase()==='cancelled';
+})
+.sort((a,b)=>a.date-b.date);
+
 const activeBox=document.getElementById('dashboardTodayTodoActive');
+const cancelledBox=document.getElementById('dashboardTodayTodoCancelled');
 const completedBox=document.getElementById('dashboardTodayTodoCompleted');
 
 if(activeBox){
@@ -12626,6 +12545,21 @@ if(activeBox){
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
     }).join('')+(activeToday.length>2?`<button type="button" class="dashboard-todo-showall" onclick="toggleDashboardAllClasses()">${dashboardShowAllClasses?'▲ Show Less':`▼ Show All Classes (${activeToday.length-2} more)`}</button>`:'');
+  }
+}
+
+if(cancelledBox){
+  if(!cancelledToday.length){
+    cancelledBox.innerHTML='';
+  }else{
+    cancelledBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">CANCELLED CLASSES FOR TODAY · ${cancelledToday.length}</div>${cancelledToday.map(x=>{
+      const item=x.item;
+      const studentName=item.studentName||item.student||item.name||'Student';
+      const type=item.type||item.title||item.subject||'Regular Class';
+      const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const reason=item.cancelReason||'No reason provided';
+      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">CANCELLED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-reason">Reason: ${escapeHtml(reason)}</div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
+    }).join('')}</div>`;
   }
 }
 
