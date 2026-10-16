@@ -4842,6 +4842,7 @@ Dashboard
 <div class="dashboard-todo-title">TO-DO LIST · TODAY'S CLASSES</div>
 <div class="dashboard-todo-body">
 <div id="dashboardTodayTodoActive" class="dashboard-todo-list"></div>
+<div id="dashboardTodayTodoCancelled" class="dashboard-todo-completed"></div>
 <div id="dashboardTodayTodoCompleted" class="dashboard-todo-completed"></div>
 </div>
 </div>
@@ -12142,29 +12143,251 @@ const modal=document.getElementById('appointmentReasonModal');
 if(modal)modal.classList.remove('show');
 }
 
+function createCancellationReplacement(cancelledItem, appointments){
+  if(!cancelledItem || !Array.isArray(appointments)) return null;
+
+  const studentId=String(cancelledItem.studentId||'');
+  if(!studentId) return null;
+
+  /*
+    Find the latest scheduled class for this student.
+    The replacement will be booked on the next available day
+    after the student's current last scheduled class.
+  */
+  const studentAppointments=appointments
+    .filter(a=>
+      String(a.studentId||'')===studentId &&
+      String(a.status||'Scheduled').toLowerCase()!=='cancelled'
+    )
+    .filter(a=>a.date);
+
+  if(!studentAppointments.length) return null;
+
+  let latestDate=studentAppointments
+    .map(a=>new Date(`${a.date}T00:00:00`))
+    .filter(d=>!isNaN(d.getTime()))
+    .sort((a,b)=>b-a)[0];
+
+  if(!latestDate) return null;
+
+  /*
+    Start with the day immediately after the student's
+    current last class, then move forward if that date/time
+    is already occupied.
+  */
+  let replacementDate=new Date(latestDate);
+  replacementDate.setDate(replacementDate.getDate()+1);
+
+  const time=cancelledItem.time||'';
+  const duration=cancelledItem.duration||'30 Minutes';
+
+  let safety=0;
+
+  while(safety<60){
+    const dateString=getLocalDateString(replacementDate);
+
+    const conflict=appointments.some(a=>
+      String(a.studentId||'')===studentId &&
+      String(a.status||'Scheduled').toLowerCase()!=='cancelled' &&
+      String(a.date||'')===dateString &&
+      String(a.time||'')===String(time||'')
+    );
+
+    if(!conflict) break;
+
+    replacementDate.setDate(replacementDate.getDate()+1);
+    safety++;
+  }
+
+  if(safety>=60) return null;
+
+  /*
+    Prevent duplicate replacement classes.
+  */
+  const replacementAlreadyExists=appointments.some(a=>
+    String(a.studentId||'')===studentId &&
+    String(a.date||'')===getLocalDateString(replacementDate) &&
+    String(a.time||'')===String(time||'') &&
+    a.isCancellationReplacement===true &&
+    String(a.replacementFor||'')===String(cancelledItem.id||'')
+  );
+
+  if(replacementAlreadyExists) return null;
+
+  const now=new Date().toISOString();
+
+  return {
+    ...cancelledItem,
+    id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    date:getLocalDateString(replacementDate),
+    time:time,
+    status:'Scheduled',
+    attendance:'',
+    cancelReason:'',
+    cancelledAt:'',
+    isCancellationReplacement:true,
+    replacementFor:cancelledItem.id,
+    createdAt:now,
+    updatedAt:now
+  };
+}
+
+function createCancellationReplacement(cancelledItem, appointments){
+  if(!cancelledItem || !Array.isArray(appointments)) return null;
+
+  const studentId=String(cancelledItem.studentId||'');
+  if(!studentId) return null;
+
+  const studentAppointments=appointments
+    .filter(a=>
+      String(a.studentId||'')===studentId &&
+      String(a.status||'Scheduled').toLowerCase()!=='cancelled'
+    )
+    .filter(a=>a.date);
+
+  let replacementDate;
+
+  if(studentAppointments.length){
+    const validDates=studentAppointments
+      .map(a=>new Date(`${a.date}T00:00:00`))
+      .filter(d=>!isNaN(d.getTime()));
+
+    if(validDates.length){
+      const latestDate=new Date(
+        Math.max(...validDates.map(d=>d.getTime()))
+      );
+
+      replacementDate=new Date(latestDate);
+      replacementDate.setDate(replacementDate.getDate()+1);
+    }
+  }
+
+  if(!replacementDate){
+    replacementDate=new Date(`${cancelledItem.date}T00:00:00`);
+    replacementDate.setDate(replacementDate.getDate()+1);
+  }
+
+  const time=cancelledItem.time||'';
+  let safety=0;
+
+  while(safety<60){
+    const dateString=getLocalDateString(replacementDate);
+
+    const conflict=appointments.some(a=>
+      String(a.studentId||'')===studentId &&
+      String(a.status||'Scheduled').toLowerCase()!=='cancelled' &&
+      String(a.date||'')===dateString &&
+      String(a.time||'')===String(time||'')
+    );
+
+    if(!conflict) break;
+
+    replacementDate.setDate(replacementDate.getDate()+1);
+    safety++;
+  }
+
+  if(safety>=60) return null;
+
+  const replacementDateString=getLocalDateString(replacementDate);
+
+  const replacementAlreadyExists=appointments.some(a=>
+    String(a.studentId||'')===studentId &&
+    String(a.date||'')===replacementDateString &&
+    String(a.time||'')===String(time||'') &&
+    a.isCancellationReplacement===true &&
+    String(a.replacementFor||'')===String(cancelledItem.id||'')
+  );
+
+  if(replacementAlreadyExists) return null;
+
+  const now=new Date().toISOString();
+
+  return {
+    ...cancelledItem,
+    id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    date:replacementDateString,
+    time:time,
+    status:'Scheduled',
+    attendance:'',
+    cancelReason:'',
+    cancelledAt:'',
+    isCancellationReplacement:true,
+    replacementFor:cancelledItem.id,
+    createdAt:now,
+    updatedAt:now
+  };
+}
+
 function saveAppointmentReason(){
-const id=document.getElementById('appointmentReasonId').value;
-const action=document.getElementById('appointmentReasonAction').value;
-const reason=(document.getElementById('appointmentReasonText').value||'').trim();
-const statusBox=document.getElementById('appointmentReasonStatus');
-if(!reason){
-statusBox.className='status error';
-statusBox.textContent='Reason is required.';
-return;
-}
-const appointments=getAppointments();
-const index=appointments.findIndex(a=>a.id===id);
-if(index<0)return;
-const now=new Date().toISOString();
-if(action==='cancel'){
-  appointments[index]={...appointments[index],status:'Cancelled',cancelReason:reason,cancelledAt:now,updatedAt:now};
-}else{
-  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
-  appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
-}
-saveAppointments(appointments);
-closeAppointmentReasonModal();
-refreshLiveUI({students:false,records:false,contracts:false});
+ const id=document.getElementById('appointmentReasonId').value;
+ const action=document.getElementById('appointmentReasonAction').value;
+ const reason=(document.getElementById('appointmentReasonText').value||'').trim();
+ const statusBox=document.getElementById('appointmentReasonStatus');
+
+ if(!reason){
+   statusBox.className='status error';
+   statusBox.textContent='Reason is required.';
+   return;
+ }
+
+ if(action==='cancel'){
+   const confirmed=window.confirm(
+     'Are you sure you want to cancel this class?'
+   );
+
+   if(!confirmed)return;
+ }
+
+ const appointments=getAppointments();
+ const index=appointments.findIndex(a=>a.id===id);
+
+ if(index<0){
+   statusBox.className='status error';
+   statusBox.textContent='The appointment could not be found.';
+   return;
+ }
+
+ const now=new Date().toISOString();
+
+ if(action==='cancel'){
+   const cancelledItem=appointments[index];
+
+   appointments[index]={
+     ...cancelledItem,
+     status:'Cancelled',
+     cancelReason:reason,
+     cancelledAt:now,
+     updatedAt:now
+   };
+
+   const replacement=createCancellationReplacement(
+     cancelledItem,
+     appointments
+   );
+
+   if(replacement){
+     appointments.push(replacement);
+   }
+
+ }else{
+   appointments[index]={
+     ...appointments[index],
+     status:'Completed',
+     attendance:'Absent',
+     absentReason:reason,
+     absentAt:now,
+     updatedAt:now
+   };
+ }
+
+ saveAppointments(appointments);
+ closeAppointmentReasonModal();
+
+ refreshLiveUI({
+   students:false,
+   records:false,
+   contracts:false
+ });
 }
 
 function cancelAppointment(id){
