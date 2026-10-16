@@ -5206,8 +5206,9 @@ onclick="if(event.target===this) closeAddStudent()"
 
   <div class="appointment-form-grid">
     <div class="full">
-      <label for="appointmentStudent">Student</label>
-      <select id="appointmentStudent" onchange="onAppointmentStudentChange()">
+      <label for="appointmentStudentSearch">Student</label>
+      <input id="appointmentStudentSearch" type="text" placeholder="Search student name or ID..." oninput="filterAppointmentStudentSelect()" autocomplete="off">
+      <select id="appointmentStudent" onchange="onAppointmentStudentChange()" style="margin-top:8px">
         <option value="">Select student</option>
       </select>
     </div>
@@ -11131,12 +11132,58 @@ function populateAppointmentStudentSelect(selectedId=''){
 const select=document.getElementById('appointmentStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
-const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
-const visibleStudents=students.filter(s=>studentHasBookableClasses(s)||s.id===selectedId||s.id===editingStudentId);
-select.innerHTML='<option value="">Select student</option>'+visibleStudents.map(s=>
+
+/*
+  IMPORTANT:
+  Manual / one-time appointments may be added even when the student's
+  package classes are already fully booked. Keep ALL students selectable.
+  The package limit must not hide a student from this appointment picker.
+*/
+select.innerHTML='<option value="">Select student</option>'+students.map(s=>
 `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
+
 if(selectedId)select.value=selectedId;
+
+const search=document.getElementById('appointmentStudentSearch');
+if(search){
+  const selected=students.find(s=>String(s.id||'')===String(selectedId||''));
+  search.value=selected ? `${selected.name||''} — ${selected.id||''}` : '';
+}
+
+filterAppointmentStudentSelect();
+if(selectedId)select.value=selectedId;
+}
+
+function filterAppointmentStudentSelect(){
+const select=document.getElementById('appointmentStudent');
+const search=document.getElementById('appointmentStudentSearch');
+if(!select)return;
+const query=String(search?.value||'').trim().toLowerCase();
+const currentValue=select.value;
+
+[...select.options].forEach(option=>{
+  if(!option.value){
+    option.hidden=false;
+    return;
+  }
+  const text=String(option.textContent||'').toLowerCase();
+  option.hidden=!!query && !text.includes(query);
+});
+
+if(currentValue){
+  const currentOption=[...select.options].find(o=>o.value===currentValue);
+  if(currentOption && !currentOption.hidden)select.value=currentValue;
+}
+}
+
+function syncAppointmentStudentSearch(){
+const select=document.getElementById('appointmentStudent');
+const search=document.getElementById('appointmentStudentSearch');
+if(!select||!search)return;
+const option=select.options[select.selectedIndex];
+search.value=option?.value ? String(option.textContent||'') : '';
+filterAppointmentStudentSelect();
 }
 
 function getAppointmentDuration(){
@@ -11325,6 +11372,7 @@ return firstDate;
 }
 
 function onAppointmentStudentChange(){
+syncAppointmentStudentSearch();
 const id=document.getElementById('appointmentStudent')?.value||'';
 const student=getAppointmentStudent(id);
 const duration=document.getElementById('appointmentDuration');
@@ -11583,6 +11631,8 @@ if(appointmentId){
   /* EDIT = Class Type ONLY. REBOOK = Date + Time ONLY. */
   if(rebookingAppointment){
     if(studentSelect)studentSelect.disabled=true;
+    const studentSearch=document.getElementById('appointmentStudentSearch');
+    if(studentSearch)studentSearch.disabled=true;
     if(appointmentDateInput)appointmentDateInput.disabled=false;
     if(timeSelect)timeSelect.disabled=false;
     if(durationSelect)durationSelect.disabled=true;
@@ -11590,6 +11640,8 @@ if(appointmentId){
     setAppointmentScheduleMode('manual');
   }else{
     if(studentSelect)studentSelect.disabled=true;
+    const studentSearch=document.getElementById('appointmentStudentSearch');
+    if(studentSearch)studentSearch.disabled=true;
     if(appointmentDateInput)appointmentDateInput.disabled=true;
     if(timeSelect)timeSelect.disabled=true;
     if(durationSelect)durationSelect.disabled=true;
@@ -11606,6 +11658,8 @@ if(appointmentId){
   if(typeSelect)typeSelect.value='Regular Class';
 
   if(studentSelect)studentSelect.disabled=false;
+  const studentSearch=document.getElementById('appointmentStudentSearch');
+  if(studentSearch){studentSearch.disabled=false;studentSearch.value='';}
   if(appointmentDateInput)appointmentDateInput.disabled=false;
   if(timeSelect)timeSelect.disabled=true;
   if(durationSelect)durationSelect.disabled=true;
