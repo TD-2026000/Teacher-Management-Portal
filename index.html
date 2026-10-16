@@ -5319,6 +5319,25 @@ onclick="if(event.target===this) closeAddStudent()"
 </div>
 </div>
 
+<!-- CANCELLATION REPLACEMENT CHOICE MODAL -->
+<div id="cancellationChoiceModal" class="modal-backdrop" onclick="if(event.target===this) closeCancellationChoiceModal()">
+<div class="modal appointment-reason-modal">
+  <div class="student-add-modal-header">
+    <div>
+      <h3>Cancelled Class</h3>
+      <div class="appointment-reason-help">What would you like to do with the cancelled class?</div>
+    </div>
+    <button type="button" class="student-modal-close" onclick="closeCancellationChoiceModal()" aria-label="Close">×</button>
+  </div>
+  <input id="cancellationChoiceId" type="hidden">
+  <div id="cancellationChoiceStatus" class="status"></div>
+  <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+    <button type="button" class="modal-cancel" onclick="closeCancellationChoiceModal()">Manual Booking</button>
+    <button type="button" class="modal-save" onclick="confirmCancellationAutomaticBooking()">Automatically Book Replacement</button>
+  </div>
+</div>
+</div>
+
 </div>
 
 <!-- PAYMENT RECEIPT -->
@@ -12231,6 +12250,63 @@ function createCancellationReplacement(cancelledItem, appointments){
   };
 }
 
+function openCancellationChoiceModal(id){
+  const item=getAppointments().find(a=>a.id===id);
+  if(!item)return;
+  const modal=document.getElementById('cancellationChoiceModal');
+  if(!modal)return;
+  document.getElementById('cancellationChoiceId').value=id;
+  const status=document.getElementById('cancellationChoiceStatus');
+  if(status){
+    status.className='status';
+    status.textContent='';
+  }
+  modal.classList.add('show');
+}
+
+function closeCancellationChoiceModal(){
+  const modal=document.getElementById('cancellationChoiceModal');
+  if(modal)modal.classList.remove('show');
+}
+
+function confirmCancellationAutomaticBooking(){
+  const id=document.getElementById('cancellationChoiceId').value;
+  const appointments=getAppointments();
+  const index=appointments.findIndex(a=>a.id===id);
+  const status=document.getElementById('cancellationChoiceStatus');
+
+  if(index<0){
+    if(status){
+      status.className='status error';
+      status.textContent='The cancelled class could not be found.';
+    }
+    return;
+  }
+
+  if(String(appointments[index].status||'').toLowerCase()!=='cancelled'){
+    if(status){
+      status.className='status error';
+      status.textContent='This class is no longer cancelled.';
+    }
+    return;
+  }
+
+  const replacement=createCancellationReplacement(appointments[index],appointments);
+
+  if(!replacement){
+    if(status){
+      status.className='status error';
+      status.textContent='A replacement class could not be created automatically. You can use Manual Booking instead.';
+    }
+    return;
+  }
+
+  appointments.push(replacement);
+  saveAppointments(appointments);
+  closeCancellationChoiceModal();
+  refreshLiveUI({students:false,records:false,contracts:false});
+}
+
 function saveAppointmentReason(){
 const id=document.getElementById('appointmentReasonId').value;
 const action=document.getElementById('appointmentReasonAction').value;
@@ -12260,36 +12336,32 @@ if(index<0){
 const now=new Date().toISOString();
 
 if(action==='cancel'){
-  const cancelledItem=appointments[index];
-
   appointments[index]={
-    ...cancelledItem,
+    ...appointments[index],
     status:'Cancelled',
     cancelReason:reason,
     cancelledAt:now,
     updatedAt:now
   };
 
-  const replacement=createCancellationReplacement(
-    cancelledItem,
-    appointments
-  );
-
-  if(replacement){
-    appointments.push(replacement);
-  }
-
-}else{
-  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
-  appointments[index]={
-    ...appointments[index],
-    status:'Completed',
-    attendance:'Absent',
-    absentReason:reason,
-    absentAt:now,
-    updatedAt:now
-  };
+  /* Cancellation does NOT consume a package class.
+     Replacement is created only after the teacher chooses Automatic Booking. */
+  saveAppointments(appointments);
+  closeAppointmentReasonModal();
+  refreshLiveUI({students:false,records:false,contracts:false});
+  openCancellationChoiceModal(id);
+  return;
 }
+
+/* ABSENT is still a COMPLETED class; attendance is recorded separately. */
+appointments[index]={
+  ...appointments[index],
+  status:'Completed',
+  attendance:'Absent',
+  absentReason:reason,
+  absentAt:now,
+  updatedAt:now
+};
 
 saveAppointments(appointments);
 closeAppointmentReasonModal();
