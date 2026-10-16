@@ -3846,24 +3846,6 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 
 </style>
 <style id="subscription-qr-direct-style">.subscription-qr-option-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.subscription-qr-view-card{justify-content:center;min-height:78px;text-align:center;border:1px solid var(--global-border);}.subscription-qr-view-card:hover{transform:translateY(-1px);}.subscription-qr-view-card .subscription-check-mark{color:#111827;border-color:#cbd5e1;background:#fff;font-size:17px;}.subscription-qr-modal{z-index:100000;}.subscription-qr-modal-box{max-width:520px;text-align:center;}.subscription-qr-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}.subscription-qr-modal-head h3{margin:0;}.subscription-qr-close{border:0;background:#f1f5f9;color:#111827;width:36px;height:36px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;}.subscription-qr-image-wrap{margin:12px auto 8px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;min-height:300px;padding:10px;}.subscription-qr-image-wrap img{display:block;max-width:100%;width:auto;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;}.subscription-qr-help{margin:8px 0 0;color:#6b7280;font-size:13px;}@media(max-width:1100px){.subscription-qr-option-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.subscription-qr-option-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.subscription-qr-option-grid{grid-template-columns:1fr;}}</style>
-
-<style id="payment-submitted-screen-css">
-.payment-submitted-overlay{position:fixed;inset:0;z-index:200000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.58);backdrop-filter:blur(4px)}
-.payment-submitted-overlay.show{display:flex}
-.payment-submitted-card{width:min(760px,90vw);min-height:40vh;aspect-ratio:16/9;max-height:650px;background:#fff;border-radius:24px;box-shadow:0 24px 70px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:34px;box-sizing:border-box;overflow:auto}
-.payment-submitted-icon{width:76px;height:76px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--global-accent-soft,#fdf0f8);color:var(--global-accent,#ff69b4);margin-bottom:14px}
-.payment-submitted-icon svg{width:42px;height:42px}
-.payment-submitted-title{margin:0;font-size:clamp(25px,3.5vw,38px);font-weight:900;color:#172033}
-.payment-submitted-text{max-width:600px;margin:10px auto 18px;color:#5f6b7a;font-size:15px;line-height:1.6}
-.payment-submitted-contact{display:flex;align-items:center;justify-content:center;gap:12px;margin:4px 0 20px}
-.payment-submitted-contact a{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,.12);transition:.15s ease}
-.payment-submitted-contact a:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.18)}
-.payment-submitted-contact svg{width:23px;height:23px;fill:currentColor}
-.payment-contact-facebook{background:#1877F2;color:#fff}.payment-contact-phone{background:#16a34a;color:#fff}.payment-contact-email{background:#ea4335;color:#fff}
-.payment-submitted-continue{border:0;border-radius:11px;padding:13px 28px;background:var(--portal-accent,#87CEEB);color:#111;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.08)}
-.payment-submitted-continue:hover{background:var(--portal-accent-dark,#70c5e8)}
-@media(max-width:650px){.payment-submitted-overlay{padding:12px}.payment-submitted-card{width:94vw;min-height:42vh;aspect-ratio:auto;padding:28px 20px}.payment-submitted-text{font-size:14px}.payment-submitted-contact a{width:44px;height:44px}}
-</style>
 </head>
 
 <body>
@@ -5465,29 +5447,6 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
       <div class="subscription-panel-title">MY PAYMENT REQUESTS</div>
       <div id="subscriptionPaymentHistory" class="subscription-history-list">No payment requests yet.</div>
     </div>
-  </div>
-</div>
-
-
-<div id="paymentSubmittedOverlay" class="payment-submitted-overlay" aria-hidden="true">
-  <div class="payment-submitted-card" role="dialog" aria-modal="true" aria-labelledby="paymentSubmittedTitle">
-    <div class="payment-submitted-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>
-    </div>
-    <h2 id="paymentSubmittedTitle" class="payment-submitted-title">PAYMENT SUBMITTED</h2>
-    <p class="payment-submitted-text">Your ₱99 monthly subscription payment has been submitted successfully and is now awaiting verification by Teacher Danyeal.</p>
-    <div class="payment-submitted-contact" aria-label="Contact Teacher Danyeal">
-      <a class="payment-contact-facebook" href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-        <svg viewBox="0 0 24 24"><path d="M14 8h3V4.5c-.52-.07-1.66-.15-3.16-.15-3.13 0-5.27 1.91-5.27 5.42V13H5v4h3.57v7h4.28v-7h3.55l.56-4h-4.11V10.1c0-1.16.31-2.1 1.15-2.1z"/></svg>
-      </a>
-      <a class="payment-contact-phone" href="tel:+639484476387" aria-label="Call Teacher Danyeal">
-        <svg viewBox="0 0 24 24"><path d="M6.6 2.9 9 2.2c.7-.2 1.4.2 1.7.8l1.2 2.8c.3.6.1 1.3-.4 1.7L10 8.9c1 2.1 2.7 3.8 4.8 4.8l1.4-1.5c.4-.5 1.1-.7 1.7-.4l2.8 1.2c.6.3 1 .9.8 1.7l-.7 2.4c-.2.8-.9 1.3-1.7 1.3C10.9 18.4 5.6 13.1 4.6 7c-.1-.8.4-1.5 1.2-1.7l.8-2.4z"/></svg>
-      </a>
-      <a class="payment-contact-email" href="mailto:teacherdanyeal@gmail.com" aria-label="Email Teacher Danyeal">
-        <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3V5zm2 2v.4l7 5.1 7-5.1V7l-7 5-7-5z"/></svg>
-      </a>
-    </div>
-    <button type="button" class="payment-submitted-continue" onclick="closePaymentSubmittedScreen()">CONTINUE TO TEACHER PORTAL</button>
   </div>
 </div>
 
@@ -16540,10 +16499,9 @@ async function submitSubscriptionPayment(){
     }
 
     const msg=remoteSaved
-      ? 'Payment submitted successfully.'
-      : 'Payment saved on this device, but the online submission table is not connected yet.';
+      ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
+      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
     if(message)message.textContent=msg;
-    if(remoteSaved)showPaymentSubmittedScreen();
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
     const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
@@ -16554,22 +16512,6 @@ async function submitSubscriptionPayment(){
     message.textContent='Payment error: ' + (err?.message || 'Unknown error');
   }
 }
-}
-
-function showPaymentSubmittedScreen(){
-  const overlay=document.getElementById('paymentSubmittedOverlay');
-  if(!overlay)return;
-  overlay.classList.add('show');
-  overlay.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
-}
-
-function closePaymentSubmittedScreen(){
-  const overlay=document.getElementById('paymentSubmittedOverlay');
-  if(!overlay)return;
-  overlay.classList.remove('show');
-  overlay.setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
 }
 </script>
 
