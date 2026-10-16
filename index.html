@@ -4278,6 +4278,128 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #studentContractPreviewPages .contract-inline-image{visibility:visible!important;opacity:1!important;}
 </style>
 </style>
+
+<style id="subscription-pending-verification-modal-step1">
+/* STEP 1 — Payment submitted / temporary verification modal */
+#subscriptionPendingVerificationModal{
+  position:fixed!important;
+  inset:0!important;
+  display:none;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:24px!important;
+  background:rgba(0,0,0,.42)!important;
+  z-index:999999!important;
+}
+#subscriptionPendingVerificationModal.show{display:flex!important;}
+#subscriptionPendingVerificationModal .subscription-pending-box{
+  width:min(40vw,560px)!important;
+  aspect-ratio:1/1;
+  max-height:88vh;
+  min-height:360px;
+  box-sizing:border-box;
+  overflow:auto;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:42px 42px 36px!important;
+  border-radius:24px!important;
+  border:1px solid rgba(255,255,255,.7)!important;
+  background:#fff!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.25)!important;
+}
+#subscriptionPendingVerificationModal .subscription-pending-icon{
+  width:76px;
+  height:76px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:20px;
+  background:var(--global-accent,#ff69b4);
+  color:var(--global-text-on-accent,#fff);
+  font-size:38px;
+  font-weight:900;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+#subscriptionPendingVerificationModal h3{
+  margin:0;
+  font-size:clamp(22px,2.4vw,31px);
+  line-height:1.2;
+  font-weight:900;
+  color:#111827;
+}
+#subscriptionPendingVerificationModal .subscription-pending-status{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin:15px 0 17px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:var(--global-accent-soft,#f5faff);
+  color:var(--global-accent-dark,#c21875);
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#subscriptionPendingVerificationModal p{
+  max-width:430px;
+  margin:0;
+  color:#475467;
+  font-size:14px;
+  line-height:1.65;
+}
+#subscriptionPendingVerificationModal .subscription-pending-note{
+  margin-top:13px;
+  color:#667085;
+  font-size:12px;
+  line-height:1.55;
+}
+#subscriptionPendingVerificationModal .subscription-pending-close{
+  margin-top:25px;
+  min-width:150px;
+  border:0;
+  border-radius:11px;
+  padding:12px 20px;
+  background:var(--global-accent,#ff69b4);
+  color:var(--global-text-on-accent,#fff);
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 5px 14px rgba(0,0,0,.12);
+}
+#subscriptionPendingVerificationModal .subscription-pending-close:hover{filter:brightness(.97);transform:translateY(-1px);}
+#subscriptionPendingVerificationModal .subscription-pending-x{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:#f1f5f9;
+  color:#344054;
+  font-size:23px;
+  line-height:1;
+  cursor:pointer;
+}
+@media(max-width:900px){
+  #subscriptionPendingVerificationModal .subscription-pending-box{width:min(78vw,560px);}
+}
+@media(max-width:600px){
+  #subscriptionPendingVerificationModal{padding:14px!important;}
+  #subscriptionPendingVerificationModal .subscription-pending-box{
+    width:min(92vw,520px)!important;
+    aspect-ratio:auto;
+    min-height:0;
+    padding:38px 24px 28px!important;
+  }
+}
+</style>
+
 </head>
 
 <body>
@@ -5905,6 +6027,25 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 </div>
 
 <div id="subscriptionQrModal" class="modal-backdrop subscription-qr-modal" aria-hidden="true" onclick="if(event.target===this)closeSubscriptionQrModal()"><div class="modal subscription-qr-modal-box" role="dialog" aria-modal="true" aria-labelledby="subscriptionQrModalTitle"><div class="subscription-qr-modal-head"><h3 id="subscriptionQrModalTitle">PAYMENT QR CODE</h3><button type="button" class="subscription-qr-close" onclick="closeSubscriptionQrModal()" aria-label="Close QR code">×</button></div><div class="subscription-qr-image-wrap"><img id="subscriptionQrModalImage" src="" alt="Payment QR code"></div><p class="subscription-qr-help">Scan this QR code to make your ₱99 payment.</p></div></div>
+
+
+<!-- STEP 1 — PAYMENT SUBMITTED / VERIFICATION PENDING MODAL -->
+<div id="subscriptionPendingVerificationModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subscriptionPendingVerificationTitle">
+  <div class="subscription-pending-box" onclick="event.stopPropagation()">
+    <button type="button" class="subscription-pending-x" onclick="closeSubscriptionPendingModal()" aria-label="Close">×</button>
+    <div class="subscription-pending-icon" aria-hidden="true">✓</div>
+    <h3 id="subscriptionPendingVerificationTitle">Payment Submitted Successfully</h3>
+    <div class="subscription-pending-status">Verification Pending</div>
+    <p>
+      Your payment has been successfully submitted and is now awaiting verification by Teacher Danyeal.
+      Your subscription features are temporarily unlocked while your payment is being verified.
+    </p>
+    <div class="subscription-pending-note">
+      Please wait for the verification result. You will receive an email once your payment has been approved or rejected.
+    </div>
+    <button type="button" class="subscription-pending-close" onclick="closeSubscriptionPendingModal()">CONTINUE</button>
+  </div>
+</div>
 
 <div id="lessonMaterialsPage" class="page">
 <div class="lesson-materials-wrap">
@@ -18985,6 +19126,32 @@ function subscriptionFileToDataURL(file){
   });
 }
 
+
+function showSubscriptionPendingModal(){
+  const modal=document.getElementById('subscriptionPendingVerificationModal');
+  if(!modal)return;
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+
+  /* Temporary unlock marker for STEP 1. */
+  try{
+    if(currentUser?.id){
+      localStorage.setItem(`td_subscription_temporary_unlock_${currentUser.id}`,'true');
+    }
+  }catch(err){
+    console.warn('Temporary subscription unlock marker could not be saved:',err);
+  }
+}
+
+function closeSubscriptionPendingModal(){
+  const modal=document.getElementById('subscriptionPendingVerificationModal');
+  if(!modal)return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+
 async function submitSubscriptionPayment(){
   const message=document.getElementById('subscriptionSubmitMessage');
   const method=String(document.getElementById('subscriptionPaymentMethod')?.value||'').trim();
@@ -19041,6 +19208,13 @@ async function submitSubscriptionPayment(){
       ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
       : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
     if(message)message.textContent=msg;
+
+    /* STEP 1: after a successful online payment submission, temporarily unlock
+       the subscription features and show the verification-pending notice. */
+    if(remoteSaved){
+      showSubscriptionPendingModal();
+    }
+
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
     const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
