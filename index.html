@@ -19219,7 +19219,7 @@ if(remoteSaved){
       {
         teacher_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email || 'Unknown Teacher',
         teacher_email: currentUser.email || '',
-        amount: `₱${Number(TEACHER_SUBSCRIPTION_PRICE || 99).toLocaleString()}`,
+        amount: `₱${Number(TEACHER_SUBSCRIPTION_PRICE || 99).toFixed(2)}`,
         payment_method: method,
         reference_number: reference,
         payment_date: new Date().toLocaleString(),
