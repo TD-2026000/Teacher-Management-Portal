@@ -19008,255 +19008,634 @@ closeStudentContractPreview = function(){
    Payment records are submitted to Supabase for admin Website 2.
    Configure the actual QR/card destinations below.
 ========================================================= */
+
 const TEACHER_SUBSCRIPTION_PRICE = 99;
+
 const SUBSCRIPTION_PAYMENT_CONFIG = {
   GCash: {
-    type:'qr',
-    qr:'',
-    text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
+    type: 'qr',
+    qr: '',
+    text: 'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
   },
   PayPal: {
-    type:'paypal',
-    url:'',
-    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
+    type: 'paypal',
+    url: '',
+    text: 'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
   },
   'Bank / InstaPay': {
-    type:'qr',
-    qr:'',
-    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
+    type: 'qr',
+    qr: '',
+    text: 'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
   }
 };
 
-function subscriptionEscape(value){
-  return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+function subscriptionEscape(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  }[c]));
 }
 
-function subscriptionLocalKey(){
-  return currentUser ? `teacherDanyealSubscriptionRequests_${currentUser.id}` : 'teacherDanyealSubscriptionRequests_guest';
+function subscriptionLocalKey() {
+  return currentUser
+    ? `teacherDanyealSubscriptionRequests_${currentUser.id}`
+    : 'teacherDanyealSubscriptionRequests_guest';
 }
 
-function getLocalSubscriptionRequests(){
-  try{return JSON.parse(localStorage.getItem(subscriptionLocalKey())||'[]');}catch(e){return [];}
+function getLocalSubscriptionRequests() {
+  try {
+    return JSON.parse(
+      localStorage.getItem(subscriptionLocalKey()) || '[]'
+    );
+  } catch (e) {
+    return [];
+  }
 }
 
-function saveLocalSubscriptionRequests(rows){
-  try{localStorage.setItem(subscriptionLocalKey(),JSON.stringify(rows));}catch(e){}
+function saveLocalSubscriptionRequests(rows) {
+  try {
+    localStorage.setItem(
+      subscriptionLocalKey(),
+      JSON.stringify(rows)
+    );
+  } catch (e) {
+    console.warn('Unable to save local payment history:', e);
+  }
 }
 
-const SUBSCRIPTION_QR_IMAGES={
-  GCash:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/Gcash.png',
-  BPI:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/BPI.png',
-  CIMB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/CIMB.png',
-  UnionBank:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/UnionBank.png',
-  AUB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/AUB.png'
+const SUBSCRIPTION_QR_IMAGES = {
+  GCash: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/Gcash.png',
+  BPI: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/BPI.png',
+  CIMB: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/CIMB.png',
+  UnionBank: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/UnionBank.png',
+  AUB: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/AUB.png'
 };
 
-function openSubscriptionPaymentMethod(method){
-  const cleanMethod=String(method||'').trim();
-  const qrUrl=SUBSCRIPTION_QR_IMAGES[cleanMethod];
-  if(!qrUrl)return;
-  const modal=document.getElementById('subscriptionQrModal');
-  const title=document.getElementById('subscriptionQrModalTitle');
-  const image=document.getElementById('subscriptionQrModalImage');
-  if(title)title.textContent=cleanMethod+' QR CODE';
-  if(image){image.src=qrUrl;image.alt=cleanMethod+' payment QR code';}
-  if(modal){modal.classList.add('show');modal.setAttribute('aria-hidden','false');}
+function openSubscriptionPaymentMethod(method) {
+  const cleanMethod = String(method || '').trim();
+  const qrUrl = SUBSCRIPTION_QR_IMAGES[cleanMethod];
+
+  if (!qrUrl) return;
+
+  const modal = document.getElementById('subscriptionQrModal');
+  const title = document.getElementById('subscriptionQrModalTitle');
+  const image = document.getElementById('subscriptionQrModalImage');
+
+  if (title) title.textContent = cleanMethod + ' QR CODE';
+
+  if (image) {
+    image.src = qrUrl;
+    image.alt = cleanMethod + ' payment QR code';
+  }
+
+  if (modal) {
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
+  }
 }
 
-function closeSubscriptionQrModal(){
-  const modal=document.getElementById('subscriptionQrModal');
-  if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
+function closeSubscriptionQrModal() {
+  const modal = document.getElementById('subscriptionQrModal');
+
+  if (modal) {
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden', 'true');
+  }
 }
 
-function selectSubscriptionMethod(method){
-  const cleanMethod=String(method||'').trim();
-  const input=document.getElementById('subscriptionPaymentMethod');
-  if(input)input.value=cleanMethod;
+function selectSubscriptionMethod(method) {
+  const cleanMethod = String(method || '').trim();
+  const input = document.getElementById('subscriptionPaymentMethod');
 
-  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
-    radio.checked=radio.value===cleanMethod;
+  if (input) input.value = cleanMethod;
+
+  document.querySelectorAll(
+    'input[name="subscriptionUsedMethod"]'
+  ).forEach(radio => {
+    radio.checked = radio.value === cleanMethod;
   });
 }
 
-async function loadSubscriptionAccount(){
-  const emailEl=document.getElementById('subscriptionAccountEmail');
-  const statusEl=document.getElementById('subscriptionAccountStatus');
-  const expiryEl=document.getElementById('subscriptionAccountExpiry');
-  if(!emailEl)return;
-  emailEl.textContent=currentUser?.email||'Not signed in';
-  if(!currentUser){
-    statusEl.textContent='LOGIN REQUIRED';
-    expiryEl.textContent='—';
+/* Load the subscription status and expiry from Supabase. */
+async function loadSubscriptionAccount() {
+  const emailEl = document.getElementById('subscriptionAccountEmail');
+  const statusEl = document.getElementById('subscriptionAccountStatus');
+  const expiryEl = document.getElementById('subscriptionAccountExpiry');
+
+  if (!emailEl || !statusEl || !expiryEl) return;
+
+  emailEl.textContent = currentUser?.email || 'Not signed in';
+
+  if (!currentUser) {
+    statusEl.textContent = 'LOGIN REQUIRED';
+    expiryEl.textContent = '—';
     return;
   }
-  statusEl.textContent='Checking...';
-  expiryEl.textContent='—';
-  try{
-    if(typeof supabaseClient==='undefined'||!supabaseClient){throw new Error('Supabase is not available.');}
-    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('access_status').eq('id',currentUser.id).maybeSingle();
-    if(profileError)throw profileError;
-    const status=String(profile?.access_status||'PENDING').toUpperCase();
-    statusEl.textContent=status;
-    const {data:sub,error:subError}=await supabaseClient.from('subscriptions').select('expiry_date,status,plan_name,price').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
-    if(!subError&&sub?.expiry_date){expiryEl.textContent=new Date(sub.expiry_date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}
-  }catch(err){
-    statusEl.textContent='PENDING';
-    expiryEl.textContent='Awaiting approval';
-    console.warn('Subscription status could not be loaded:',err);
+
+  statusEl.textContent = 'Checking...';
+  expiryEl.textContent = 'Loading...';
+
+  try {
+    if (
+      typeof supabaseClient === 'undefined' ||
+      !supabaseClient
+    ) {
+      throw new Error('Supabase is not available.');
+    }
+
+    const userId = currentUser.id;
+
+    const [
+      { data: subscriptions, error: subError },
+      { data: payments, error: paymentError },
+      { data: profile, error: profileError }
+    ] = await Promise.all([
+      supabaseClient
+        .from('subscriptions')
+        .select('id,user_id,expiry_date,status,plan_name,price,created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1),
+
+      supabaseClient
+        .from('payments')
+        .select('id,user_id,status,payment_date,created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1),
+
+      supabaseClient
+        .from('profiles')
+        .select('access_status')
+        .eq('id', userId)
+        .maybeSingle()
+    ]);
+
+    if (subError) throw subError;
+    if (paymentError) throw paymentError;
+    if (profileError) throw profileError;
+
+    const sub = subscriptions?.[0] || null;
+    const latestPayment = payments?.[0] || null;
+
+    const now = new Date();
+    const expiry = sub?.expiry_date
+      ? new Date(sub.expiry_date)
+      : null;
+
+    const subscriptionStatus = String(
+      sub?.status || ''
+    ).toUpperCase();
+
+    const paymentStatus = String(
+      latestPayment?.status || ''
+    ).toUpperCase();
+
+    const profileStatus = String(
+      profile?.access_status || ''
+    ).toUpperCase();
+
+    if (
+      sub &&
+      expiry &&
+      !Number.isNaN(expiry.getTime()) &&
+      expiry > now &&
+      subscriptionStatus === 'ACTIVE'
+    ) {
+      statusEl.textContent = 'ACTIVE';
+      expiryEl.textContent = expiry.toLocaleDateString(
+        undefined,
+        {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }
+      );
+      return;
+    }
+
+    if (sub && expiry && !Number.isNaN(expiry.getTime())) {
+      expiryEl.textContent = expiry.toLocaleDateString(
+        undefined,
+        {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }
+      );
+    } else {
+      expiryEl.textContent = 'Awaiting approval';
+    }
+
+    if (sub && expiry && expiry <= now) {
+      statusEl.textContent = 'EXPIRED';
+    } else if (paymentStatus === 'REJECTED') {
+      statusEl.textContent = 'REJECTED';
+    } else if (paymentStatus === 'VERIFIED') {
+      statusEl.textContent =
+        subscriptionStatus || profileStatus || 'VERIFIED';
+    } else if (subscriptionStatus) {
+      statusEl.textContent = subscriptionStatus;
+    } else if (profileStatus) {
+      statusEl.textContent = profileStatus;
+    } else {
+      statusEl.textContent = 'PENDING';
+    }
+
+  } catch (err) {
+    console.error(
+      'Subscription status could not be loaded:',
+      err
+    );
+
+    statusEl.textContent = 'Unable to load';
+    expiryEl.textContent = 'Please refresh and try again.';
   }
 }
 
-async function renderSubscriptionPage(){
-  loadSubscriptionAccount();
-  renderSubscriptionHistory();
-  const input=document.getElementById('subscriptionPaymentMethod');
-  const method=String(input?.value||'').trim();
-  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
-    radio.checked=radio.value===method;
+/* Refresh both account details and payment history when opening the page. */
+async function renderSubscriptionPage() {
+  const input = document.getElementById(
+    'subscriptionPaymentMethod'
+  );
+
+  const method = String(input?.value || '').trim();
+
+  document.querySelectorAll(
+    'input[name="subscriptionUsedMethod"]'
+  ).forEach(radio => {
+    radio.checked = radio.value === method;
   });
+
+  await Promise.all([
+    loadSubscriptionAccount(),
+    renderSubscriptionHistory()
+  ]);
 }
 
-function renderSubscriptionHistory(){
-  const box=document.getElementById('subscriptionPaymentHistory');
-  if(!box)return;
-  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
-  if(!rows.length){box.textContent='No payment requests yet.';return;}
-  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
+/* Read payment requests from Supabase instead of relying only on localStorage. */
+async function renderSubscriptionHistory() {
+  const box = document.getElementById(
+    'subscriptionPaymentHistory'
+  );
+
+  if (!box) return;
+
+  const localRows = getLocalSubscriptionRequests();
+
+  if (!currentUser || !supabaseClient) {
+    renderLocalSubscriptionHistory(box, localRows);
+    return;
+  }
+
+  box.textContent = 'Loading payment requests...';
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('payments')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const remoteRows = data || [];
+
+    /*
+      The database is authoritative for rows already saved online.
+      Reference number is used to match old local submissions.
+    */
+    const mergedRows = remoteRows.map(row => {
+      const local = localRows.find(item =>
+        String(item.reference_number || '') ===
+        String(row.reference_number || '')
+      );
+
+      return {
+        ...local,
+        ...row,
+        status: String(row.status || local?.status || 'PENDING')
+          .toUpperCase()
+      };
+    });
+
+    /*
+      Retain local-only submissions so a network issue does not
+      erase the teacher's locally saved history.
+    */
+    localRows.forEach(local => {
+      const exists = mergedRows.some(row =>
+        String(row.reference_number || '') ===
+        String(local.reference_number || '')
+      );
+
+      if (!exists) mergedRows.push(local);
+    });
+
+    mergedRows.sort((a, b) =>
+      String(b.created_at || b.payment_date || '')
+        .localeCompare(
+          String(a.created_at || a.payment_date || '')
+        )
+    );
+
+    saveLocalSubscriptionRequests(mergedRows);
+    renderLocalSubscriptionHistory(box, mergedRows);
+
+  } catch (err) {
+    console.error(
+      'Unable to load payment history from Supabase:',
+      err
+    );
+
+    renderLocalSubscriptionHistory(box, localRows);
+
+    if (!localRows.length) {
+      box.textContent =
+        'Unable to load payment requests. Please refresh and try again.';
+    }
+  }
 }
 
-function subscriptionFileToDataURL(file){
-  return new Promise((resolve,reject)=>{
-    if(!file)return resolve('');
-    const reader=new FileReader();
-    reader.onload=()=>resolve(String(reader.result||''));
-    reader.onerror=()=>reject(reader.error||new Error('Unable to read payment proof.'));
+function renderLocalSubscriptionHistory(box, rows) {
+  if (!box) return;
+
+  const sortedRows = [...rows].sort((a, b) =>
+    String(b.created_at || b.payment_date || '')
+      .localeCompare(
+        String(a.created_at || a.payment_date || '')
+      )
+  );
+
+  if (!sortedRows.length) {
+    box.textContent = 'No payment requests yet.';
+    return;
+  }
+
+  box.innerHTML = sortedRows.map(row => {
+    const status = String(
+      row.status || 'PENDING'
+    ).toUpperCase();
+
+    const date = row.created_at || row.payment_date;
+
+    return `
+      <div class="subscription-history-item">
+        <div>
+          <strong>₱${Number(row.amount || 99).toLocaleString()} Monthly Subscription</strong>
+          <small>
+            ${subscriptionEscape(row.payment_method || '')}
+            · ${subscriptionEscape(row.reference_number || 'No reference')}
+            <br>
+            ${subscriptionEscape(
+              date ? new Date(date).toLocaleString() : ''
+            )}
+          </small>
+        </div>
+        <div class="subscription-history-status">
+          ${subscriptionEscape(status)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function subscriptionFileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve('');
+
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result || ''));
+
+    reader.onerror = () => reject(
+      reader.error || new Error('Unable to read payment proof.')
+    );
+
     reader.readAsDataURL(file);
   });
 }
 
+function showSubscriptionPendingModal() {
+  const modal = document.getElementById(
+    'subscriptionPendingVerificationModal'
+  );
 
-function showSubscriptionPendingModal(){
-  const modal=document.getElementById('subscriptionPendingVerificationModal');
-  if(!modal)return;
+  if (!modal) return;
+
   modal.classList.add('show');
-  modal.setAttribute('aria-hidden','false');
-  document.body.style.overflow='hidden';
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
 
-  /* Temporary unlock marker for STEP 1. */
-  try{
-    if(currentUser?.id){
-      localStorage.setItem(`td_subscription_temporary_unlock_${currentUser.id}`,'true');
+  try {
+    if (currentUser?.id) {
+      localStorage.setItem(
+        `td_subscription_temporary_unlock_${currentUser.id}`,
+        'true'
+      );
     }
-  }catch(err){
-    console.warn('Temporary subscription unlock marker could not be saved:',err);
+  } catch (err) {
+    console.warn(
+      'Temporary subscription unlock marker could not be saved:',
+      err
+    );
   }
 }
 
-function closeSubscriptionPendingModal(){
-  const modal=document.getElementById('subscriptionPendingVerificationModal');
-  if(!modal)return;
+function closeSubscriptionPendingModal() {
+  const modal = document.getElementById(
+    'subscriptionPendingVerificationModal'
+  );
+
+  if (!modal) return;
+
   modal.classList.remove('show');
-  modal.setAttribute('aria-hidden','true');
-  document.body.style.overflow='';
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
-async function submitSubscriptionPayment(){
-  const message=document.getElementById('subscriptionSubmitMessage');
-  const method=String(document.getElementById('subscriptionPaymentMethod')?.value||'').trim();
-  const reference=String(document.getElementById('subscriptionReference')?.value||'').trim();
-  const note=String(document.getElementById('subscriptionNote')?.value||'').trim();
-  const proofFile=document.getElementById('subscriptionProof')?.files?.[0]||null;
-  if(message)message.textContent='';
-  if(!currentUser){if(message)message.textContent='Please log in first.';return;}
-  if(!method){if(message)message.textContent='Please choose a payment method.';return;}
-  if(!reference){if(message)message.textContent='Please enter your payment reference number.';return;}
-  try{
-    let proofData='';
-    if(proofFile){
-      if(proofFile.size>2*1024*1024)throw new Error('Payment proof must be 2 MB or smaller.');
-      proofData=await subscriptionFileToDataURL(proofFile);
+async function submitSubscriptionPayment() {
+  const message = document.getElementById(
+    'subscriptionSubmitMessage'
+  );
+
+  const method = String(
+    document.getElementById('subscriptionPaymentMethod')?.value || ''
+  ).trim();
+
+  const reference = String(
+    document.getElementById('subscriptionReference')?.value || ''
+  ).trim();
+
+  const note = String(
+    document.getElementById('subscriptionNote')?.value || ''
+  ).trim();
+
+  const proofFile =
+    document.getElementById('subscriptionProof')?.files?.[0] || null;
+
+  if (message) message.textContent = '';
+
+  if (!currentUser) {
+    if (message) message.textContent = 'Please log in first.';
+    return;
+  }
+
+  if (!method) {
+    if (message) message.textContent = 'Please choose a payment method.';
+    return;
+  }
+
+  if (!reference) {
+    if (message) {
+      message.textContent =
+        'Please enter your payment reference number.';
     }
-    const request={
-      user_id:currentUser.id,
-      email:currentUser.email||'',
-      payment_type:'MONTHLY',
-      amount:TEACHER_SUBSCRIPTION_PRICE,
-      payment_method:method,
-      reference_number:reference,
-      payment_date:new Date().toISOString(),
-      status:'PENDING',
-      notes:note,
-      proof_name:proofFile?.name||'',
-      proof_data:proofData,
-      created_at:new Date().toISOString()
+    return;
+  }
+
+  try {
+    let proofData = '';
+
+    if (proofFile) {
+      if (proofFile.size > 2 * 1024 * 1024) {
+        throw new Error(
+          'Payment proof must be 2 MB or smaller.'
+        );
+      }
+
+      proofData = await subscriptionFileToDataURL(proofFile);
+    }
+
+    const createdAt = new Date().toISOString();
+
+    const request = {
+      user_id: currentUser.id,
+      email: currentUser.email || '',
+      payment_type: 'MONTHLY',
+      amount: TEACHER_SUBSCRIPTION_PRICE,
+      payment_method: method,
+      reference_number: reference,
+      payment_date: createdAt,
+      status: 'PENDING',
+      notes: note,
+      proof_name: proofFile?.name || '',
+      proof_data: proofData,
+      created_at: createdAt
     };
 
-    /* Save locally first so the teacher never loses the submission if the network fails. */
-    const local=getLocalSubscriptionRequests();
+    /* Keep a local copy before sending to Supabase. */
+    const local = getLocalSubscriptionRequests();
+
     local.push(request);
     saveLocalSubscriptionRequests(local);
 
-    let remoteSaved=false;
-    if(typeof supabaseClient!=='undefined'&&supabaseClient){
-      const {error}=await supabaseClient.from('payments').insert([{
-        user_id:currentUser.id,
-        payment_type:'MONTHLY',
-        amount:TEACHER_SUBSCRIPTION_PRICE,
-        payment_method:method,
-        reference_number:reference,
-        payment_date:new Date().toISOString(),
-        status:'PENDING',
-        notes:JSON.stringify({email:currentUser.email||'',note,proof_name:proofFile?.name||'',proof_data:proofData})
-      }]);
-      if(error)throw error;
-      remoteSaved=true;
-      
-if(remoteSaved){
-  try{
-    await emailjs.send(
-      'service_wx3z91j',
-      'template_efswtan',
-      {
-        teacher_name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email || 'Unknown Teacher',
-        teacher_email: currentUser.email || '',
-        amount: `₱${Number(TEACHER_SUBSCRIPTION_PRICE || 99).toFixed(2)}`,
+    if (
+      typeof supabaseClient === 'undefined' ||
+      !supabaseClient
+    ) {
+      throw new Error('Supabase is not available.');
+    }
+
+    const { error } = await supabaseClient
+      .from('payments')
+      .insert([{
+        user_id: currentUser.id,
+        payment_type: 'MONTHLY',
+        amount: TEACHER_SUBSCRIPTION_PRICE,
         payment_method: method,
         reference_number: reference,
-        payment_date: new Date().toLocaleString(),
-        note: note || 'No note provided.',
-        action: 'APPROVE / REJECT'
-      }
+        payment_date: createdAt,
+        status: 'PENDING',
+        notes: JSON.stringify({
+          email: currentUser.email || '',
+          note,
+          proof_name: proofFile?.name || '',
+          proof_data: proofData
+        })
+      }]);
+
+    if (error) throw error;
+
+    /*
+      Mark the local copy as submitted online. The database status
+      will replace this status on the next history refresh.
+    */
+    const savedRows = getLocalSubscriptionRequests().map(row =>
+      String(row.reference_number || '') === reference
+        ? { ...row, status: 'PENDING' }
+        : row
     );
-    console.log('EmailJS payment notification sent successfully.');
-  }catch(emailError){
-    console.error('EmailJS notification failed:', emailError);
+
+    saveLocalSubscriptionRequests(savedRows);
+
+    try {
+      if (typeof emailjs !== 'undefined' && emailjs) {
+        await emailjs.send(
+          'service_wx3z91j',
+          'template_efswtan',
+          {
+            teacher_name:
+              currentUser.user_metadata?.full_name ||
+              currentUser.user_metadata?.name ||
+              currentUser.email ||
+              'Unknown Teacher',
+            teacher_email: currentUser.email || '',
+            amount: `₱${Number(TEACHER_SUBSCRIPTION_PRICE).toFixed(2)}`,
+            payment_method: method,
+            reference_number: reference,
+            payment_date: new Date().toLocaleString(),
+            note: note || 'No note provided.',
+            action: 'APPROVE / REJECT'
+          }
+        );
+
+        console.log('EmailJS payment notification sent successfully.');
+      }
+    } catch (emailError) {
+      console.error(
+        'EmailJS notification failed:',
+        emailError
+      );
+    }
+
+    if (message) {
+      message.textContent =
+        'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.';
+    }
+
+    showSubscriptionPendingModal();
+
+    const refEl = document.getElementById('subscriptionReference');
+    if (refEl) refEl.value = '';
+
+    const noteEl = document.getElementById('subscriptionNote');
+    if (noteEl) noteEl.value = '';
+
+    const proofEl = document.getElementById('subscriptionProof');
+    if (proofEl) proofEl.value = '';
+
+    await Promise.all([
+      renderSubscriptionHistory(),
+      loadSubscriptionAccount()
+    ]);
+
+  } catch (err) {
+    console.error(
+      'Subscription payment submission failed:',
+      err
+    );
+
+    if (message) {
+      message.textContent =
+        'Payment error: ' + (err?.message || 'Unknown error');
+    }
   }
 }
 
-    }
-
-    const msg=remoteSaved
-      ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
-      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
-    if(message)message.textContent=msg;
-
-    /* STEP 1: after a successful online payment submission, temporarily unlock
-       the subscription features and show the verification-pending notice. */
-    if(remoteSaved){
-      showSubscriptionPendingModal();
-    }
-
-    const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
-    const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
-    const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
-    renderSubscriptionHistory();
-  }catch(err){
-    console.error('Subscription payment submission failed:',err);
-    if(message){
-      message.textContent='Payment error: ' + (err?.message || 'Unknown error');
-    }
-  }
-  }
   </script>
 
 
