@@ -278,8 +278,6 @@ body{
 .dashboard-todo-completed .dashboard-todo-card{background:#f3f3f3;border-left-color:#aaa;opacity:.88;}
 .dashboard-todo-completed .dashboard-todo-card-name{text-decoration:line-through;color:#666;}
 .dashboard-todo-completed-badge{display:inline-block;margin-left:8px;padding:3px 7px;border-radius:999px;background:#e1e1e1;color:#555;font-size:11px;font-weight:900;text-decoration:none;}
-.dashboard-todo-card-reason{flex:0 1 42%;min-width:180px;text-align:right;color:#666;font-size:13px;line-height:1.35;}
-@media(max-width:700px){.dashboard-todo-card-reason{flex:1 1 100%;min-width:0;text-align:left;}}
 @media(max-width:700px){.dashboard-todo-card{align-items:flex-start;}.dashboard-todo-card-time{font-size:14px;}}
 .dashboard-todo-title{
   padding:13px 16px;
@@ -4278,136 +4276,6 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #studentContractPreviewPages .contract-inline-image{visibility:visible!important;opacity:1!important;}
 </style>
 </style>
-
-<style id="subscription-pending-verification-modal-step1">
-/* STEP 1 — Payment submitted / temporary verification modal */
-#subscriptionPendingVerificationModal{
-  position:fixed!important;
-  inset:0!important;
-  display:none;
-  align-items:center!important;
-  justify-content:center!important;
-  padding:24px!important;
-  background:rgba(0,0,0,.42)!important;
-  z-index:999999!important;
-}
-#subscriptionPendingVerificationModal.show{display:flex!important;}
-#subscriptionPendingVerificationModal .subscription-pending-box{
-  width:min(40vw,560px)!important;
-  aspect-ratio:1/1;
-  max-height:88vh;
-  min-height:360px;
-  box-sizing:border-box;
-  overflow:auto;
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:42px 42px 36px!important;
-  border-radius:24px!important;
-  border:1px solid rgba(255,255,255,.7)!important;
-  background:#fff!important;
-  box-shadow:0 24px 70px rgba(0,0,0,.25)!important;
-}
-#subscriptionPendingVerificationModal .subscription-pending-icon{
-  width:76px;
-  height:76px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-bottom:20px;
-  background:var(--global-accent,#ff69b4);
-  color:var(--global-text-on-accent,#fff);
-  font-size:38px;
-  font-weight:900;
-  box-shadow:0 8px 22px rgba(0,0,0,.12);
-}
-#subscriptionPendingVerificationModal h3{
-  margin:0;
-  font-size:clamp(22px,2.4vw,31px);
-  line-height:1.2;
-  font-weight:900;
-  color:#111827;
-}
-#subscriptionPendingVerificationModal .subscription-pending-status{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  margin:15px 0 17px;
-  padding:8px 14px;
-  border-radius:999px;
-  background:var(--global-accent-soft,#f5faff);
-  color:var(--global-accent-dark,#c21875);
-  font-size:12px;
-  font-weight:900;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-}
-#subscriptionPendingVerificationModal p{
-  max-width:430px;
-  margin:0;
-  color:#475467;
-  font-size:14px;
-  line-height:1.65;
-}
-#subscriptionPendingVerificationModal .subscription-pending-note{
-  margin-top:13px;
-  color:#667085;
-  font-size:12px;
-  line-height:1.55;
-}
-#subscriptionPendingVerificationModal .subscription-pending-close{
-  margin-top:25px;
-  min-width:150px;
-  border:0;
-  border-radius:11px;
-  padding:12px 20px;
-  background:var(--global-accent,#ff69b4);
-  color:var(--global-text-on-accent,#fff);
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 5px 14px rgba(0,0,0,.12);
-}
-#subscriptionPendingVerificationModal .subscription-pending-close:hover{filter:brightness(.97);transform:translateY(-1px);}
-#subscriptionPendingVerificationModal .subscription-pending-x{
-  position:absolute;
-  top:14px;
-  right:14px;
-  width:38px;
-  height:38px;
-  border:0;
-  border-radius:50%;
-  background:#f1f5f9;
-  color:#344054;
-  font-size:23px;
-  line-height:1;
-  cursor:pointer;
-}
-@media(max-width:900px){
-  #subscriptionPendingVerificationModal .subscription-pending-box{width:min(78vw,560px);}
-}
-@media(max-width:600px){
-  #subscriptionPendingVerificationModal{padding:14px!important;}
-  #subscriptionPendingVerificationModal .subscription-pending-box{
-    width:min(92vw,520px)!important;
-    aspect-ratio:auto;
-    min-height:0;
-    padding:38px 24px 28px!important;
-  }
-}
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
-<script>
-  emailjs.init({
-    publicKey: 'c6EftsVJb2RHlRH_E'
-  });
-</script>
-
 </head>
 
 <body>
@@ -4974,7 +4842,6 @@ Dashboard
 <div class="dashboard-todo-title">TO-DO LIST · TODAY'S CLASSES</div>
 <div class="dashboard-todo-body">
 <div id="dashboardTodayTodoActive" class="dashboard-todo-list"></div>
-<div id="dashboardTodayTodoCancelled" class="dashboard-todo-completed"></div>
 <div id="dashboardTodayTodoCompleted" class="dashboard-todo-completed"></div>
 </div>
 </div>
@@ -4999,7 +4866,7 @@ Dashboard
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('payment')">
-<span class="dashboard-menu-label">PAYMENT RECEIPT</span>
+<span class="dashboard-menu-label">PAYMENT</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('records')">
@@ -5445,25 +5312,6 @@ onclick="if(event.target===this) closeAddStudent()"
   <div class="modal-actions">
     <button type="button" class="modal-cancel" onclick="closeAppointmentReasonModal()">Cancel</button>
     <button type="button" class="modal-save" onclick="saveAppointmentReason()">Save</button>
-  </div>
-</div>
-</div>
-
-<!-- CANCELLATION REPLACEMENT CHOICE MODAL -->
-<div id="cancellationChoiceModal" class="modal-backdrop" onclick="if(event.target===this) closeCancellationChoiceModal()">
-<div class="modal appointment-reason-modal">
-  <div class="student-add-modal-header">
-    <div>
-      <h3>Cancelled Class</h3>
-      <div class="appointment-reason-help">What would you like to do with the cancelled class?</div>
-    </div>
-    <button type="button" class="student-modal-close" onclick="closeCancellationChoiceModal()" aria-label="Close">×</button>
-  </div>
-  <input id="cancellationChoiceId" type="hidden">
-  <div id="cancellationChoiceStatus" class="status"></div>
-  <div class="modal-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
-    <button type="button" class="modal-cancel" onclick="closeCancellationChoiceModal()">Manual Booking</button>
-    <button type="button" class="modal-save" onclick="confirmCancellationAutomaticBooking()">Automatically Book Replacement</button>
   </div>
 </div>
 </div>
@@ -6035,25 +5883,6 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 </div>
 
 <div id="subscriptionQrModal" class="modal-backdrop subscription-qr-modal" aria-hidden="true" onclick="if(event.target===this)closeSubscriptionQrModal()"><div class="modal subscription-qr-modal-box" role="dialog" aria-modal="true" aria-labelledby="subscriptionQrModalTitle"><div class="subscription-qr-modal-head"><h3 id="subscriptionQrModalTitle">PAYMENT QR CODE</h3><button type="button" class="subscription-qr-close" onclick="closeSubscriptionQrModal()" aria-label="Close QR code">×</button></div><div class="subscription-qr-image-wrap"><img id="subscriptionQrModalImage" src="" alt="Payment QR code"></div><p class="subscription-qr-help">Scan this QR code to make your ₱99 payment.</p></div></div>
-
-
-<!-- STEP 1 — PAYMENT SUBMITTED / VERIFICATION PENDING MODAL -->
-<div id="subscriptionPendingVerificationModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subscriptionPendingVerificationTitle">
-  <div class="subscription-pending-box" onclick="event.stopPropagation()">
-    <button type="button" class="subscription-pending-x" onclick="closeSubscriptionPendingModal()" aria-label="Close">×</button>
-    <div class="subscription-pending-icon" aria-hidden="true">✓</div>
-    <h3 id="subscriptionPendingVerificationTitle">Payment Submitted Successfully</h3>
-    <div class="subscription-pending-status">Verification Pending</div>
-    <p>
-      Your payment has been successfully submitted and is now awaiting verification by Teacher Danyeal.
-      Your subscription features are temporarily unlocked while your payment is being verified.
-    </p>
-    <div class="subscription-pending-note">
-      Please wait for the verification result. You will receive an email once your payment has been approved or rejected.
-    </div>
-    <button type="button" class="subscription-pending-close" onclick="closeSubscriptionPendingModal()">CONTINUE</button>
-  </div>
-</div>
 
 <div id="lessonMaterialsPage" class="page">
 <div class="lesson-materials-wrap">
@@ -8515,6 +8344,8 @@ await supabaseClient.auth.signOut();
 ========================================================= */
 
 async function handleSignedIn(user){
+subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';subscriptionAccessCheckPromise=null;
+
 
 /* =========================================================
    FAST LOGIN
@@ -8538,6 +8369,7 @@ document.getElementById('currentTeacher').textContent=fullName;
 
 document.getElementById('authScreen').classList.add('hidden');
 document.getElementById('appShell').classList.remove('hidden');
+installSubscriptionFeatureGate();
 
 /* Render immediately from cached/local data. */
 loadTeacherProfile();
@@ -8574,6 +8406,8 @@ Promise.resolve()
 ========================================================= */
 
 function handleSignedOut(){
+subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';subscriptionAccessCheckPromise=null;
+
 
 currentUser=null;
 
@@ -9247,7 +9081,91 @@ function backToDashboard(){
    PAGE NAVIGATION
 ========================================================= */
 
+
+/* SUBSCRIPTION ACCESS GATE */
+let subscriptionAccessActive=false;
+let subscriptionAccessCheckedUserId='';
+let subscriptionAccessCheckPromise=null;
+
+async function refreshSubscriptionAccess(force=false){
+  if(!currentUser?.id){subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';return false;}
+  if(!force && subscriptionAccessCheckedUserId===currentUser.id)return subscriptionAccessActive;
+  if(subscriptionAccessCheckPromise && !force)return subscriptionAccessCheckPromise;
+  const uid=currentUser.id;
+  subscriptionAccessCheckPromise=(async()=>{
+    try{
+      if(typeof supabaseClient==='undefined'||!supabaseClient)throw new Error('Supabase unavailable');
+      const [profileResult,subResult]=await Promise.all([
+        supabaseClient.from('profiles').select('access_status').eq('id',uid).maybeSingle(),
+        supabaseClient.from('subscriptions').select('status,expiry_date,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(1).maybeSingle()
+      ]);
+      if(profileResult.error)throw profileResult.error;
+      if(subResult.error)throw subResult.error;
+      const p=String(profileResult.data?.access_status||'PENDING').trim().toUpperCase();
+      const s=String(subResult.data?.status||'PENDING').trim().toUpperCase();
+      const expiry=subResult.data?.expiry_date?new Date(subResult.data.expiry_date).getTime():0;
+      subscriptionAccessActive=p==='ACTIVE' && s==='ACTIVE' && Number.isFinite(expiry) && expiry>Date.now();
+      subscriptionAccessCheckedUserId=uid;
+      return subscriptionAccessActive;
+    }catch(err){
+      console.warn('Subscription check failed; features remain locked.',err);
+      subscriptionAccessActive=false;subscriptionAccessCheckedUserId=uid;return false;
+    }finally{subscriptionAccessCheckPromise=null;}
+  })();
+  return subscriptionAccessCheckPromise;
+}
+function showSubscriptionLockAlert(){
+  const el=document.getElementById('subscriptionLockOverlay');
+  if(el){el.classList.add('show');el.setAttribute('aria-hidden','false');}
+}
+function closeSubscriptionLockAlert(){
+  const el=document.getElementById('subscriptionLockOverlay');
+  if(el){el.classList.remove('show');el.setAttribute('aria-hidden','true');}
+}
+function goToSubscriptionFromLock(){closeSubscriptionLockAlert();showPage('subscription');}
+function isSubscriptionExemptTarget(target){
+  if(!target?.closest)return true;
+  if(target.closest('#subscriptionPage,#subscriptionLockOverlay,#profilePanel,#portalSettingsPanel,#portalNotificationPanel,[data-subscription-exempt="true"]'))return true;
+  const el=target.closest('button,a,[role="button"],input[type="button"],input[type="submit"]');
+  if(!el)return true;
+  const text=String(el.innerText||el.textContent||el.value||'').trim().toLowerCase();
+  const onclick=String(el.getAttribute('onclick')||'').toLowerCase();
+  const id=String(el.id||'').toLowerCase();
+  if(/logout|sign out|subscription|subscribe|change password/.test(text))return true;
+  if(/logoutteacher|showpage\(['"]subscription|subscription/.test(onclick))return true;
+  if(/logout|subscription|profile|settings|notification/.test(id))return true;
+  return false;
+}
+function installSubscriptionFeatureGate(){
+  const shell=document.getElementById('appShell');
+  if(!shell||shell.dataset.subscriptionGateInstalled==='true')return;
+  shell.dataset.subscriptionGateInstalled='true';
+  shell.addEventListener('click',function(event){
+    if(!currentUser||isSubscriptionExemptTarget(event.target))return;
+    /* Block synchronously so the clicked feature handler cannot run first. */
+    if(subscriptionAccessActive && subscriptionAccessCheckedUserId===currentUser.id)return;
+    event.preventDefault();event.stopPropagation();
+    if(event.stopImmediatePropagation)event.stopImmediatePropagation();
+    showSubscriptionLockAlert();
+    /* Verify in the background. If access is active, the next click will work. */
+    refreshSubscriptionAccess(true).then(active=>{
+      if(active)closeSubscriptionLockAlert();
+    });
+  },true);
+}
+document.addEventListener('click',e=>{const el=document.getElementById('subscriptionLockOverlay');if(el&&e.target===el)closeSubscriptionLockAlert();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSubscriptionLockAlert();});
+
+
 function showPage(page){
+if(page!=='subscription' && currentUser && !subscriptionAccessActive){
+  showSubscriptionLockAlert();
+  refreshSubscriptionAccess().then(active=>{
+    if(active){closeSubscriptionLockAlert();showPage(page);}
+  });
+  return;
+}
+
 
 closeProfilePanel();
 
@@ -11531,7 +11449,7 @@ const otherEnd=new Date(otherStart.getTime()+otherDuration*60000);
 return start<otherEnd&&end>otherStart;
 });
 if(conflict){
-const conflictName=getAppointmentDisplayName(conflict,'Another class');
+const conflictName=conflict.studentName||'Another class';
 box.textContent=`⚠️ Schedule conflict: ${conflictName} is already scheduled for ${formatAppointmentTime(conflict.time)} on this date.`;
 box.classList.add('show');
 return true;
@@ -12018,23 +11936,13 @@ refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id
 }
 }
 
-function getStudentNickname(studentId, fallback='Student'){
-  const student=getStudents().find(s=>String(s.id)===String(studentId));
-  return student?.nickname || student?.name || fallback;
-}
-
-function getAppointmentDisplayName(item, fallback='Student'){
-  return getStudentNickname(item?.studentId, item?.studentName || item?.student || item?.name || fallback);
-}
-
 function aptFilterMatch(item){
 /* Cancelled bookings are kept in storage for history and do NOT reduce the
    student's class balance, but they are hidden from the calendar. */
 if(String(item.status||'Scheduled').toLowerCase()==='cancelled')return false;
 const search=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
 const status=document.getElementById('appointmentStatusFilter')?.value||'all';
-const student=getStudents().find(s=>String(s.id)===String(item.studentId));
-const text=`${student?.nickname||''} ${item.studentName||''} ${item.studentId||''}`.toLowerCase();
+const text=`${item.studentName||''} ${item.studentId||''}`.toLowerCase();
 return (!search||text.includes(search))&&(status==='all'||item.status===status);
 }
 
@@ -12043,7 +11951,7 @@ function filteredAppointments(){return getAppointments().filter(aptFilterMatch);
 function appointmentMiniCard(item){
 const status=item.status||'Scheduled';
 const cls=appointmentStatusClass(status);
-return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(getAppointmentDisplayName(item))}</div>`;
+return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(item.studentName||'Student')}</div>`;
 }
 
 function renderAppointmentMonth(items){
@@ -12125,7 +12033,7 @@ const timeline=slots.map(slot=>{
         }
       }
       return `<div class="appointment-time-booking ${status==='Completed'?'completed':'scheduled'}">
-        <div class="appointment-time-booking-main"><strong>${escapeHtml(getAppointmentDisplayName(item))}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
+        <div class="appointment-time-booking-main"><strong>${escapeHtml(item.studentName||'Student')}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
         <div class="appointment-time-booking-actions">${actionButtons}</div>
       </div>`;
     }).join('');
@@ -12155,7 +12063,7 @@ function viewAppointmentDetails(id){
   const time=formatAppointmentTime(item.time||'');
   const endTime=(()=>{try{const d=parseAppointmentDate(date,item.time||''); if(!d)return ''; d.setMinutes(d.getMinutes()+durationToMinutes(item.duration||'30 Minutes')); return formatAppointmentTime(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);}catch(e){return '';}})();
   content.innerHTML=`<div class="appointment-view-grid">
-    <div class="label">Student</div><div>${escapeHtml(getStudentNickname(item.studentId, item.studentName||student?.name||'Student'))}</div>
+    <div class="label">Student</div><div>${escapeHtml(item.studentName||student?.name||'Student')}</div>
     <div class="label">Date</div><div>${escapeHtml(date)}</div>
     <div class="label">Time</div><div>${escapeHtml(time)}${endTime?` – ${escapeHtml(endTime)}`:''}</div>
     <div class="label">Duration</div><div>${escapeHtml(item.duration||'30 Minutes')}</div>
@@ -12323,205 +12231,26 @@ const modal=document.getElementById('appointmentReasonModal');
 if(modal)modal.classList.remove('show');
 }
 
-function createCancellationReplacement(cancelledItem, appointments){
-  if(!cancelledItem || !Array.isArray(appointments)) return null;
-
-  const studentId=String(cancelledItem.studentId||'');
-  if(!studentId) return null;
-
-  const studentAppointments=appointments
-    .filter(a=>
-      String(a.studentId||'')===studentId &&
-      String(a.status||'Scheduled').toLowerCase()!=='cancelled'
-    )
-    .filter(a=>a.date);
-
-  let replacementDate;
-
-  if(studentAppointments.length){
-    const validDates=studentAppointments
-      .map(a=>new Date(`${a.date}T00:00:00`))
-      .filter(d=>!isNaN(d.getTime()));
-
-    if(validDates.length){
-      const latestDate=new Date(
-        Math.max(...validDates.map(d=>d.getTime()))
-      );
-
-      replacementDate=new Date(latestDate);
-      replacementDate.setDate(replacementDate.getDate()+1);
-    }
-  }
-
-  if(!replacementDate){
-    replacementDate=new Date(`${cancelledItem.date}T00:00:00`);
-    replacementDate.setDate(replacementDate.getDate()+1);
-  }
-
-  const time=cancelledItem.time||'';
-  let safety=0;
-
-  while(safety<60){
-    const dateString=getLocalDateString(replacementDate);
-
-    const conflict=appointments.some(a=>
-      String(a.studentId||'')===studentId &&
-      String(a.status||'Scheduled').toLowerCase()!=='cancelled' &&
-      String(a.date||'')===dateString &&
-      String(a.time||'')===String(time||'')
-    );
-
-    if(!conflict) break;
-
-    replacementDate.setDate(replacementDate.getDate()+1);
-    safety++;
-  }
-
-  if(safety>=60) return null;
-
-  const replacementDateString=getLocalDateString(replacementDate);
-
-  const replacementAlreadyExists=appointments.some(a=>
-    String(a.studentId||'')===studentId &&
-    String(a.date||'')===replacementDateString &&
-    String(a.time||'')===String(time||'') &&
-    a.isCancellationReplacement===true &&
-    String(a.replacementFor||'')===String(cancelledItem.id||'')
-  );
-
-  if(replacementAlreadyExists) return null;
-
-  const now=new Date().toISOString();
-
-  return {
-    ...cancelledItem,
-    id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-    date:replacementDateString,
-    time:time,
-    status:'Scheduled',
-    attendance:'',
-    cancelReason:'',
-    cancelledAt:'',
-    isCancellationReplacement:true,
-    replacementFor:cancelledItem.id,
-    createdAt:now,
-    updatedAt:now
-  };
-}
-
-function openCancellationChoiceModal(id){
-  const item=getAppointments().find(a=>a.id===id);
-  if(!item)return;
-  const modal=document.getElementById('cancellationChoiceModal');
-  if(!modal)return;
-  document.getElementById('cancellationChoiceId').value=id;
-  const status=document.getElementById('cancellationChoiceStatus');
-  if(status){
-    status.className='status';
-    status.textContent='';
-  }
-  modal.classList.add('show');
-}
-
-function closeCancellationChoiceModal(){
-  const modal=document.getElementById('cancellationChoiceModal');
-  if(modal)modal.classList.remove('show');
-}
-
-function confirmCancellationAutomaticBooking(){
-  const id=document.getElementById('cancellationChoiceId').value;
-  const appointments=getAppointments();
-  const index=appointments.findIndex(a=>a.id===id);
-  const status=document.getElementById('cancellationChoiceStatus');
-
-  if(index<0){
-    if(status){
-      status.className='status error';
-      status.textContent='The cancelled class could not be found.';
-    }
-    return;
-  }
-
-  if(String(appointments[index].status||'').toLowerCase()!=='cancelled'){
-    if(status){
-      status.className='status error';
-      status.textContent='This class is no longer cancelled.';
-    }
-    return;
-  }
-
-  const replacement=createCancellationReplacement(appointments[index],appointments);
-
-  if(!replacement){
-    if(status){
-      status.className='status error';
-      status.textContent='A replacement class could not be created automatically. You can use Manual Booking instead.';
-    }
-    return;
-  }
-
-  appointments.push(replacement);
-  saveAppointments(appointments);
-  closeCancellationChoiceModal();
-  refreshLiveUI({students:false,records:false,contracts:false});
-}
-
 function saveAppointmentReason(){
 const id=document.getElementById('appointmentReasonId').value;
 const action=document.getElementById('appointmentReasonAction').value;
 const reason=(document.getElementById('appointmentReasonText').value||'').trim();
 const statusBox=document.getElementById('appointmentReasonStatus');
-
 if(!reason){
 statusBox.className='status error';
 statusBox.textContent='Reason is required.';
 return;
 }
-
-if(action==='cancel'){
-  const confirmed=window.confirm('Are you sure you want to cancel this class?');
-  if(!confirmed)return;
-}
-
 const appointments=getAppointments();
 const index=appointments.findIndex(a=>a.id===id);
-
-if(index<0){
-  statusBox.className='status error';
-  statusBox.textContent='The appointment could not be found.';
-  return;
-}
-
+if(index<0)return;
 const now=new Date().toISOString();
-
 if(action==='cancel'){
-  appointments[index]={
-    ...appointments[index],
-    status:'Cancelled',
-    cancelReason:reason,
-    cancelledAt:now,
-    updatedAt:now
-  };
-
-  /* Cancellation does NOT consume a package class.
-     Replacement is created only after the teacher chooses Automatic Booking. */
-  saveAppointments(appointments);
-  closeAppointmentReasonModal();
-  refreshLiveUI({students:false,records:false,contracts:false});
-  openCancellationChoiceModal(id);
-  return;
+  appointments[index]={...appointments[index],status:'Cancelled',cancelReason:reason,cancelledAt:now,updatedAt:now};
+}else{
+  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
+  appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
 }
-
-/* ABSENT is still a COMPLETED class; attendance is recorded separately. */
-appointments[index]={
-  ...appointments[index],
-  status:'Completed',
-  attendance:'Absent',
-  absentReason:reason,
-  absentAt:now,
-  updatedAt:now
-};
-
 saveAppointments(appointments);
 closeAppointmentReasonModal();
 refreshLiveUI({students:false,records:false,contracts:false});
@@ -12651,8 +12380,7 @@ async function refreshDashboardSummaryCounts(){
         .from('appointments')
         .select('id',{count:'exact',head:true})
         .eq('user_id',currentUser.id)
-        .eq('class_date',today)
-        .neq('status','Cancelled');
+        .eq('class_date',today);
 
     if(todayError) throw todayError;
 
@@ -12721,8 +12449,7 @@ const validAppointments=appointments
 const todayCount=validAppointments.filter(x=>
  x.date.getFullYear()===now.getFullYear() &&
  x.date.getMonth()===now.getMonth() &&
- x.date.getDate()===now.getDate() &&
- String(x.item.status||'Scheduled').toLowerCase()!=='cancelled'
+ x.date.getDate()===now.getDate()
 ).length;
 
 /* Do not overwrite the dashboard appointment count from localStorage here.
@@ -12751,18 +12478,7 @@ const activeToday=dashboardClasses.filter(x=>!x.completed);
 const completedToday=dashboardClasses.filter(x=>x.completed).sort((a,b)=>b.date-a.date);
 const activeToShow=dashboardShowAllClasses?activeToday:activeToday.slice(0,2);
 const completedToShow=dashboardShowAllCompleted?completedToday:completedToday.slice(0,0);
-const cancelledToday=validAppointments
-.filter(x=>{
-  const d=x.date;
-  return d.getFullYear()===now.getFullYear() &&
-    d.getMonth()===now.getMonth() &&
-    d.getDate()===now.getDate() &&
-    String(x.item.status||'Scheduled').toLowerCase()==='cancelled';
-})
-.sort((a,b)=>a.date-b.date);
-
 const activeBox=document.getElementById('dashboardTodayTodoActive');
-const cancelledBox=document.getElementById('dashboardTodayTodoCancelled');
 const completedBox=document.getElementById('dashboardTodayTodoCompleted');
 
 if(activeBox){
@@ -12771,26 +12487,11 @@ if(activeBox){
   }else{
     activeBox.innerHTML=activeToShow.map(x=>{
       const item=x.item;
-      const studentName=getAppointmentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
     }).join('')+(activeToday.length>2?`<button type="button" class="dashboard-todo-showall" onclick="toggleDashboardAllClasses()">${dashboardShowAllClasses?'▲ Show Less':`▼ Show All Classes (${activeToday.length-2} more)`}</button>`:'');
-  }
-}
-
-if(cancelledBox){
-  if(!cancelledToday.length){
-    cancelledBox.innerHTML='';
-  }else{
-    cancelledBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">CANCELLED CLASSES FOR TODAY · ${cancelledToday.length}</div>${cancelledToday.map(x=>{
-      const item=x.item;
-      const studentName=getAppointmentDisplayName(item);
-      const type=item.type||item.title||item.subject||'Regular Class';
-      const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      const reason=item.cancelReason||'No reason provided';
-      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">CANCELLED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-reason">Reason: ${escapeHtml(reason)}</div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
-    }).join('')}</div>`;
   }
 }
 
@@ -12800,7 +12501,7 @@ if(completedBox){
   }else{
     completedBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">COMPLETED CLASSES TODAY · ${completedToday.length}</div>${completedToShow.map(x=>{
       const item=x.item;
-      const studentName=getAppointmentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -13866,7 +13567,7 @@ function renderEvaluationQueue(activeId){
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
-      <div class="pending-meta"><span class="pending-name">${escapeHtml(getAppointmentDisplayName(a))}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
+      <div class="pending-meta"><span class="pending-name">${escapeHtml(a.studentName||'Student')}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
       <button type="button" onclick="loadEvaluationFromAppointment('${escapeAttr(a.id)}')">${active?'Evaluating':'Evaluate'}</button>
     </div>`;
   }).join('');
@@ -13900,7 +13601,7 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
     if(el)el.value=value??'';
   };
 
-  const studentName=student?.nickname || student?.name || item.studentName || item.student || item.name || '';
+  const studentName=student?.name || item.studentName || item.student || item.name || '';
   const studentId=student?.id ?? item.studentId ?? '';
   const parentEmail=student?.email || item.parentEmail || item.parent_email || item.parentGmail || item.parentEmailAddress || item.email || '';
 
@@ -15333,7 +15034,7 @@ student,
 <div class="evaluation-student-info">
 
 <span class="student-name">
-${escapeHtml(student.nickname||student.name||'Student')}
+${escapeHtml(student.name)}
 </span>
 
 <span class="student-id">
@@ -18894,6 +18595,21 @@ body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 .lesson-delete-confirm-actions{display:flex;gap:10px;justify-content:center;}
 .lesson-delete-confirm-actions button{border:1px solid #aaa;border-radius:9px;padding:10px 18px;font-weight:800;cursor:pointer;background:#f5f5f5;}
 .lesson-delete-confirm-actions .danger{background:#ffe1e1;border-color:#d55;color:#a00;}
+
+/* SUBSCRIPTION FEATURE LOCK ALERT */
+.subscription-lock-overlay{position:fixed;inset:0;z-index:200000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,18,24,.62);backdrop-filter:blur(3px)}
+.subscription-lock-overlay.show{display:flex}
+.subscription-lock-alert{width:30vw;min-width:340px;max-width:560px;min-height:30vh;max-height:80vh;overflow:auto;background:#fff;border:2px solid #00caca;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.32);padding:clamp(20px,2.5vw,34px);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.subscription-lock-icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#fff1cc;color:#8a5700;font-size:27px;font-weight:900;margin-bottom:12px}
+.subscription-lock-alert h2{margin:0 0 10px;font-size:clamp(19px,1.6vw,25px);line-height:1.2}
+.subscription-lock-alert p{margin:0;color:#4b5563;line-height:1.55;font-size:clamp(13px,1vw,16px)}
+.subscription-lock-actions{display:flex;justify-content:center;gap:10px;margin-top:20px;flex-wrap:wrap;width:100%}
+.subscription-lock-actions button{border:0;border-radius:9px;padding:12px 20px;font-weight:900;cursor:pointer}
+.subscription-lock-subscribe{background:#00d9d9;color:#111;min-width:170px}
+.subscription-lock-subscribe:hover{background:#00c5c5}
+.subscription-lock-close{background:#eceff1;color:#263238}
+@media(max-width:900px){.subscription-lock-alert{width:min(92vw,520px);min-width:0;min-height:0;padding:24px}}
+
 </style>
 
 
@@ -19008,637 +18724,215 @@ closeStudentContractPreview = function(){
    Payment records are submitted to Supabase for admin Website 2.
    Configure the actual QR/card destinations below.
 ========================================================= */
-
 const TEACHER_SUBSCRIPTION_PRICE = 99;
-
 const SUBSCRIPTION_PAYMENT_CONFIG = {
   GCash: {
-    type: 'qr',
-    qr: '',
-    text: 'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
+    type:'qr',
+    qr:'',
+    text:'Scan the GCash QR code below, pay ₱99, then enter your payment reference number.'
   },
   PayPal: {
-    type: 'paypal',
-    url: '',
-    text: 'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
+    type:'paypal',
+    url:'',
+    text:'Use the PayPal payment link below to pay ₱99. After payment, return here and submit your payment reference number.'
   },
   'Bank / InstaPay': {
-    type: 'qr',
-    qr: '',
-    text: 'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
+    type:'qr',
+    qr:'',
+    text:'Scan the Bank / InstaPay QR code below or use the bank transfer details, pay ₱99, then enter your payment reference number.'
   }
 };
 
-function subscriptionEscape(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;'
-  }[c]));
+function subscriptionEscape(value){
+  return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 }
 
-function subscriptionLocalKey() {
-  return currentUser
-    ? `teacherDanyealSubscriptionRequests_${currentUser.id}`
-    : 'teacherDanyealSubscriptionRequests_guest';
+function subscriptionLocalKey(){
+  return currentUser ? `teacherDanyealSubscriptionRequests_${currentUser.id}` : 'teacherDanyealSubscriptionRequests_guest';
 }
 
-function getLocalSubscriptionRequests() {
-  try {
-    return JSON.parse(
-      localStorage.getItem(subscriptionLocalKey()) || '[]'
-    );
-  } catch (e) {
-    return [];
-  }
+function getLocalSubscriptionRequests(){
+  try{return JSON.parse(localStorage.getItem(subscriptionLocalKey())||'[]');}catch(e){return [];}
 }
 
-function saveLocalSubscriptionRequests(rows) {
-  try {
-    localStorage.setItem(
-      subscriptionLocalKey(),
-      JSON.stringify(rows)
-    );
-  } catch (e) {
-    console.warn('Unable to save local payment history:', e);
-  }
+function saveLocalSubscriptionRequests(rows){
+  try{localStorage.setItem(subscriptionLocalKey(),JSON.stringify(rows));}catch(e){}
 }
 
-const SUBSCRIPTION_QR_IMAGES = {
-  GCash: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/Gcash.png',
-  BPI: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/BPI.png',
-  CIMB: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/CIMB.png',
-  UnionBank: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/UnionBank.png',
-  AUB: 'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/AUB.png'
+const SUBSCRIPTION_QR_IMAGES={
+  GCash:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/Gcash.png',
+  BPI:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/BPI.png',
+  CIMB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/CIMB.png',
+  UnionBank:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/UnionBank.png',
+  AUB:'https://td-2026000.github.io/Teacher-Management-Portal/payment-qr/AUB.png'
 };
 
-function openSubscriptionPaymentMethod(method) {
-  const cleanMethod = String(method || '').trim();
-  const qrUrl = SUBSCRIPTION_QR_IMAGES[cleanMethod];
-
-  if (!qrUrl) return;
-
-  const modal = document.getElementById('subscriptionQrModal');
-  const title = document.getElementById('subscriptionQrModalTitle');
-  const image = document.getElementById('subscriptionQrModalImage');
-
-  if (title) title.textContent = cleanMethod + ' QR CODE';
-
-  if (image) {
-    image.src = qrUrl;
-    image.alt = cleanMethod + ' payment QR code';
-  }
-
-  if (modal) {
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
-  }
+function openSubscriptionPaymentMethod(method){
+  const cleanMethod=String(method||'').trim();
+  const qrUrl=SUBSCRIPTION_QR_IMAGES[cleanMethod];
+  if(!qrUrl)return;
+  const modal=document.getElementById('subscriptionQrModal');
+  const title=document.getElementById('subscriptionQrModalTitle');
+  const image=document.getElementById('subscriptionQrModalImage');
+  if(title)title.textContent=cleanMethod+' QR CODE';
+  if(image){image.src=qrUrl;image.alt=cleanMethod+' payment QR code';}
+  if(modal){modal.classList.add('show');modal.setAttribute('aria-hidden','false');}
 }
 
-function closeSubscriptionQrModal() {
-  const modal = document.getElementById('subscriptionQrModal');
-
-  if (modal) {
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
-  }
+function closeSubscriptionQrModal(){
+  const modal=document.getElementById('subscriptionQrModal');
+  if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true');}
 }
 
-function selectSubscriptionMethod(method) {
-  const cleanMethod = String(method || '').trim();
-  const input = document.getElementById('subscriptionPaymentMethod');
+function selectSubscriptionMethod(method){
+  const cleanMethod=String(method||'').trim();
+  const input=document.getElementById('subscriptionPaymentMethod');
+  if(input)input.value=cleanMethod;
 
-  if (input) input.value = cleanMethod;
-
-  document.querySelectorAll(
-    'input[name="subscriptionUsedMethod"]'
-  ).forEach(radio => {
-    radio.checked = radio.value === cleanMethod;
+  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
+    radio.checked=radio.value===cleanMethod;
   });
 }
 
-/* Load the subscription status and expiry from Supabase. */
-async function loadSubscriptionAccount() {
-  const emailEl = document.getElementById('subscriptionAccountEmail');
-  const statusEl = document.getElementById('subscriptionAccountStatus');
-  const expiryEl = document.getElementById('subscriptionAccountExpiry');
-
-  if (!emailEl || !statusEl || !expiryEl) return;
-
-  emailEl.textContent = currentUser?.email || 'Not signed in';
-
-  if (!currentUser) {
-    statusEl.textContent = 'LOGIN REQUIRED';
-    expiryEl.textContent = '—';
+async function loadSubscriptionAccount(){
+  const emailEl=document.getElementById('subscriptionAccountEmail');
+  const statusEl=document.getElementById('subscriptionAccountStatus');
+  const expiryEl=document.getElementById('subscriptionAccountExpiry');
+  if(!emailEl)return;
+  emailEl.textContent=currentUser?.email||'Not signed in';
+  if(!currentUser){
+    statusEl.textContent='LOGIN REQUIRED';
+    expiryEl.textContent='—';
     return;
   }
-
-  statusEl.textContent = 'Checking...';
-  expiryEl.textContent = 'Loading...';
-
-  try {
-    if (
-      typeof supabaseClient === 'undefined' ||
-      !supabaseClient
-    ) {
-      throw new Error('Supabase is not available.');
-    }
-
-    const userId = currentUser.id;
-
-    const [
-      { data: subscriptions, error: subError },
-      { data: payments, error: paymentError },
-      { data: profile, error: profileError }
-    ] = await Promise.all([
-      supabaseClient
-        .from('subscriptions')
-        .select('id,user_id,expiry_date,status,plan_name,price,created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1),
-
-      supabaseClient
-        .from('payments')
-        .select('id,user_id,status,payment_date,created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1),
-
-      supabaseClient
-        .from('profiles')
-        .select('access_status')
-        .eq('id', userId)
-        .maybeSingle()
-    ]);
-
-    if (subError) throw subError;
-    if (paymentError) throw paymentError;
-    if (profileError) throw profileError;
-
-    const sub = subscriptions?.[0] || null;
-    const latestPayment = payments?.[0] || null;
-
-    const now = new Date();
-    const expiry = sub?.expiry_date
-      ? new Date(sub.expiry_date)
-      : null;
-
-    const subscriptionStatus = String(
-      sub?.status || ''
-    ).toUpperCase();
-
-    const paymentStatus = String(
-      latestPayment?.status || ''
-    ).toUpperCase();
-
-    const profileStatus = String(
-      profile?.access_status || ''
-    ).toUpperCase();
-
-    if (
-      sub &&
-      expiry &&
-      !Number.isNaN(expiry.getTime()) &&
-      expiry > now &&
-      subscriptionStatus === 'ACTIVE'
-    ) {
-      statusEl.textContent = 'ACTIVE';
-      expiryEl.textContent = expiry.toLocaleDateString(
-        undefined,
-        {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }
-      );
-      return;
-    }
-
-    if (sub && expiry && !Number.isNaN(expiry.getTime())) {
-      expiryEl.textContent = expiry.toLocaleDateString(
-        undefined,
-        {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }
-      );
-    } else {
-      expiryEl.textContent = 'Awaiting approval';
-    }
-
-    if (sub && expiry && expiry <= now) {
-      statusEl.textContent = 'EXPIRED';
-    } else if (paymentStatus === 'REJECTED') {
-      statusEl.textContent = 'REJECTED';
-    } else if (paymentStatus === 'VERIFIED') {
-      statusEl.textContent =
-        subscriptionStatus || profileStatus || 'VERIFIED';
-    } else if (subscriptionStatus) {
-      statusEl.textContent = subscriptionStatus;
-    } else if (profileStatus) {
-      statusEl.textContent = profileStatus;
-    } else {
-      statusEl.textContent = 'PENDING';
-    }
-
-  } catch (err) {
-    console.error(
-      'Subscription status could not be loaded:',
-      err
-    );
-
-    statusEl.textContent = 'Unable to load';
-    expiryEl.textContent = 'Please refresh and try again.';
+  statusEl.textContent='Checking...';
+  expiryEl.textContent='—';
+  try{
+    if(typeof supabaseClient==='undefined'||!supabaseClient){throw new Error('Supabase is not available.');}
+    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('access_status').eq('id',currentUser.id).maybeSingle();
+    if(profileError)throw profileError;
+    const status=String(profile?.access_status||'PENDING').toUpperCase();
+    statusEl.textContent=status;
+    const {data:sub,error:subError}=await supabaseClient.from('subscriptions').select('expiry_date,status,plan_name,price').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(!subError&&sub?.expiry_date){expiryEl.textContent=new Date(sub.expiry_date).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});}
+  }catch(err){
+    statusEl.textContent='PENDING';
+    expiryEl.textContent='Awaiting approval';
+    console.warn('Subscription status could not be loaded:',err);
   }
 }
 
-/* Refresh both account details and payment history when opening the page. */
-async function renderSubscriptionPage() {
-  const input = document.getElementById(
-    'subscriptionPaymentMethod'
-  );
-
-  const method = String(input?.value || '').trim();
-
-  document.querySelectorAll(
-    'input[name="subscriptionUsedMethod"]'
-  ).forEach(radio => {
-    radio.checked = radio.value === method;
+async function renderSubscriptionPage(){
+  loadSubscriptionAccount();
+  renderSubscriptionHistory();
+  const input=document.getElementById('subscriptionPaymentMethod');
+  const method=String(input?.value||'').trim();
+  document.querySelectorAll('input[name="subscriptionUsedMethod"]').forEach(radio=>{
+    radio.checked=radio.value===method;
   });
-
-  await Promise.all([
-    loadSubscriptionAccount(),
-    renderSubscriptionHistory()
-  ]);
 }
 
-/* Read payment requests from Supabase instead of relying only on localStorage. */
-async function renderSubscriptionHistory() {
-  const box = document.getElementById(
-    'subscriptionPaymentHistory'
-  );
-
-  if (!box) return;
-
-  const localRows = getLocalSubscriptionRequests();
-
-  if (!currentUser || !supabaseClient) {
-    renderLocalSubscriptionHistory(box, localRows);
-    return;
-  }
-
-  box.textContent = 'Loading payment requests...';
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('payments')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    const remoteRows = data || [];
-
-    /*
-      The database is authoritative for rows already saved online.
-      Reference number is used to match old local submissions.
-    */
-    const mergedRows = remoteRows.map(row => {
-      const local = localRows.find(item =>
-        String(item.reference_number || '') ===
-        String(row.reference_number || '')
-      );
-
-      return {
-        ...local,
-        ...row,
-        status: String(row.status || local?.status || 'PENDING')
-          .toUpperCase()
-      };
-    });
-
-    /*
-      Retain local-only submissions so a network issue does not
-      erase the teacher's locally saved history.
-    */
-    localRows.forEach(local => {
-      const exists = mergedRows.some(row =>
-        String(row.reference_number || '') ===
-        String(local.reference_number || '')
-      );
-
-      if (!exists) mergedRows.push(local);
-    });
-
-    mergedRows.sort((a, b) =>
-      String(b.created_at || b.payment_date || '')
-        .localeCompare(
-          String(a.created_at || a.payment_date || '')
-        )
-    );
-
-    saveLocalSubscriptionRequests(mergedRows);
-    renderLocalSubscriptionHistory(box, mergedRows);
-
-  } catch (err) {
-    console.error(
-      'Unable to load payment history from Supabase:',
-      err
-    );
-
-    renderLocalSubscriptionHistory(box, localRows);
-
-    if (!localRows.length) {
-      box.textContent =
-        'Unable to load payment requests. Please refresh and try again.';
-    }
-  }
+function renderSubscriptionHistory(){
+  const box=document.getElementById('subscriptionPaymentHistory');
+  if(!box)return;
+  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  if(!rows.length){box.textContent='No payment requests yet.';return;}
+  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
 }
 
-function renderLocalSubscriptionHistory(box, rows) {
-  if (!box) return;
-
-  const sortedRows = [...rows].sort((a, b) =>
-    String(b.created_at || b.payment_date || '')
-      .localeCompare(
-        String(a.created_at || a.payment_date || '')
-      )
-  );
-
-  if (!sortedRows.length) {
-    box.textContent = 'No payment requests yet.';
-    return;
-  }
-
-  box.innerHTML = sortedRows.map(row => {
-    const status = String(
-      row.status || 'PENDING'
-    ).toUpperCase();
-
-    const date = row.created_at || row.payment_date;
-
-    return `
-      <div class="subscription-history-item">
-        <div>
-          <strong>₱${Number(row.amount || 99).toLocaleString()} Monthly Subscription</strong>
-          <small>
-            ${subscriptionEscape(row.payment_method || '')}
-            · ${subscriptionEscape(row.reference_number || 'No reference')}
-            <br>
-            ${subscriptionEscape(
-              date ? new Date(date).toLocaleString() : ''
-            )}
-          </small>
-        </div>
-        <div class="subscription-history-status">
-          ${subscriptionEscape(status)}
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function subscriptionFileToDataURL(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve('');
-
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(String(reader.result || ''));
-
-    reader.onerror = () => reject(
-      reader.error || new Error('Unable to read payment proof.')
-    );
-
+function subscriptionFileToDataURL(file){
+  return new Promise((resolve,reject)=>{
+    if(!file)return resolve('');
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(reader.error||new Error('Unable to read payment proof.'));
     reader.readAsDataURL(file);
   });
 }
 
-function showSubscriptionPendingModal() {
-  const modal = document.getElementById(
-    'subscriptionPendingVerificationModal'
-  );
-
-  if (!modal) return;
-
-  modal.classList.add('show');
-  modal.setAttribute('aria-hidden', 'false');
-  document.body.style.overflow = 'hidden';
-
-  try {
-    if (currentUser?.id) {
-      localStorage.setItem(
-        `td_subscription_temporary_unlock_${currentUser.id}`,
-        'true'
-      );
+async function submitSubscriptionPayment(){
+  const message=document.getElementById('subscriptionSubmitMessage');
+  const method=String(document.getElementById('subscriptionPaymentMethod')?.value||'').trim();
+  const reference=String(document.getElementById('subscriptionReference')?.value||'').trim();
+  const note=String(document.getElementById('subscriptionNote')?.value||'').trim();
+  const proofFile=document.getElementById('subscriptionProof')?.files?.[0]||null;
+  if(message)message.textContent='';
+  if(!currentUser){if(message)message.textContent='Please log in first.';return;}
+  if(!method){if(message)message.textContent='Please choose a payment method.';return;}
+  if(!reference){if(message)message.textContent='Please enter your payment reference number.';return;}
+  try{
+    let proofData='';
+    if(proofFile){
+      if(proofFile.size>2*1024*1024)throw new Error('Payment proof must be 2 MB or smaller.');
+      proofData=await subscriptionFileToDataURL(proofFile);
     }
-  } catch (err) {
-    console.warn(
-      'Temporary subscription unlock marker could not be saved:',
-      err
-    );
-  }
-}
-
-function closeSubscriptionPendingModal() {
-  const modal = document.getElementById(
-    'subscriptionPendingVerificationModal'
-  );
-
-  if (!modal) return;
-
-  modal.classList.remove('show');
-  modal.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-}
-
-async function submitSubscriptionPayment() {
-  const message = document.getElementById(
-    'subscriptionSubmitMessage'
-  );
-
-  const method = String(
-    document.getElementById('subscriptionPaymentMethod')?.value || ''
-  ).trim();
-
-  const reference = String(
-    document.getElementById('subscriptionReference')?.value || ''
-  ).trim();
-
-  const note = String(
-    document.getElementById('subscriptionNote')?.value || ''
-  ).trim();
-
-  const proofFile =
-    document.getElementById('subscriptionProof')?.files?.[0] || null;
-
-  if (message) message.textContent = '';
-
-  if (!currentUser) {
-    if (message) message.textContent = 'Please log in first.';
-    return;
-  }
-
-  if (!method) {
-    if (message) message.textContent = 'Please choose a payment method.';
-    return;
-  }
-
-  if (!reference) {
-    if (message) {
-      message.textContent =
-        'Please enter your payment reference number.';
-    }
-    return;
-  }
-
-  try {
-    let proofData = '';
-
-    if (proofFile) {
-      if (proofFile.size > 2 * 1024 * 1024) {
-        throw new Error(
-          'Payment proof must be 2 MB or smaller.'
-        );
-      }
-
-      proofData = await subscriptionFileToDataURL(proofFile);
-    }
-
-    const createdAt = new Date().toISOString();
-
-    const request = {
-      user_id: currentUser.id,
-      email: currentUser.email || '',
-      payment_type: 'MONTHLY',
-      amount: TEACHER_SUBSCRIPTION_PRICE,
-      payment_method: method,
-      reference_number: reference,
-      payment_date: createdAt,
-      status: 'PENDING',
-      notes: note,
-      proof_name: proofFile?.name || '',
-      proof_data: proofData,
-      created_at: createdAt
+    const request={
+      user_id:currentUser.id,
+      email:currentUser.email||'',
+      payment_type:'MONTHLY',
+      amount:TEACHER_SUBSCRIPTION_PRICE,
+      payment_method:method,
+      reference_number:reference,
+      payment_date:new Date().toISOString(),
+      status:'PENDING',
+      notes:note,
+      proof_name:proofFile?.name||'',
+      proof_data:proofData,
+      created_at:new Date().toISOString()
     };
 
-    /* Keep a local copy before sending to Supabase. */
-    const local = getLocalSubscriptionRequests();
-
+    /* Save locally first so the teacher never loses the submission if the network fails. */
+    const local=getLocalSubscriptionRequests();
     local.push(request);
     saveLocalSubscriptionRequests(local);
 
-    if (
-      typeof supabaseClient === 'undefined' ||
-      !supabaseClient
-    ) {
-      throw new Error('Supabase is not available.');
-    }
-
-    const { error } = await supabaseClient
-      .from('payments')
-      .insert([{
-        user_id: currentUser.id,
-        payment_type: 'MONTHLY',
-        amount: TEACHER_SUBSCRIPTION_PRICE,
-        payment_method: method,
-        reference_number: reference,
-        payment_date: createdAt,
-        status: 'PENDING',
-        notes: JSON.stringify({
-          email: currentUser.email || '',
-          note,
-          proof_name: proofFile?.name || '',
-          proof_data: proofData
-        })
+    let remoteSaved=false;
+    if(typeof supabaseClient!=='undefined'&&supabaseClient){
+      const {error}=await supabaseClient.from('payments').insert([{
+        user_id:currentUser.id,
+        payment_type:'MONTHLY',
+        amount:TEACHER_SUBSCRIPTION_PRICE,
+        payment_method:method,
+        reference_number:reference,
+        payment_date:new Date().toISOString(),
+        status:'PENDING',
+        notes:JSON.stringify({email:currentUser.email||'',note,proof_name:proofFile?.name||'',proof_data:proofData})
       }]);
-
-    if (error) throw error;
-
-    /*
-      Mark the local copy as submitted online. The database status
-      will replace this status on the next history refresh.
-    */
-    const savedRows = getLocalSubscriptionRequests().map(row =>
-      String(row.reference_number || '') === reference
-        ? { ...row, status: 'PENDING' }
-        : row
-    );
-
-    saveLocalSubscriptionRequests(savedRows);
-
-    try {
-      if (typeof emailjs !== 'undefined' && emailjs) {
-        await emailjs.send(
-          'service_wx3z91j',
-          'template_efswtan',
-          {
-            teacher_name:
-              currentUser.user_metadata?.full_name ||
-              currentUser.user_metadata?.name ||
-              currentUser.email ||
-              'Unknown Teacher',
-            teacher_email: currentUser.email || '',
-            amount: `₱${Number(TEACHER_SUBSCRIPTION_PRICE).toFixed(2)}`,
-            payment_method: method,
-            reference_number: reference,
-            payment_date: new Date().toLocaleString(),
-            note: note || 'No note provided.',
-            action: 'APPROVE / REJECT'
-          }
-        );
-
-        console.log('EmailJS payment notification sent successfully.');
-      }
-    } catch (emailError) {
-      console.error(
-        'EmailJS notification failed:',
-        emailError
-      );
+      if(error)throw error;
+      remoteSaved=true;
     }
 
-    if (message) {
-      message.textContent =
-        'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.';
-    }
-
-    showSubscriptionPendingModal();
-
-    const refEl = document.getElementById('subscriptionReference');
-    if (refEl) refEl.value = '';
-
-    const noteEl = document.getElementById('subscriptionNote');
-    if (noteEl) noteEl.value = '';
-
-    const proofEl = document.getElementById('subscriptionProof');
-    if (proofEl) proofEl.value = '';
-
-    await Promise.all([
-      renderSubscriptionHistory(),
-      loadSubscriptionAccount()
-    ]);
-
-  } catch (err) {
-    console.error(
-      'Subscription payment submission failed:',
-      err
-    );
-
-    if (message) {
-      message.textContent =
-        'Payment error: ' + (err?.message || 'Unknown error');
+    const msg=remoteSaved
+      ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱99 payment.'
+      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
+    if(message)message.textContent=msg;
+    const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
+    const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
+    const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
+    renderSubscriptionHistory();
+  }catch(err){
+    console.error('Subscription payment submission failed:',err);
+    if(message){
+      message.textContent='Payment error: ' + (err?.message || 'Unknown error');
     }
   }
-}
-
+  }
   </script>
 
 
+
+
+<div id="subscriptionLockOverlay" class="subscription-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="subscriptionLockTitle" aria-hidden="true">
+  <div class="subscription-lock-alert">
+    <div class="subscription-lock-icon" aria-hidden="true">🔒</div>
+    <h2 id="subscriptionLockTitle">FEATURES ARE LOCKED</h2>
+    <p>You need an active subscription to access all Teacher Management Portal features. Please subscribe to unlock the portal.</p>
+    <div class="subscription-lock-actions">
+      <button type="button" class="subscription-lock-subscribe" onclick="goToSubscriptionFromLock()">SUBSCRIBE NOW</button>
+      <button type="button" class="subscription-lock-close" onclick="closeSubscriptionLockAlert()">CLOSE</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
