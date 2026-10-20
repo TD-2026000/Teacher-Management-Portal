@@ -11084,18 +11084,29 @@ return getStudents().find(s=>s.id===id)||null;
 }
 
 function getStudentBookedCountForCurrentClasses(student){
-if(!student)return 0;
-const current=getCurrentStudentPackage(student);
-const appointments=getAppointments();
-const regular=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class');
-if(current){
-  const linked=regular.filter(a=>a.packageId===current.id);
-  const legacy=regular.filter(a=>!a.packageId);
-  /* Older appointments without packageId are still counted so they cannot
-     accidentally create an extra class beyond the active classes. */
-  return linked.length + legacy.length;
-}
-return regular.length;
+  if(!student)return 0;
+
+  const current=getCurrentStudentPackage(student);
+  const appointments=getAppointments();
+  const nowMs=Date.now();
+
+  const regular=appointments.filter(a=>{
+    if(a.studentId!==student.id)return false;
+    if((a.type||'Regular Class')!=='Regular Class')return false;
+    if(a.status==='Completed'||a.status==='Cancelled')return false;
+
+    const dt=getAppointmentDateTime(a);
+    return dt ? dt.getTime()>=nowMs : false;
+  });
+
+  if(current){
+    const linked=regular.filter(a=>a.packageId===current.id);
+    const legacy=regular.filter(a=>!a.packageId);
+
+    return linked.length + legacy.length;
+  }
+
+  return regular.length;
 }
 
 function studentHasBookableClasses(student){
