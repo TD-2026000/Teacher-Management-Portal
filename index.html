@@ -13070,26 +13070,8 @@ async function copyStudentLessonFlowLinks(){
 }
 
 function getRenewalStartDate(student, renewalDate){
-if(!student||!renewalDate)return '';
-const current=getCurrentStudentPackage(student);
-const appointments=getAppointments();
-const renewalMs=new Date(`${renewalDate}T00:00:00`).getTime();
-let futureOld=appointments.filter(a=>{
-  if(a.studentId!==student.id)return false;
-  if((a.type||'Regular Class')!=='Regular Class')return false;
-  if(a.status==='Completed'||a.status==='Cancelled')return false;
-  if(current && a.packageId && a.packageId!==current.id)return false;
-  const dt=getAppointmentDateTime(a);
-  return dt && dt.getTime()>=renewalMs;
-});
-futureOld.sort((a,b)=>getAppointmentDateTime(a)-getAppointmentDateTime(b));
-if(futureOld.length){
-  const last=getAppointmentDateTime(futureOld[futureOld.length-1]);
-  const nextBase=new Date(`${getLocalDateString(last)}T00:00:00`);
-  nextBase.setDate(nextBase.getDate()+1);
-  return getNextPreferredDate(student,getLocalDateString(nextBase));
-}
-return getNextPreferredDate(student,renewalDate);
+  if(!student||!renewalDate)return '';
+  return getNextPreferredDate(student,renewalDate);
 }
 
 function openRenewPackage(id){
