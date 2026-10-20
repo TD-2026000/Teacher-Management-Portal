@@ -2225,22 +2225,6 @@ button.secondary,
 .student-all-record-performance-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
 .student-all-record-star{font-size:17px;color:#ddd}.student-all-record-star.on{color:#f65ba1}
 .student-all-record-schedule-table .student-all-record-attendance-present{font-weight:800;color:#176b2c}.student-all-record-schedule-table .student-all-record-attendance-absent{font-weight:800;color:#a40000}
-
-.student-all-record-schedule-table tr.student-all-record-row-cancelled{
-  background:#fff3b0 !important;
-}
-
-.student-all-record-schedule-table tr.student-all-record-row-absent{
-  background:#ffd6d6 !important;
-}
-
-.student-all-record-cancellation-reason{
-  margin-top:4px;
-  font-size:12px;
-  font-weight:700;
-  color:#7a4b00;
-}
-
 @media(max-width:900px){.student-all-record-pdf-page{transform-origin:top center;transform:scale(.8);margin-bottom:-220px}.student-all-record-modal{width:94vw}.student-all-record-preview-pages{overflow-x:hidden}}
 @media(max-width:560px){.student-all-record-pdf-page{transform:scale(.58);margin-bottom:-470px}.student-all-record-header{align-items:flex-start}}
 .student-profile-modal{width:95vw;max-width:1450px;max-height:92vh;overflow:auto}
@@ -12570,14 +12554,14 @@ function buildStudentAllRecordInfoPage(student){
 
 function buildStudentAllRecordSchedulePage(student){
   /*
-    STUDENT CLASS SCHEDULE in Student All Record must contain
-    completed classes, including cancelled and absent records.
+    STUDENT CLASS SCHEDULE in Student All Record must contain ONLY
+    classes that have actually been completed. Do not include future,
+    booked, pending, or other unfinished appointments.
   */
-
   const appointments=getAppointments().filter(a=>
     String(a.studentId||'')===String(student.id||'') &&
     String(a.type||'Regular Class')==='Regular Class' &&
-    ['Completed','Cancelled'].includes(String(a.status||''))
+    String(a.status||'')==='Completed'
   ).sort((a,b)=>{
     const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
     return (da?da.getTime():0)-(db?db.getTime():0);
@@ -12590,141 +12574,25 @@ function buildStudentAllRecordSchedulePage(student){
     const n=Number(text.replace(/[^0-9.]/g,''));
     return Number.isFinite(n)&&n>0?Math.round(n):25;
   };
-
-  const formatTime=dt=>
-    dt
-      ?dt.toLocaleTimeString([],{
-        hour:'numeric',
-        minute:'2-digit',
-        hour12:true
-      })
-      :'—';
-
+  const formatTime=dt=>dt?dt.toLocaleTimeString([], {hour:'numeric',minute:'2-digit',hour12:true}):'—';
   const getEndTime=(dt,duration)=>{
     if(!dt)return '—';
-    return formatTime(
-      new Date(
-        dt.getTime()+
-        parseDurationMinutes(duration)*60000
-      )
-    );
+    return formatTime(new Date(dt.getTime()+parseDurationMinutes(duration)*60000));
   };
 
   const rows=appointments.map(a=>{
-
     const dt=getAppointmentDateTime(a);
-
-    const date=dt
-      ?getLocalDateString(dt)
-      :(a.date||'—');
-
-    const day=dt
-      ?dt.toLocaleDateString([],{
-        weekday:'long'
-      })
-      :(a.day||'—');
-
-    const start=dt
-      ?formatTime(dt)
-      :(a.time||'—');
-
-    const end=dt
-      ?getEndTime(
-        dt,
-        a.duration||student.duration
-      )
-      :'—';
-
+    const date=dt?getLocalDateString(dt):(a.date||'—');
+    const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
+    const start=dt?formatTime(dt):(a.time||'—');
+    const end=dt?getEndTime(dt,a.duration||student.duration):'—';
     const time=`${start} – ${end}`;
-
-    const attendance=String(
-      a.attendance||''
-    ).trim();
-
-    const status=String(
-      a.status||''
-    ).trim();
-
-    const isCancelled=/^cancelled$/i.test(status);
-
-    const isAbsent=/^absent$/i.test(attendance);
-
-    const attendanceText=
-      isCancelled
-        ?'Cancelled'
-        :isAbsent
-          ?'Absent'
-          :/^present$/i.test(attendance)
-            ?'Present'
-            :(attendance||'—');
-
-    let cancellationReason='';
-
-    if(isCancelled){
-      cancellationReason=
-        a.cancellationReason||
-        a.cancelReason||
-        a.reason||
-        '';
-    }
-
-    const rowClass=
-      isCancelled
-        ?'student-all-record-row-cancelled'
-        :isAbsent
-          ?'student-all-record-row-absent'
-          :'';
-
-    return `
-      <tr class="${rowClass}">
-        <td>${escapeHtml(date)}</td>
-        <td>${escapeHtml(day)}</td>
-        <td>${escapeHtml(time)}</td>
-        <td>${escapeHtml(a.type||'Regular Class')}</td>
-        <td>${escapeHtml(a.duration||student.duration||'—')}</td>
-        <td>
-          ${escapeHtml(attendanceText)}
-          ${
-            cancellationReason
-              ?`<div class="student-all-record-cancellation-reason">
-                  Reason: ${escapeHtml(cancellationReason)}
-                </div>`
-              :''
-          }
-        </td>
-      </tr>
-    `;
+    const attendance=String(a.attendance||'').trim();
+    const attendanceText=/^present$/i.test(attendance)?'Present':/^absent$/i.test(attendance)?'Absent':(attendance||'—');
+    return `<tr><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td><td class="student-all-record-attendance-${attendanceText.toLowerCase()}">${escapeHtml(attendanceText)}</td></tr>`;
   }).join('');
-
-  const body=appointments.length
-    ?`
-      <table class="student-all-record-pdf-table student-all-record-schedule-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Day</th>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Duration</th>
-            <th>Attendance</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-    `
-    :`
-      <div class="student-all-record-empty">
-        No class schedule or appointments recorded yet.
-      </div>
-    `;
-
-  return studentAllRecordPageShell(
-    'STUDENT CLASS SCHEDULE',
-    student,
-    body
-  );
+  const body=appointments.length?`<table class="student-all-record-pdf-table student-all-record-schedule-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th><th>Attendance</th></tr></thead><tbody>${rows}</tbody></table>`:`<div class="student-all-record-empty">No class schedule or appointments recorded yet.</div>`;
+  return studentAllRecordPageShell('STUDENT CLASS SCHEDULE',student,body);
 }
 
 function buildStudentAllRecordContractPage(student){
