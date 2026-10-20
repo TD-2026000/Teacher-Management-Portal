@@ -18886,13 +18886,70 @@ async function renderSubscriptionPage(){
   });
 }
 
-function renderSubscriptionHistory(){
+
+async function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
-  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
-  if(!rows.length){box.textContent='No payment requests yet.';return;}
-  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
+
+  let rows=getLocalSubscriptionRequests();
+
+  if(
+    currentUser?.id &&
+    typeof supabaseClient!=='undefined' &&
+    supabaseClient
+  ){
+    try{
+      const {data,error}=await supabaseClient
+        .from('payments')
+        .select('user_id,amount,payment_method,reference_number,payment_date,status,created_at')
+        .eq('user_id',currentUser.id)
+        .order('created_at',{ascending:false});
+
+      if(error)throw error;
+
+      if(Array.isArray(data)){
+        rows=data.map(r=>({
+          ...r,
+          created_at:r.created_at||r.payment_date||'',
+          status:String(r.status||'PENDING').toUpperCase()
+        }));
+
+        saveLocalSubscriptionRequests(rows);
+      }
+    }catch(error){
+      console.error('Unable to refresh payment history:',error);
+    }
+  }
+
+  rows.sort((a,b)=>
+    String(b.created_at||'').localeCompare(String(a.created_at||''))
+  );
+
+  if(!rows.length){
+    box.textContent='No payment requests yet.';
+    return;
+  }
+
+  box.innerHTML=rows.map(r=>`
+    <div class="subscription-history-item">
+      <div>
+        <strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong>
+        <small>
+          ${subscriptionEscape(r.payment_method||'')} ·
+          ${subscriptionEscape(r.reference_number||'No reference')}
+          <br>
+          ${subscriptionEscape(
+            r.created_at?new Date(r.created_at).toLocaleString():''
+          )}
+        </small>
+      </div>
+      <div class="subscription-history-status">
+        ${subscriptionEscape(r.status||'PENDING')}
+      </div>
+    </div>
+  `).join('');
 }
+
 
 function subscriptionFileToDataURL(file){
   return new Promise((resolve,reject)=>{
