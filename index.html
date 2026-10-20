@@ -6240,6 +6240,7 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
+      <div class="edit-student-field"><label>Bonus / Free Classes</label><input id="editStudentFreeClasses" type="number" min="0" step="1" value="0" placeholder="0"><div class="small" style="margin-top:4px">Extra classes granted for free. These add to the available class balance but are tracked separately from purchased classes.</div></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -10394,6 +10395,8 @@ document.getElementById('editStudentDuration').value=
 :'30 Minutes';
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
+const freeClassesInput=document.getElementById('editStudentFreeClasses');
+if(freeClassesInput)freeClassesInput.value=Math.max(0,parseInt(student.freeClasses,10)||0);
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10678,6 +10681,7 @@ parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
+freeClasses:Math.max(0,parseInt(document.getElementById('editStudentFreeClasses')?.value,10)||0),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -12496,9 +12500,11 @@ if(!current){
   completed=getStudentEvaluations(student.id).length;
 }
 
-const remaining=Math.max(0,packageCount-completed);
-const percent=packageCount?Math.min(100,Math.round((completed/packageCount)*100)):0;
-return {purchased:packageCount,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
+const bonus=Math.max(0,parseInt(student.freeClasses,10)||0);
+const totalAvailable=packageCount+bonus;
+const remaining=Math.max(0,totalAvailable-completed);
+const percent=totalAvailable?Math.min(100,Math.round((completed/totalAvailable)*100)):0;
+return {purchased:packageCount,bonus,totalAvailable,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
 function studentAllRecordSafeText(value, fallback='—'){
@@ -12837,6 +12843,7 @@ content.innerHTML=`
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
+    <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
     <div class="student-detail-stat"><b>${Math.max(0,p.remaining-appointments.filter(a=>a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class'&&a.status!=='Completed').length)}</b><span>Classes Not Yet Booked</span></div>
