@@ -18969,8 +18969,36 @@ async function submitSubscriptionPayment(){
   const proofFile=document.getElementById('subscriptionProof')?.files?.[0]||null;
   if(message)message.textContent='';
   if(!currentUser){if(message)message.textContent='Please log in first.';return;}
-  if(!method){if(message)message.textContent='Please choose a payment method.';return;}
-  if(!reference){if(message)message.textContent='Please enter your payment reference number.';return;}
+
+if(!method){
+  if(message)message.textContent='Please choose a payment method.';
+  return;
+}
+
+if(!reference){
+  if(message)message.textContent='Please enter your payment reference number.';
+  return;
+}
+
+/* PREVENT DUPLICATE REFERENCE NUMBER */
+const normalizedReference=reference.trim().toUpperCase();
+
+const localRequests=getLocalSubscriptionRequests();
+
+if(localRequests.some(r =>
+  String(r.reference_number||'').trim().toUpperCase()===normalizedReference
+)){
+  if(message){
+    message.style.color='#dc2626';
+    message.textContent='⚠️ This Reference Number has already been submitted. Please use a different Reference Number.';
+  }
+  return;
+}
+
+if(message){
+  message.style.color='';
+}
+
   try{
     let proofData='';
     if(proofFile){
