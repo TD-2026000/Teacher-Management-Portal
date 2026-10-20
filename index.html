@@ -4993,6 +4993,18 @@ onclick="if(event.target===this) closeAddStudent()"
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
 
+<div>
+  <label>Bonus / Free Lessons</label>
+  <input
+    id="newStudentBonusClasses"
+    type="number"
+    min="0"
+    step="1"
+    value="0"
+    placeholder="Enter bonus / free lessons"
+  >
+</div>
+
 <div id="newCustomStudentFields" class="custom-student-fields-form"></div>
 
 <div class="full">
@@ -6812,6 +6824,7 @@ async function syncStudentToSupabase(student){
       level: String(student.level || ''),
       duration: String(student.duration || ''),
       package_name: String(student.packageName || ''),
+      bonus_free_classes: Number(student.bonusFreeClasses || 0),
       status: String(student.status || 'Active'),
       enrolled_date: student.startDate || student.createdAt
         ? String(student.startDate || student.createdAt).slice(0,10)
@@ -10137,6 +10150,15 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
+  
+const bonusFreeClasses = Math.max(
+  0,
+  parseInt(
+    document.getElementById('newStudentBonusClasses').value,
+    10
+  ) || 0
+);
+  
 const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
@@ -10199,6 +10221,7 @@ students.push({
   level,
   duration,
   packageName,
+  bonusFreeClasses,
   status,
   preferredSchedule:schedule,
   scheduleDetails,
