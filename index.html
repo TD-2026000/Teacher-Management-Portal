@@ -12770,10 +12770,15 @@ if(title)title.textContent=`${student.nickname||student.name||'Student'} — Pro
 if(!content)return;
 
 const avatar=getStudentAvatarHtml(student,'student-profile-avatar');
-const appointments=getAppointments().filter(a=>a.studentId===student.id).sort((a,b)=>{
+
+const appointments=getAppointments().filter(a=>
+  a.studentId===student.id &&
+  String(a.status||'Scheduled')==='Scheduled'
+).sort((a,b)=>{
  const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
  return (db?db.getTime():0)-(da?da.getTime():0);
 });
+
 const currentPackage=getCurrentStudentPackage(student);
 const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
 const evaluations=getStudentEvaluations(student.id);
