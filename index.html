@@ -2347,7 +2347,7 @@ body .student-profile-custom-field-box label{
 .renew-modal{max-width:620px}
 .renew-summary{border:1px solid #ddd;border-radius:9px;background:#fafafa;padding:10px;margin:10px 0 14px;line-height:1.5}
 .renew-preview{border:1px solid #d8eeee;border-radius:9px;background:#f4ffff;padding:10px;margin-top:10px;font-size:13px}
-.student-detail-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.student-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
 .student-detail-stat{border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;background:#fff}
 .student-detail-stat b{display:block;font-size:24px}
 .student-detail-stat span{font-size:11px;color:#666}
@@ -2454,14 +2454,6 @@ body .student-profile-custom-field-box label{
 .appointment-more-menu button:hover{background:#f1f1f1}
 .appointment-more-menu button.absent{color:#8b0000}
 .appointment-reason-modal{max-width:520px}
-/* Cancellation choice dialog: approximately 40% of the screen on desktop. */
-.appointment-cancel-choice-modal{width:40vw;max-width:560px;min-width:320px}
-.appointment-cancel-choice-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:14px}
-.appointment-cancel-choice-btn{display:block;width:100%;text-align:left;border:1px solid #cbd5e1;border-radius:12px;padding:14px;background:#fff;color:#17202a;cursor:pointer}
-.appointment-cancel-choice-btn:hover{border-color:var(--global-accent-dark,#00bcbc);background:#f0ffff}
-.appointment-cancel-choice-btn strong{display:block;font-size:14px;margin-bottom:5px}
-.appointment-cancel-choice-btn span{display:block;font-size:12px;line-height:1.45;color:#5b6570}
-@media(max-width:700px){.appointment-cancel-choice-modal{width:92vw;min-width:0;max-width:none}}
 .appointment-reason-help{font-size:12px;color:#666;line-height:1.45;margin-top:5px}
 .appointment-modal{max-width:700px}
 .appointment-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -5322,31 +5314,6 @@ onclick="if(event.target===this) closeAddStudent()"
     <button type="button" class="modal-save" onclick="saveAppointmentReason()">Save</button>
   </div>
 </div>
-</div>
-
-<!-- CANCEL CLASS CHOICE MODAL -->
-<div id="appointmentCancelChoiceModal" class="modal-backdrop" onclick="if(event.target===this) closeAppointmentCancelChoiceModal()">
-  <div class="modal appointment-cancel-choice-modal" role="dialog" aria-modal="true" aria-labelledby="appointmentCancelChoiceTitle">
-    <div class="student-add-modal-header">
-      <div>
-        <h3 id="appointmentCancelChoiceTitle">What should happen to this class?</h3>
-        <div class="appointment-reason-help">Choose how to handle the cancelled class. The class credit will be preserved.</div>
-      </div>
-      <button type="button" class="student-modal-close" onclick="closeAppointmentCancelChoiceModal()" aria-label="Close">×</button>
-    </div>
-    <div class="appointment-cancel-choice-grid">
-      <button type="button" class="appointment-cancel-choice-btn" onclick="completeAppointmentCancellation('auto_rebook')">
-        <strong>Automatically Rebook</strong>
-        <span>Find the next available future date and time based on the student's preferred schedule.</span>
-      </button>
-      <button type="button" class="appointment-cancel-choice-btn" onclick="completeAppointmentCancellation('manual_rebook')">
-        <strong>Reserve for Later (Manual Booking)</strong>
-        <span>Keep this class credit reserved. It will not increase or decrease the remaining class balance until it is booked later.</span>
-      </button>
-    </div>
-    <div id="appointmentCancelChoiceStatus" class="status"></div>
-    <div class="modal-actions"><button type="button" class="modal-cancel" onclick="closeAppointmentCancelChoiceModal()">Back</button></div>
-  </div>
 </div>
 
 </div>
@@ -11116,16 +11083,12 @@ function getStudentBookedCountForCurrentClasses(student){
 if(!student)return 0;
 const current=getCurrentStudentPackage(student);
 const appointments=getAppointments();
-/* A cancelled class reserved for later still occupies one purchased class credit.
-   This keeps the remaining balance unchanged until that reserved class is rebooked. */
-const regular=appointments.filter(a=>
-  String(a.studentId)===String(student.id) &&
-  (a.type||'Regular Class')==='Regular Class' &&
-  (a.status!=='Cancelled' || a.rebookingStatus==='pending_manual_booking')
-);
+const regular=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class');
 if(current){
   const linked=regular.filter(a=>a.packageId===current.id);
   const legacy=regular.filter(a=>!a.packageId);
+  /* Older appointments without packageId are still counted so they cannot
+     accidentally create an extra class beyond the active classes. */
   return linked.length + legacy.length;
 }
 return regular.length;
@@ -11147,7 +11110,8 @@ const select=document.getElementById('appointmentStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
-const visibleStudents=students.filter(s=>studentHasBookableClasses(s)||s.id===selectedId||s.id===editingStudentId);
+/* Show every student in the master student list, even if they have no appointment or no unbooked classes. The save-time class-limit validation still decides whether a new regular booking is allowed. */
+const visibleStudents=students;
 select.innerHTML='<option value="">Select student</option>'+visibleStudents.map(s=>
 `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
@@ -11710,7 +11674,7 @@ function generatePreferredAppointments(student,startDate,type){
   const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
   if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
   let appointments=getAppointments();
-  const existingCount=appointments.filter(a=>String(a.studentId)===String(student.id)&&(a.type||'Regular Class')==='Regular Class'&&(a.status!=='Cancelled'||a.rebookingStatus==='pending_manual_booking')).length;
+  const existingCount=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class').length;
   let remaining=Math.max(0,packageLimit-existingCount);
   if(remaining===0)return {created:0,remaining:0,reason:'The class limit has already been reached.'};
   let created=0;
@@ -11789,10 +11753,7 @@ if(wasRebook){
     ...old,
     date,
     time,
-    status:'Scheduled',
     scheduleMode:'manual',
-    cancellationPlan:'',
-    rebookingStatus:'rebooked_from_reserve',
     updatedAt:now
   };
   const index=appointments.findIndex(a=>a.id===old.id);
@@ -11867,7 +11828,7 @@ const packageLimit=currentPackage
   : getPackageClassCount(student.packageName);
 const bookedForClasses=getStudentBookedCountForCurrentClasses(student);
 if(type==='Regular Class' && packageLimit && bookedForClasses>=packageLimit){
-  return fail('This student has no unreserved classes remaining. A cancelled class reserved for later is still counted in the package. Rebook that reserved class or renew the classes first.');
+  return fail('This student has no remaining classes in the active classes. Please renew the classes first.');
 }
 const now=new Date().toISOString();
 const appointments=getAppointments();
@@ -12192,109 +12153,19 @@ statusBox.className='status error';
 statusBox.textContent='Reason is required.';
 return;
 }
-if(action==='cancel'){
-  /* Ask the teacher how to handle the class before changing its status. */
-  pendingAppointmentCancellation={id,reason};
-  closeAppointmentReasonModal();
-  const choiceModal=document.getElementById('appointmentCancelChoiceModal');
-  const choiceStatus=document.getElementById('appointmentCancelChoiceStatus');
-  if(choiceStatus){choiceStatus.className='status';choiceStatus.textContent='';}
-  if(choiceModal)choiceModal.classList.add('show');
-  return;
-}
 const appointments=getAppointments();
 const index=appointments.findIndex(a=>a.id===id);
 if(index<0)return;
 const now=new Date().toISOString();
-/* ABSENT is still a COMPLETED class; attendance is recorded separately. */
-appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
+if(action==='cancel'){
+  appointments[index]={...appointments[index],status:'Cancelled',cancelReason:reason,cancelledAt:now,updatedAt:now};
+}else{
+  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
+  appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
+}
 saveAppointments(appointments);
 closeAppointmentReasonModal();
-refreshLiveUI({students:false,contracts:false});
-}
-
-let pendingAppointmentCancellation=null;
-
-function closeAppointmentCancelChoiceModal(){
-const modal=document.getElementById('appointmentCancelChoiceModal');
-if(modal)modal.classList.remove('show');
-}
-
-function findNextPreferredClassSlot(student, oldAppointment, appointments){
-  const today=getLocalDateString(new Date());
-  const startDate=(oldAppointment.date&&oldAppointment.date>=today)?oldAppointment.date:today;
-  const cursor=new Date(`${startDate}T00:00:00`);
-  const duration=durationToMinutes(oldAppointment.duration||student.duration||'30 Minutes');
-  for(let dayOffset=0;dayOffset<730;dayOffset++){
-    const date=getLocalDateString(cursor);
-    const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
-    const times=normalizeScheduleTimes(student.scheduleDetails?.[day]);
-    for(const mins of times){
-      if(!Number.isFinite(mins))continue;
-      const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-      if(date===oldAppointment.date && time===oldAppointment.time)continue;
-      const start=parseAppointmentDate(date,time);
-      if(!start || start<new Date())continue;
-      const end=new Date(start.getTime()+duration*60000);
-      const conflict=appointments.some(a=>{
-        if(String(a.id)===String(oldAppointment.id)||a.status==='Cancelled')return false;
-        const otherStart=getAppointmentDateTime(a);
-        if(!otherStart)return false;
-        const otherEnd=new Date(otherStart.getTime()+durationToMinutes(a.duration||'30 Minutes')*60000);
-        return start<otherEnd&&end>otherStart;
-      });
-      if(!conflict && !hasExactStudentAppointment(student.id,date,time))return {date,time};
-    }
-    cursor.setDate(cursor.getDate()+1);
-  }
-  return null;
-}
-
-function completeAppointmentCancellation(plan){
-  if(!pendingAppointmentCancellation)return;
-  const {id,reason}=pendingAppointmentCancellation;
-  const appointments=getAppointments();
-  const index=appointments.findIndex(a=>String(a.id)===String(id));
-  if(index<0){
-    const box=document.getElementById('appointmentCancelChoiceStatus');
-    if(box){box.className='status show error';box.textContent='The appointment could not be found. Please close this window and try again.';}
-    return;
-  }
-  const old=appointments[index];
-  const student=getAppointmentStudent(old.studentId);
-  const now=new Date().toISOString();
-  if(plan==='auto_rebook'){
-    if(!student){
-      const box=document.getElementById('appointmentCancelChoiceStatus');
-      if(box){box.className='status show error';box.textContent='Student record not found. No changes were made.';}
-      return;
-    }
-    const slot=findNextPreferredClassSlot(student,old,appointments);
-    if(!slot){
-      const box=document.getElementById('appointmentCancelChoiceStatus');
-      if(box){box.className='status show error';box.textContent='No available future preferred slot was found. Please choose Reserve for Later instead.';}
-      return;
-    }
-    /* Move the same appointment record so the class credit is neither added nor removed. */
-    appointments[index]={...old,date:slot.date,time:slot.time,status:'Scheduled',scheduleMode:'preferred',cancelReason:reason,cancelledAt:now,rebookingStatus:'auto_rebooked',previousCancelledDate:old.date,previousCancelledTime:old.time,updatedAt:now};
-    saveAppointments(appointments);
-    pendingAppointmentCancellation=null;
-    closeAppointmentCancelChoiceModal();
-    selectedAppointmentDate=slot.date;
-    const movedDate=new Date(`${slot.date}T00:00:00`);
-    appointmentMonthDate=new Date(movedDate.getFullYear(),movedDate.getMonth(),1);
-    apptShowMessage(`Class automatically rebooked for ${student.name} on ${slot.date} at ${formatAppointmentTime(slot.time)}. Remaining class balance is unchanged.`);
-    refreshLiveUI({students:false,contracts:false,studentId:student.id});
-    return;
-  }
-  if(plan==='manual_rebook'){
-    appointments[index]={...old,status:'Cancelled',cancelReason:reason,cancelledAt:now,updatedAt:now,cancellationPlan:'manual_rebook',rebookingStatus:'pending_manual_booking'};
-    saveAppointments(appointments);
-    pendingAppointmentCancellation=null;
-    closeAppointmentCancelChoiceModal();
-    apptShowMessage(`Class reserved for manual booking for ${old.studentName||student?.name||'this student'}. The reserved class still counts toward the package, so the remaining balance will not increase or decrease.`);
-    refreshLiveUI({students:false,contracts:false,studentId:old.studentId});
-  }
+refreshLiveUI({students:false,records:false,contracts:false});
 }
 
 function cancelAppointment(id){
@@ -12905,10 +12776,7 @@ const appointmentRows=appointments.map((a,index)=>{
  const dt=getAppointmentDateTime(a); const date=dt?getLocalDateString(dt):a.date||'—';
  const time=a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—');
  const day=dt?dt.toLocaleDateString([], {weekday:'long'}):(a.day||'—');
- const isManualReserved=a.status==='Cancelled'&&a.rebookingStatus==='pending_manual_booking';
- const statusLabel=isManualReserved?'CANCELLED — RESERVED FOR MANUAL BOOKING':(a.status||'Scheduled');
- const action=isManualReserved?`<button type="button" class="view-record-btn" onclick="rebookAppointment('${escapeAttr(a.id)}')">BOOK RESERVED CLASS</button>`:'';
- return `<tr class="student-profile-appointment-row" data-index="${index}"><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td><td>${escapeHtml(statusLabel)}</td><td>${action}</td></tr>`;
+ return `<tr class="student-profile-appointment-row" data-index="${index}"><td>${escapeHtml(date)}</td><td>${escapeHtml(day)}</td><td>${escapeHtml(time)}</td><td>${escapeHtml(a.type||'Regular Class')}</td><td>${escapeHtml(a.duration||student.duration||'—')}</td></tr>`;
 }).join('');
 
 const evaluationRows=evaluations.map((ev,i)=>{
@@ -12971,6 +12839,7 @@ content.innerHTML=`
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
+    <div class="student-detail-stat"><b>${Math.max(0,p.remaining-appointments.filter(a=>a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class'&&a.status!=='Completed').length)}</b><span>Classes Not Yet Booked</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
     <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
@@ -12984,7 +12853,7 @@ content.innerHTML=`
     <button type="button" class="view-record-btn" id="studentProfileAppointmentsToggle" onclick="toggleStudentProfileSection('appointments')">SHOW CLASSES / APPOINTMENTS</button>
    </div>
    <div id="studentProfileAppointmentsContent" style="display:none">
-    ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th><th>Status / Reserved Class</th><th>Action</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
+    ${appointments.length?`<div style="overflow:auto;margin-top:10px"><table class="student-class-table"><thead><tr><th>Date</th><th>Day</th><th>Time</th><th>Type</th><th>Duration</th></tr></thead><tbody id="studentProfileAppointmentsList">${appointmentRows}</tbody></table></div>`:'<div class="small" style="margin-top:10px">No classes or appointments recorded yet.</div>'}
    </div>
   </div>
 
