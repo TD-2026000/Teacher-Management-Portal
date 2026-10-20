@@ -5316,6 +5316,40 @@ onclick="if(event.target===this) closeAddStudent()"
 </div>
 </div>
 
+<!-- CANCEL CLASS BOOKING CHOICE MODAL -->
+<div id="cancelClassChoiceModal" class="modal-backdrop" onclick="if(event.target===this) closeCancelClassChoiceModal()">
+  <div class="modal" style="width:min(520px,94vw);max-width:520px;border-radius:18px;padding:24px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div><h3 style="margin:0 0 6px">Cancel Class</h3><p class="small" style="margin:0">Choose what to do with this cancelled lesson.</p></div>
+      <button type="button" class="student-modal-close" onclick="closeCancelClassChoiceModal()" aria-label="Close">×</button>
+    </div>
+    <div style="display:grid;gap:12px;margin-top:18px">
+      <button type="button" class="reserve-choice-card" onclick="confirmCancelClassChoice('auto')" style="text-align:left;padding:16px;border:1px solid #d7e0ea;border-radius:12px;background:var(--card-bg,#fff);cursor:pointer">
+        <strong style="display:block;font-size:15px;margin-bottom:5px">Automatically Rebook</strong><span style="font-size:13px;color:var(--muted,#64748b)">Book this lesson on the next available future date using the student's preferred class schedule.</span>
+      </button>
+      <button type="button" class="reserve-choice-card" onclick="confirmCancelClassChoice('manual')" style="text-align:left;padding:16px;border:1px solid #d7e0ea;border-radius:12px;background:var(--card-bg,#fff);cursor:pointer">
+        <strong style="display:block;font-size:15px;margin-bottom:5px">Reserve for Later</strong><span style="font-size:13px;color:var(--muted,#64748b)">Keep this lesson in RESERVE FOR BOOK so you can choose how many lessons to book later.</span>
+      </button>
+    </div>
+    <div id="cancelClassChoiceStatus" class="status" style="margin-top:12px"></div>
+    <div class="modal-actions"><button type="button" class="modal-cancel" onclick="closeCancelClassChoiceModal()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- WITHDRAW RESERVED LESSONS MODAL -->
+<div id="withdrawReservedModal" class="modal-backdrop" onclick="if(event.target===this) closeWithdrawReservedModal()">
+  <div class="modal" style="width:min(440px,94vw);max-width:440px;border-radius:18px;padding:24px">
+    <h3 style="margin-top:0">Withdraw Reserved Lessons</h3>
+    <p id="withdrawReservedHelp" class="small">Choose how many reserved lessons to book.</p>
+    <input id="withdrawReservedStudentId" type="hidden">
+    <label for="withdrawReservedCount">Number of lessons to book</label>
+    <input id="withdrawReservedCount" type="number" min="1" step="1" value="1" style="width:100%;margin-top:6px">
+    <div class="small" style="margin-top:8px">The selected lessons will be booked on the student's preferred class days and times. Any unselected lessons will remain reserved.</div>
+    <div id="withdrawReservedStatus" class="status" style="margin-top:12px"></div>
+    <div class="modal-actions"><button type="button" class="modal-cancel" onclick="closeWithdrawReservedModal()">Cancel</button><button type="button" class="modal-save" onclick="confirmWithdrawReservedLessons()">Book Selected Lessons</button></div>
+  </div>
+</div>
+
 </div>
 
 <!-- PAYMENT RECEIPT -->
@@ -8344,8 +8378,6 @@ await supabaseClient.auth.signOut();
 ========================================================= */
 
 async function handleSignedIn(user){
-subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';
-
 
 /* =========================================================
    FAST LOGIN
@@ -8369,8 +8401,6 @@ document.getElementById('currentTeacher').textContent=fullName;
 
 document.getElementById('authScreen').classList.add('hidden');
 document.getElementById('appShell').classList.remove('hidden');
-installSubscriptionFeatureGate();
-refreshSubscriptionAccess(true);
 
 /* Render immediately from cached/local data. */
 loadTeacherProfile();
@@ -8407,8 +8437,6 @@ Promise.resolve()
 ========================================================= */
 
 function handleSignedOut(){
-subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';
-
 
 currentUser=null;
 
@@ -9082,115 +9110,7 @@ function backToDashboard(){
    PAGE NAVIGATION
 ========================================================= */
 
-
-/* =========================================================
-   SUBSCRIPTION ACCESS CONTROL
-   Access is granted only when profile and latest subscription are ACTIVE
-   and the subscription expiry date is in the future.
-========================================================= */
-let subscriptionAccessActive=false;
-let subscriptionAccessCheckedUserId='';
-let subscriptionSuccessShownForUserId='';
-
-function closeSubscriptionSuccessPopup(){
-  const el=document.getElementById('subscriptionSuccessOverlay');
-  if(el){el.classList.remove('show');el.setAttribute('aria-hidden','true');}
-}
-function showSubscriptionSuccessPopup(){
-  const el=document.getElementById('subscriptionSuccessOverlay');
-  if(el){el.classList.add('show');el.setAttribute('aria-hidden','false');}
-}
-async function refreshSubscriptionAccess(force=false){
-  if(!currentUser?.id){subscriptionAccessActive=false;subscriptionAccessCheckedUserId='';return false;}
-  const uid=currentUser.id;
-  if(!force && subscriptionAccessCheckedUserId===uid)return subscriptionAccessActive;
-  try{
-    if(typeof supabaseClient==='undefined'||!supabaseClient)throw new Error('Supabase unavailable');
-    const [profileResult,subResult]=await Promise.all([
-      supabaseClient.from('profiles').select('access_status').eq('id',uid).maybeSingle(),
-      supabaseClient.from('subscriptions').select('status,expiry_date,created_at').eq('user_id',uid).order('created_at',{ascending:false}).limit(1).maybeSingle()
-    ]);
-    if(profileResult.error)throw profileResult.error;
-    if(subResult.error)throw subResult.error;
-    const profileStatus=String(profileResult.data?.access_status||'PENDING').trim().toUpperCase();
-    const subscriptionStatus=String(subResult.data?.status||'PENDING').trim().toUpperCase();
-    const expiry=subResult.data?.expiry_date?new Date(subResult.data.expiry_date).getTime():0;
-    const active=profileStatus==='ACTIVE' && subscriptionStatus==='ACTIVE' && Number.isFinite(expiry) && expiry>Date.now();
-    const wasActive=subscriptionAccessActive;
-    const hadPriorCheckForSameUser=subscriptionAccessCheckedUserId===uid;
-    subscriptionAccessActive=active;
-    subscriptionAccessCheckedUserId=uid;
-    /* Show congratulations only when a previously checked locked account becomes active,
-       not every time an already-active teacher logs in. */
-    if(active && hadPriorCheckForSameUser && !wasActive && subscriptionSuccessShownForUserId!==uid){
-      subscriptionSuccessShownForUserId=uid;
-      showSubscriptionSuccessPopup();
-    }
-    return active;
-  }catch(error){
-    console.warn('Subscription access check failed; keeping features locked.',error);
-    subscriptionAccessActive=false;
-    subscriptionAccessCheckedUserId=uid;
-    return false;
-  }
-}
-function showSubscriptionLockAlert(){
-  let overlay=document.getElementById('subscriptionLockOverlay');
-  if(!overlay){
-    overlay=document.createElement('div');
-    overlay.id='subscriptionLockOverlay';
-    overlay.className='subscription-lock-overlay';
-    overlay.setAttribute('role','dialog');
-    overlay.setAttribute('aria-modal','true');
-    overlay.innerHTML='<div class="subscription-lock-alert"><div class="subscription-lock-icon">🔒</div><h2>FEATURES ARE LOCKED</h2><p>You need an active subscription to access all Teacher Management Portal features. Please subscribe to unlock the portal.</p><div class="subscription-lock-actions"><button type="button" class="subscription-lock-subscribe" onclick="goToSubscriptionFromLock()">SUBSCRIBE NOW</button><button type="button" class="subscription-lock-close" onclick="closeSubscriptionLockAlert()">CLOSE</button></div></div>';
-    document.body.appendChild(overlay);
-  }
-  overlay.classList.add('show');
-  overlay.setAttribute('aria-hidden','false');
-}
-function closeSubscriptionLockAlert(){
-  const el=document.getElementById('subscriptionLockOverlay');
-  if(el){el.classList.remove('show');el.setAttribute('aria-hidden','true');}
-}
-function goToSubscriptionFromLock(){closeSubscriptionLockAlert();showPage('subscription');}
-function isSubscriptionExemptTarget(target){
-  if(!target?.closest)return true;
-  if(target.closest('#subscriptionPage,#subscriptionLockOverlay,#subscriptionSuccessOverlay,[data-subscription-exempt="true"]'))return true;
-  const el=target.closest('button,a,[role="button"],input[type="button"],input[type="submit"]');
-  if(!el)return true;
-  const text=String(el.innerText||el.textContent||el.value||'').trim().toLowerCase();
-  const onclick=String(el.getAttribute('onclick')||'').toLowerCase();
-  const id=String(el.id||'').toLowerCase();
-  return /logout|sign out|subscription|subscribe|change password/.test(text) ||
-    /logoutteacher|showpage\(['"]subscription/.test(onclick) ||
-    /logout|subscription/.test(id);
-}
-function installSubscriptionFeatureGate(){
-  const shell=document.getElementById('appShell');
-  if(!shell||shell.dataset.subscriptionGateInstalled==='true')return;
-  shell.dataset.subscriptionGateInstalled='true';
-  shell.addEventListener('click',function(event){
-    if(!currentUser||isSubscriptionExemptTarget(event.target))return;
-    if(subscriptionAccessActive && subscriptionAccessCheckedUserId===currentUser.id)return;
-    event.preventDefault();
-    event.stopPropagation();
-    if(event.stopImmediatePropagation)event.stopImmediatePropagation();
-    showSubscriptionLockAlert();
-    refreshSubscriptionAccess(true).then(active=>{
-      if(active)closeSubscriptionLockAlert();
-    });
-  },true);
-}
-
 function showPage(page){
-if(page!=='subscription' && currentUser && !(subscriptionAccessActive && subscriptionAccessCheckedUserId===currentUser.id)){
-  showSubscriptionLockAlert();
-  refreshSubscriptionAccess(true).then(active=>{
-    if(active){closeSubscriptionLockAlert();showPage(page);}
-  });
-  return;
-}
-
 
 closeProfilePanel();
 
@@ -12266,50 +12186,133 @@ statusBox.className='status error';
 statusBox.textContent='Reason is required.';
 return;
 }
+if(action==='cancel'){
+  const item=getAppointments().find(a=>String(a.id)===String(id));
+  if(!item)return;
+  window.pendingClassCancellation={id:item.id,reason};
+  closeAppointmentReasonModal();
+  openCancelClassChoiceModal();
+  return;
+}
 const appointments=getAppointments();
 const index=appointments.findIndex(a=>a.id===id);
 if(index<0)return;
 const now=new Date().toISOString();
-if(action==='cancel'){
-
-  const item = appointments[index];
-
-  const choice = prompt(
-    'Choose what to do with the cancelled class:\n\n' +
-    '1 = Automatically rebook on a future date\n' +
-    '2 = Reserve for manual booking later\n\n' +
-    'Enter 1 or 2:'
-  );
-
-  if(choice !== '1' && choice !== '2'){
-    return;
-  }
-
-  appointments[index] = {
-    ...item,
-    status: 'Cancelled',
-    cancelReason: reason,
-    cancelledAt: now,
-    updatedAt: now,
-
-    cancellationPlan:
-      choice === '1'
-        ? 'auto_rebook'
-        : 'manual_rebook',
-
-    rebookingStatus:
-      choice === '1'
-        ? 'pending_auto_rebook'
-        : 'pending_manual_booking'
-  };
-
-}else{
-  /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
-  appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
-}
+/* ABSENT is still a COMPLETED class; attendance is recorded separately. */
+appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
 saveAppointments(appointments);
 closeAppointmentReasonModal();
 refreshLiveUI({students:false,records:false,contracts:false});
+}
+
+function openCancelClassChoiceModal(){
+  const modal=document.getElementById('cancelClassChoiceModal');
+  const status=document.getElementById('cancelClassChoiceStatus');
+  if(status){status.className='status';status.textContent='';}
+  if(modal)modal.classList.add('show');
+}
+function closeCancelClassChoiceModal(){
+  const modal=document.getElementById('cancelClassChoiceModal');
+  if(modal)modal.classList.remove('show');
+  window.pendingClassCancellation=null;
+}
+function confirmCancelClassChoice(mode){
+  const pending=window.pendingClassCancellation;
+  const status=document.getElementById('cancelClassChoiceStatus');
+  if(!pending)return;
+  const appointments=getAppointments();
+  const index=appointments.findIndex(a=>String(a.id)===String(pending.id));
+  if(index<0){if(status){status.className='status error';status.textContent='Appointment not found. Please refresh and try again.';}return;}
+  const item=appointments[index];
+  const now=new Date().toISOString();
+  appointments[index]={...item,status:'Cancelled',cancelReason:pending.reason,cancelledAt:now,updatedAt:now,
+    cancellationPlan:mode==='manual'?'manual_rebook':'auto_rebook',
+    rebookingStatus:mode==='manual'?'pending_manual_booking':'pending_auto_rebook'};
+  saveAppointments(appointments);
+  const studentId=item.studentId;
+  closeCancelClassChoiceModal();
+  refreshLiveUI({students:false,records:false,contracts:false});
+  if(mode==='auto'){
+    const result=bookReservedLessons(studentId,[String(item.id)],1);
+    if(result.created===1){
+      alert('Class cancelled and automatically rebooked on '+result.dates[0]+'.');
+    }else{
+      alert('The class was cancelled, but no conflict-free preferred slot was found. It is saved under RESERVE FOR BOOK so you can book it later.');
+      const list=getAppointments();const ix=list.findIndex(a=>String(a.id)===String(item.id));
+      if(ix>=0){list[ix]={...list[ix],cancellationPlan:'manual_rebook',rebookingStatus:'pending_manual_booking'};saveAppointments(list);}
+    }
+  }
+  if(window.currentStudentProfileId===studentId)openStudentProfile(studentId);
+}
+
+function getPendingReservedLessons(studentId){
+  return getAppointments().filter(a=>String(a.studentId)===String(studentId)&&a.status==='Cancelled'&&a.rebookingStatus==='pending_manual_booking');
+}
+function renderReserveForBookContent(studentId){
+  const reserved=getPendingReservedLessons(studentId);
+  if(!reserved.length)return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>0 lessons reserved</span><span class="small">No lessons waiting for booking.</span></div>';
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><strong style="font-size:20px">${reserved.length}</strong> lesson${reserved.length===1?'':'s'} reserved <span title="Cancelled lesson waiting for booking" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f59e0b;color:#fff;font-size:12px;font-weight:800">!</span></div><button type="button" class="primary-action" onclick="openWithdrawReservedModal('${escapeAttr(studentId)}')">WITHDRAW</button></div><div class="small" style="margin-top:6px">Reserved lessons will remain here until they are booked.</div>`;
+}
+function openWithdrawReservedModal(studentId){
+  const reserved=getPendingReservedLessons(studentId);
+  if(!reserved.length){alert('There are no reserved lessons to book.');if(window.currentStudentProfileId)openStudentProfile(window.currentStudentProfileId);return;}
+  const student=getStudents().find(s=>String(s.id)===String(studentId));
+  const input=document.getElementById('withdrawReservedStudentId');
+  const count=document.getElementById('withdrawReservedCount');
+  const help=document.getElementById('withdrawReservedHelp');
+  const status=document.getElementById('withdrawReservedStatus');
+  if(input)input.value=studentId;
+  if(count){count.min='1';count.max=String(reserved.length);count.value=String(reserved.length);}
+  if(help)help.textContent=`${student?.name||'This student'} has ${reserved.length} reserved lesson${reserved.length===1?'':'s'}. Choose how many to book now.`;
+  if(status){status.className='status';status.textContent='';}
+  document.getElementById('withdrawReservedModal')?.classList.add('show');
+}
+function closeWithdrawReservedModal(){document.getElementById('withdrawReservedModal')?.classList.remove('show');}
+function bookReservedLessons(studentId,reservedIds,requestedCount){
+  const student=getStudents().find(s=>String(s.id)===String(studentId));
+  if(!student)return {created:0,dates:[],reason:'Student not found.'};
+  const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
+  if(!preferredDays.length)return {created:0,dates:[],reason:'No preferred class schedule is saved for this student.'};
+  const all=getAppointments();
+  const pending=all.filter(a=>String(a.studentId)===String(studentId)&&a.status==='Cancelled'&&reservedIds.includes(String(a.id))&&['pending_manual_booking','pending_auto_rebook'].includes(a.rebookingStatus));
+  const target=Math.min(Math.max(0,Number(requestedCount)||0),pending.length);
+  let created=0;const dates=[];const linked=[];
+  const cursor=new Date();cursor.setHours(0,0,0,0);cursor.setDate(cursor.getDate()+1);
+  for(let i=0;i<730&&created<target;i++){
+    const date=getLocalDateString(cursor);
+    const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
+    const times=normalizeScheduleTimes(student.scheduleDetails?.[day]);
+    for(const mins of times){
+      if(created>=target)break;
+      if(!Number.isFinite(mins))continue;
+      const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+      const duration=student.duration||'30 Minutes';
+      if(hasExactStudentAppointment(student.id,date,time)||hasAppointmentConflict(date,time,durationToMinutes(duration)))continue;
+      const source=pending[created];
+      const now=new Date().toISOString();
+      const newId=`appt_${Date.now()}_${Math.random().toString(36).slice(2,9)}_reserve_${created}`;
+      all.push({id:newId,studentId:student.id,studentName:student.name,date,time,duration,type:source?.type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:student.currentPackageId||'',createdAt:now,updatedAt:now,rebookedFrom:source?.id||'',reservedLesson:true});
+      if(source){source.rebookingStatus='booked';source.rebookedAppointmentId=newId;source.rebookedAt=now;source.updatedAt=now;linked.push(source.id);}
+      created++;dates.push(`${date} ${formatAppointmentTime(time)}`);
+    }
+    cursor.setDate(cursor.getDate()+1);
+  }
+  saveAppointments(all);
+  return {created,dates,remaining:pending.length-created,reason:created<target?'Some lessons could not be booked because no conflict-free preferred slots were found.':''};
+}
+function confirmWithdrawReservedLessons(){
+  const studentId=document.getElementById('withdrawReservedStudentId')?.value||'';
+  const countInput=document.getElementById('withdrawReservedCount');
+  const status=document.getElementById('withdrawReservedStatus');
+  const pending=getPendingReservedLessons(studentId);
+  const count=Number(countInput?.value);
+  if(!Number.isInteger(count)||count<1||count>pending.length){if(status){status.className='status error';status.textContent=`Enter a number from 1 to ${pending.length}.`;}return;}
+  const result=bookReservedLessons(studentId,pending.map(a=>String(a.id)),count);
+  if(!result.created){if(status){status.className='status error';status.textContent=result.reason||'No lessons were booked. Check the preferred class schedule.';}return;}
+  closeWithdrawReservedModal();
+  refreshLiveUI({students:false,records:false,contracts:false,studentId});
+  openStudentProfile(studentId);
+  alert(`${result.created} lesson${result.created===1?'':'s'} booked on the student's preferred schedule.${result.remaining?` ${result.remaining} lesson(s) remain reserved.`:''}${result.reason?' '+result.reason:''}`);
 }
 
 function cancelAppointment(id){
@@ -12453,26 +12456,6 @@ async function refreshDashboardSummaryCounts(){
   }
 }
 
-
-function getDashboardAppointmentStudentDisplayName(item){
-  const students=typeof getStudents==='function'?getStudents():[];
-  const studentId=String(item?.studentId||item?.student_id||'').trim();
-  const appointmentName=String(item?.studentName||item?.student||item?.name||'').trim();
-
-  let student=null;
-  if(studentId){
-    student=students.find(s=>String(s?.id||'')===studentId)||null;
-  }
-  if(!student && appointmentName){
-    const normalized=appointmentName.toLowerCase();
-    student=students.find(s=>
-      String(s?.name||'').trim().toLowerCase()===normalized ||
-      String(s?.nickname||'').trim().toLowerCase()===normalized
-    )||null;
-  }
-  return String(student?.nickname||item?.studentNickname||item?.student_nickname||appointmentName||'Student').trim();
-}
-
 function renderDashboard(){
 
 refreshDashboardSummaryCounts();
@@ -12563,7 +12546,7 @@ if(activeBox){
   }else{
     activeBox.innerHTML=activeToShow.map(x=>{
       const item=x.item;
-      const studentName=getDashboardAppointmentStudentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -12577,7 +12560,7 @@ if(completedBox){
   }else{
     completedBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">COMPLETED CLASSES TODAY · ${completedToday.length}</div>${completedToShow.map(x=>{
       const item=x.item;
-      const studentName=getDashboardAppointmentStudentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -12985,6 +12968,10 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
+    <div class="student-profile-info-box" style="grid-column:span 3;border:1px solid #f2d18b;background:#fffaf0">
+      <label style="display:flex;align-items:center;gap:7px">RESERVE FOR BOOK <span title="These are cancelled lessons reserved for future booking." style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f59e0b;color:#fff;font-size:12px;font-weight:800">!</span></label>
+      <div id="studentReserveForBookContent">${renderReserveForBookContent(student.id)}</div>
+    </div>
    ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
    </div>
   </div>
@@ -18671,30 +18658,6 @@ body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 .lesson-delete-confirm-actions{display:flex;gap:10px;justify-content:center;}
 .lesson-delete-confirm-actions button{border:1px solid #aaa;border-radius:9px;padding:10px 18px;font-weight:800;cursor:pointer;background:#f5f5f5;}
 .lesson-delete-confirm-actions .danger{background:#ffe1e1;border-color:#d55;color:#a00;}
-
-/* Subscription activation congratulations popup */
-.subscription-success-overlay{position:fixed;inset:0;z-index:200100;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,18,24,.62);backdrop-filter:blur(3px)}
-.subscription-success-overlay.show{display:flex}
-.subscription-success-card{width:min(92vw,520px);background:#fff;border:2px solid #00d9d9;border-radius:18px;padding:30px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.32)}
-.subscription-success-icon{font-size:42px;margin-bottom:8px}
-.subscription-success-card h2{margin:0 0 12px;color:#111;font-size:24px}
-.subscription-success-card p{margin:0;color:#4b5563;line-height:1.6}
-.subscription-success-card button{margin-top:20px;border:0;border-radius:9px;background:#00d9d9;color:#111;padding:12px 22px;font-weight:900;cursor:pointer}
-
-
-/* Subscription feature lock alert */
-.subscription-lock-overlay{position:fixed;inset:0;z-index:200000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,18,24,.62);backdrop-filter:blur(3px)}
-.subscription-lock-overlay.show{display:flex}
-.subscription-lock-alert{width:30vw;min-width:340px;max-width:560px;min-height:30vh;max-height:80vh;overflow:auto;background:#fff;border:2px solid #ff69ad;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.32);padding:clamp(20px,2.5vw,34px);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.subscription-lock-icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#fff1cc;color:#8a5700;font-size:27px;font-weight:900;margin-bottom:12px}
-.subscription-lock-alert h2{margin:0 0 10px;font-size:clamp(19px,1.6vw,25px);line-height:1.2}
-.subscription-lock-alert p{margin:0;color:#ff2685;line-height:1.55;font-size:clamp(13px,1vw,16px)}
-.subscription-lock-actions{display:flex;justify-content:center;gap:10px;margin-top:20px;flex-wrap:wrap;width:100%}
-.subscription-lock-actions button{border:0;border-radius:9px;padding:12px 20px;font-weight:900;cursor:pointer}
-.subscription-lock-subscribe{background:#ff69ad;color:#fff;min-width:150px}
-.subscription-lock-close{background:#eceff1;color:#263238}
-@media(max-width:900px){.subscription-lock-alert{width:min(92vw,520px);min-width:0;min-height:0;padding:24px}}
-
 </style>
 
 
@@ -18917,70 +18880,13 @@ async function renderSubscriptionPage(){
   });
 }
 
-
-async function renderSubscriptionHistory(){
+function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
-
-  let rows=getLocalSubscriptionRequests();
-
-  if(
-    currentUser?.id &&
-    typeof supabaseClient!=='undefined' &&
-    supabaseClient
-  ){
-    try{
-      const {data,error}=await supabaseClient
-        .from('payments')
-        .select('user_id,amount,payment_method,reference_number,payment_date,status,created_at')
-        .eq('user_id',currentUser.id)
-        .order('created_at',{ascending:false});
-
-      if(error)throw error;
-
-      if(Array.isArray(data)){
-        rows=data.map(r=>({
-          ...r,
-          created_at:r.created_at||r.payment_date||'',
-          status:String(r.status||'PENDING').toUpperCase()
-        }));
-
-        saveLocalSubscriptionRequests(rows);
-      }
-    }catch(error){
-      console.error('Unable to refresh payment history:',error);
-    }
-  }
-
-  rows.sort((a,b)=>
-    String(b.created_at||'').localeCompare(String(a.created_at||''))
-  );
-
-  if(!rows.length){
-    box.textContent='No payment requests yet.';
-    return;
-  }
-
-  box.innerHTML=rows.map(r=>`
-    <div class="subscription-history-item">
-      <div>
-        <strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong>
-        <small>
-          ${subscriptionEscape(r.payment_method||'')} ·
-          ${subscriptionEscape(r.reference_number||'No reference')}
-          <br>
-          ${subscriptionEscape(
-            r.created_at?new Date(r.created_at).toLocaleString():''
-          )}
-        </small>
-      </div>
-      <div class="subscription-history-status">
-        ${subscriptionEscape(r.status||'PENDING')}
-      </div>
-    </div>
-  `).join('');
+  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  if(!rows.length){box.textContent='No payment requests yet.';return;}
+  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||99).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
 }
-
 
 function subscriptionFileToDataURL(file){
   return new Promise((resolve,reject)=>{
@@ -19000,36 +18906,8 @@ async function submitSubscriptionPayment(){
   const proofFile=document.getElementById('subscriptionProof')?.files?.[0]||null;
   if(message)message.textContent='';
   if(!currentUser){if(message)message.textContent='Please log in first.';return;}
-
-if(!method){
-  if(message)message.textContent='Please choose a payment method.';
-  return;
-}
-
-if(!reference){
-  if(message)message.textContent='Please enter your payment reference number.';
-  return;
-}
-
-/* PREVENT DUPLICATE REFERENCE NUMBER */
-const normalizedReference=reference.trim().toUpperCase();
-
-const localRequests=getLocalSubscriptionRequests();
-
-if(localRequests.some(r =>
-  String(r.reference_number||'').trim().toUpperCase()===normalizedReference
-)){
-  if(message){
-    message.style.color='#dc2626';
-    message.textContent='⚠️ This Reference Number has already been submitted. Please use a different Reference Number.';
-  }
-  return;
-}
-
-if(message){
-  message.style.color='';
-}
-
+  if(!method){if(message)message.textContent='Please choose a payment method.';return;}
+  if(!reference){if(message)message.textContent='Please enter your payment reference number.';return;}
   try{
     let proofData='';
     if(proofFile){
@@ -19090,28 +18968,6 @@ if(message){
   </script>
 
 
-
-
-<div id="subscriptionSuccessOverlay" class="subscription-success-overlay" role="dialog" aria-modal="true" aria-labelledby="subscriptionSuccessTitle" aria-hidden="true">
-  <div class="subscription-success-card">
-    <div class="subscription-success-icon" aria-hidden="true">🎉</div>
-    <h2 id="subscriptionSuccessTitle">Congratulations!</h2>
-    <p>Your subscription is now ACTIVE. You can now use all features of the Teacher Management Portal.<br><br>Enjoy using the website, and thank you for using our website!</p>
-    <button type="button" onclick="closeSubscriptionSuccessPopup()">START USING THE WEBSITE</button>
-  </div>
-</div>
-
-
-/* Recheck approval periodically so admin verification unlocks the portal without relogging. */
-let subscriptionAccessPollInstalled=false;
-function startSubscriptionAccessPolling(){
-  if(subscriptionAccessPollInstalled)return;
-  subscriptionAccessPollInstalled=true;
-  window.setInterval(()=>{
-    if(currentUser)refreshSubscriptionAccess(true);
-  },15000);
-}
-document.addEventListener('DOMContentLoaded',startSubscriptionAccessPolling);
 
 </body>
 </html>
