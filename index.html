@@ -12859,9 +12859,10 @@ content.innerHTML=`
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
-    <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
+    
+    <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
     <div class="student-detail-stat"><b>${Math.max(0,p.remaining-appointments.filter(a=>a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class'&&a.status!=='Completed').length)}</b><span>Classes Not Yet Booked</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
