@@ -12271,7 +12271,38 @@ const index=appointments.findIndex(a=>a.id===id);
 if(index<0)return;
 const now=new Date().toISOString();
 if(action==='cancel'){
-  appointments[index]={...appointments[index],status:'Cancelled',cancelReason:reason,cancelledAt:now,updatedAt:now};
+
+  const item = appointments[index];
+
+  const choice = prompt(
+    'Choose what to do with the cancelled class:\n\n' +
+    '1 = Automatically rebook on a future date\n' +
+    '2 = Reserve for manual booking later\n\n' +
+    'Enter 1 or 2:'
+  );
+
+  if(choice !== '1' && choice !== '2'){
+    return;
+  }
+
+  appointments[index] = {
+    ...item,
+    status: 'Cancelled',
+    cancelReason: reason,
+    cancelledAt: now,
+    updatedAt: now,
+
+    cancellationPlan:
+      choice === '1'
+        ? 'auto_rebook'
+        : 'manual_rebook',
+
+    rebookingStatus:
+      choice === '1'
+        ? 'pending_auto_rebook'
+        : 'pending_manual_booking'
+  };
+
 }else{
   /* ABSENT is still a COMPLETED class; attendance is recorded separately. */
   appointments[index]={...appointments[index],status:'Completed',attendance:'Absent',absentReason:reason,absentAt:now,updatedAt:now};
