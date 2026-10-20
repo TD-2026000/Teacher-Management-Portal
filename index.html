@@ -11684,14 +11684,30 @@ return getAppointments().some(a=>a.studentId===studentId&&a.date===date&&a.time=
 }
 
 function generatePreferredAppointments(student,startDate,type){
-  const packageLimit=getPackageClassCount(student.packageName);
-  if(!packageLimit)return {created:0,remaining:0,reason:'No class limit was found in the Classes field. Example: 30 Classes.'};
-  const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
-  if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
-  let appointments=getAppointments();
-  const existingCount=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class').length;
-  let remaining=Math.max(0,packageLimit-existingCount);
-  if(remaining===0)return {created:0,remaining:0,reason:'The class limit has already been reached.'};
+  const progress=getStudentProgress(student);
+const remaining=Math.max(0,Number(progress.notYetBooked)||0);
+
+const preferredDays=SCHEDULE_DAYS.filter(
+  day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length
+);
+
+if(!preferredDays.length){
+  return {
+    created:0,
+    remaining,
+    reason:'This student has no preferred class days/times saved.'
+  };
+}
+
+if(remaining===0){
+  return {
+    created:0,
+    remaining:0,
+    reason:'There are no classes left to book.'
+  };
+}
+
+let appointments=getAppointments();
   let created=0;
   let cursor=new Date(`${startDate}T00:00:00`);
   for(let i=0;i<730&&created<remaining;i++){
