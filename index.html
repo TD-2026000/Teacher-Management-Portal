@@ -14573,7 +14573,58 @@ showStatus('Preparing formal evaluation report...',true);
 
 try{
   const dataUrl=await renderEvaluationParentImage();
-  const filename=`Teacher-Danyeal-Evaluation-${studentName}.png`;
+  const student=getStudents().find(s=>{
+  const fullName=String(s.name||'').trim();
+  const nickname=String(s.nickname||'').trim();
+
+  return (
+    fullName===studentName ||
+    nickname===studentName
+  );
+});
+
+const studentNickname=String(
+  student?.nickname || student?.name || studentName || 'Student'
+)
+.trim()
+.replace(/[^a-z0-9]+/gi,'-')
+.replace(/^-+|-+$/g,'') || 'Student';
+
+const evaluationStudentId=student?.id || '';
+
+const evaluationAppointments=getAppointments()
+  .filter(a=>
+    String(a.studentId||'')===String(evaluationStudentId||'') &&
+    String(a.type||'Regular Class')==='Regular Class'
+  )
+  .sort((a,b)=>{
+    const da=getAppointmentDateTime(a);
+    const db=getAppointmentDateTime(b);
+    return (db?.getTime()||0)-(da?.getTime()||0);
+  });
+
+const evaluationAppointment=evaluationAppointments[0]||null;
+
+const classDate=evaluationAppointment?.date || '';
+const classTime=evaluationAppointment?.time || '';
+
+const lessonTopic=(
+  document.getElementById('lesson')?.value ||
+  document.getElementById('topic')?.value ||
+  'Evaluation'
+)
+.trim()
+.replace(/[^a-z0-9]+/gi,'-')
+.replace(/^-+|-+$/g,'') || 'Evaluation';
+
+const safeDate=String(classDate||'')
+.replace(/[^0-9-]/g,'') || 'Unknown-Date';
+
+const safeTime=String(classTime||'')
+.replace(/[^0-9a-z]+/gi,'-')
+.replace(/^-+|-+$/g,'') || 'Unknown-Time';
+
+const filename=`${studentNickname}-TD-Evaluation-${lessonTopic}-${safeDate}-${safeTime}.png`;
 
   if(typeof window.showSaveFilePicker==='function'){
     try{
