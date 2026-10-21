@@ -12384,11 +12384,15 @@ const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
 .filter(x=>x.date && !isNaN(x.date.getTime()));
 
-const todayCount=validAppointments.filter(x=>
- x.date.getFullYear()===now.getFullYear() &&
- x.date.getMonth()===now.getMonth() &&
- x.date.getDate()===now.getDate()
-).length;
+const todayCount=validAppointments.filter(x=>{
+  const d=x.date;
+
+  return d.getFullYear()===now.getFullYear() &&
+         d.getMonth()===now.getMonth() &&
+         d.getDate()===now.getDate() &&
+         String(x.item.status||'Scheduled').toLowerCase()!=='cancelled' &&
+         String(x.item.type||'Regular Class')==='Regular Class';
+}).length;
 
 /* Do not overwrite the dashboard appointment count from localStorage here.
    The dashboard summary count is authoritative from Supabase and is updated
