@@ -12318,9 +12318,7 @@ async function refreshDashboardSummaryCounts(){
         .from('appointments')
         .select('id',{count:'exact',head:true})
         .eq('user_id',currentUser.id)
-        .eq('class_date',today)
-        .eq('type','Regular Class')
-        .neq('status','Cancelled');
+        .eq('class_date',today);
 
     if(todayError) throw todayError;
 
