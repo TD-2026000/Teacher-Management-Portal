@@ -12337,6 +12337,8 @@ async function refreshDashboardSummaryCounts(){
 
 function renderDashboard(){
 
+refreshDashboardSummaryCounts();
+
 const students=getStudents();
 const evals=getEvaluations();
 
