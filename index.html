@@ -11095,14 +11095,13 @@ return regular.length;
 }
 
 function studentHasBookableClasses(student){
-if(!student)return false;
-const current=getCurrentStudentPackage(student);
-const packageCount=current
-  ? Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName))
-  : getPackageClassCount(student.packageName);
-if(!packageCount)return true; /* keep students with no readable limit selectable */
-const booked=getStudentBookedCountForCurrentClasses(student);
-return booked < packageCount;
+  if(!student) return false;
+
+  const progress=getStudentProgress(student);
+
+  // Keep the student visible in the Add Appointment
+  // selection even when all classes are already booked.
+  return true;
 }
 
 function populateAppointmentStudentSelect(selectedId=''){
