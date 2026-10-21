@@ -12294,7 +12294,7 @@ async function refreshDashboardSummaryCounts(){
   if(!currentUser || !supabaseClient) return;
 
   try{
-    const today = getLocalDateString(new Date());
+    const today=getLocalDateString(new Date());
 
     const {count:studentCount,error:studentError} =
       await supabaseClient
@@ -12304,23 +12304,21 @@ async function refreshDashboardSummaryCounts(){
 
     if(studentError) throw studentError;
 
-const {count:todayCount,error:todayError} =
-  await supabaseClient
-    .from('appointments')
-    .select('id',{count:'exact',head:true})
-    .eq('user_id',currentUser.id)
-    .eq('class_date',today);
+    const {count:appointmentCount,error:appointmentError} =
+      await supabaseClient
+        .from('appointments')
+        .select('id',{count:'exact',head:true})
+        .eq('user_id',currentUser.id)
+        .neq('status','Completed');
 
     if(appointmentError) throw appointmentError;
 
-const {count:todayCount,error:todayError} =
-  await supabaseClient
-    .from('appointments')
-    .select('id',{count:'exact',head:true})
-    .eq('user_id',currentUser.id)
-    .eq('class_date',today)
-    .eq('type','Regular Class')
-    .neq('status','Cancelled');
+    const {count:todayCount,error:todayError} =
+      await supabaseClient
+        .from('appointments')
+        .select('id',{count:'exact',head:true})
+        .eq('user_id',currentUser.id)
+        .eq('class_date',today);
 
     if(todayError) throw todayError;
 
