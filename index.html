@@ -14609,8 +14609,14 @@ const classDate=evaluationAppointment?.date || '';
 const classTime=evaluationAppointment?.time || '';
 
 const lessonTopic=(
-  document.getElementById('lesson')?.value ||
-  document.getElementById('topic')?.value ||
+  document.querySelector('#evaluationPage input[placeholder*="lesson" i]')?.value ||
+  document.querySelector('#evaluationPage textarea[placeholder*="lesson" i]')?.value ||
+  document.querySelector('#evaluationPage input[placeholder*="topic" i]')?.value ||
+  document.querySelector('#evaluationPage textarea[placeholder*="topic" i]')?.value ||
+  document.querySelector('#evaluationPage input[aria-label*="lesson" i]')?.value ||
+  document.querySelector('#evaluationPage textarea[aria-label*="lesson" i]')?.value ||
+  document.querySelector('#evaluationPage input[aria-label*="topic" i]')?.value ||
+  document.querySelector('#evaluationPage textarea[aria-label*="topic" i]')?.value ||
   'Evaluation'
 )
 .trim()
