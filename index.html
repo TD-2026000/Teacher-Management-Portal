@@ -2347,7 +2347,7 @@ body .student-profile-custom-field-box label{
 .renew-modal{max-width:620px}
 .renew-summary{border:1px solid #ddd;border-radius:9px;background:#fafafa;padding:10px;margin:10px 0 14px;line-height:1.5}
 .renew-preview{border:1px solid #d8eeee;border-radius:9px;background:#f4ffff;padding:10px;margin-top:10px;font-size:13px}
-.student-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.student-detail-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .student-detail-stat{border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;background:#fff}
 .student-detail-stat b{display:block;font-size:24px}
 .student-detail-stat span{font-size:11px;color:#666}
@@ -2455,10 +2455,10 @@ body .student-profile-custom-field-box label{
 .appointment-more-menu button.absent{color:#8b0000}
 .appointment-reason-modal{max-width:520px}
 .appointment-reason-help{font-size:12px;color:#666;line-height:1.45;margin-top:5px}
-.appointment-modal{max-width:700px}
+.appointment-modal{width:80vw;max-width:80vw;max-height:90vh}
 .appointment-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .appointment-form-grid .full{grid-column:1/-1}
-.appointment-info-box{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;font-size:12px;line-height:1.5}
+.appointment-info-box{border:1px solid #ddd;border-radius:8px;padding:12px;background:#fafafa;font-size:13px;line-height:1.5}.appointment-preferred-schedule-label{font-weight:800;margin-top:6px}.appointment-preferred-schedule-list{margin:6px 0 8px;padding-left:22px}.appointment-preferred-schedule-list li{margin:3px 0}
 .appointment-conflict{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#ffe1e1;color:#8b0000;font-size:12px;font-weight:800}
 .appointment-conflict.show{display:block}
 .appointment-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -6240,7 +6240,6 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
-      <div class="edit-student-field"><label>Bonus / Free Classes</label><input id="editStudentFreeClasses" type="number" min="0" step="1" value="0" placeholder="0"><div class="small" style="margin-top:4px">Extra classes granted for free. These add to the available class balance but are tracked separately from purchased classes.</div></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -9839,7 +9838,7 @@ function getScheduleConflicts(excludeStudentId=''){
         conflicts[day].push({
           start,
           end,
-          studentName:student.nickname||student.name||'Another student'
+          studentName:getStudentDisplayName(student,'Another student')
         });
       });
     });
@@ -10395,8 +10394,6 @@ document.getElementById('editStudentDuration').value=
 :'30 Minutes';
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
-const freeClassesInput=document.getElementById('editStudentFreeClasses');
-if(freeClassesInput)freeClassesInput.value=Math.max(0,parseInt(student.freeClasses,10)||0);
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10548,7 +10545,7 @@ async function syncStudentScheduleToAppointments(studentId, oldStudent, newStude
       const updated={
         ...appointment,
         studentId:newStudentId,
-        studentName:newStudent.name,
+        studentName:getStudentDisplayName(newStudent),
         date:slot.date,
         time:slot.time,
         duration:newDuration,
@@ -10681,7 +10678,6 @@ parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
-freeClasses:Math.max(0,parseInt(document.getElementById('editStudentFreeClasses')?.value,10)||0),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -11023,7 +11019,7 @@ async function loadAppointmentsFromSupabase(){
       return {
         id:String(row.id),
         studentId:String(row.student_id||''),
-        studentName:student?.name||'',
+        studentName:getStudentDisplayName(student,''),
         date:row.class_date||'',
         time:row.class_time
           ?String(row.class_time).slice(0,5)
@@ -11084,29 +11080,18 @@ return getStudents().find(s=>s.id===id)||null;
 }
 
 function getStudentBookedCountForCurrentClasses(student){
-  if(!student)return 0;
-
-  const current=getCurrentStudentPackage(student);
-  const appointments=getAppointments();
-  const nowMs=Date.now();
-
-  const regular=appointments.filter(a=>{
-    if(a.studentId!==student.id)return false;
-    if((a.type||'Regular Class')!=='Regular Class')return false;
-    if(a.status==='Completed'||a.status==='Cancelled')return false;
-
-    const dt=getAppointmentDateTime(a);
-    return dt ? dt.getTime()>=nowMs : false;
-  });
-
-  if(current){
-    const linked=regular.filter(a=>a.packageId===current.id);
-    const legacy=regular.filter(a=>!a.packageId);
-
-    return linked.length + legacy.length;
-  }
-
-  return regular.length;
+if(!student)return 0;
+const current=getCurrentStudentPackage(student);
+const appointments=getAppointments();
+const regular=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class');
+if(current){
+  const linked=regular.filter(a=>a.packageId===current.id);
+  const legacy=regular.filter(a=>!a.packageId);
+  /* Older appointments without packageId are still counted so they cannot
+     accidentally create an extra class beyond the active classes. */
+  return linked.length + legacy.length;
+}
+return regular.length;
 }
 
 function studentHasBookableClasses(student){
@@ -11125,10 +11110,9 @@ const select=document.getElementById('appointmentStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
-/* Show every student in the master student list, even if they have no appointment or no unbooked classes. The save-time class-limit validation still decides whether a new regular booking is allowed. */
-const visibleStudents=students;
+const visibleStudents=students.filter(s=>studentHasBookableClasses(s)||s.id===selectedId||s.id===editingStudentId);
 select.innerHTML='<option value="">Select student</option>'+visibleStudents.map(s=>
-`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
+`<option value="${escapeAttr(s.id)}">${escapeHtml(getStudentDisplayName(s))} — ${escapeHtml(s.id)}</option>`
 ).join('');
 if(selectedId)select.value=selectedId;
 }
@@ -11266,14 +11250,19 @@ const box=document.getElementById('appointmentAutoInfo');
 if(!box)return;
 const student=getAppointmentStudent(document.getElementById('appointmentStudent')?.value||'');
 if(!student){box.textContent='Select a student to see the saved preferred schedule and class limit.';return;}
-const packageCount=getPackageClassCount(student.packageName);
+const progress=getStudentProgress(student);
+const packageCount=progress.totalAvailable;
 const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
-const scheduleText=preferredDays.length
-?preferredDays.map(day=>`${day} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>minutesToTimeLabel(mins)).join(' / ')}`).join(' · ')
-:'No preferred schedule saved.';
+const scheduleHtml=preferredDays.length
+  ?`<ul class="appointment-preferred-schedule-list">${preferredDays.map(day=>{
+      const times=normalizeScheduleTimes(student.scheduleDetails?.[day]);
+      const text=times.map(mins=>minutesToTimeLabel(mins)).join(' / ');
+      return `<li><strong>${escapeHtml(day)}</strong> — ${escapeHtml(text)}</li>`;
+    }).join('')}</ul>`
+  :'<span>No preferred schedule saved.</span>';
 const existing=getStudentBookedCountForCurrentClasses(student);
 const mode=getAppointmentScheduleMode();
-box.innerHTML=`<strong>${escapeHtml(student.name)}</strong><br>Classes: <strong>${packageCount?packageCount+' classes':'No class limit found'}</strong> · Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong><br>Preferred schedule: ${escapeHtml(scheduleText)}<br>Classes used in active classes: <strong>${existing}</strong>${packageCount?` · Remaining: <strong>${Math.max(0,packageCount-existing)}</strong>`:''}<br><span style="font-weight:700">Booking mode: ${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</span>`;
+box.innerHTML=`<strong>${escapeHtml(getStudentDisplayName(student))}</strong><br>Classes: <strong>${packageCount?packageCount+' classes':'No class limit found'}</strong> · Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong><br><div class="appointment-preferred-schedule-label">Preferred schedule:</div>${scheduleHtml}<div>Classes used in active classes: <strong>${existing}</strong>${packageCount?` · Remaining: <strong>${Math.max(0,progress.remaining)}</strong>`:''}</div><div>Classes not yet booked: <strong>${progress.notYetBooked}</strong></div><br><span style="font-weight:700">Booking mode: ${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</span>`;
 }
 
 function updateAppointmentSummary(){
@@ -11389,7 +11378,7 @@ const select=document.getElementById('appointmentDeleteStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 select.innerHTML='<option value="">Select student</option>'+students.map(s=>
-`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
+`<option value="${escapeAttr(s.id)}">${escapeHtml(getStudentDisplayName(s))} — ${escapeHtml(s.id)}</option>`
 ).join('');
 if(selectedId)select.value=selectedId;
 updateAppointmentDeleteInfo();
@@ -11685,53 +11674,60 @@ return getAppointments().some(a=>a.studentId===studentId&&a.date===date&&a.time=
 
 function generatePreferredAppointments(student,startDate,type){
   const progress=getStudentProgress(student);
-const remaining=Math.max(0,Number(progress.notYetBooked)||0);
+  const remainingToBook=Math.max(0,Number(progress.notYetBooked)||0);
+  const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
 
-const preferredDays=SCHEDULE_DAYS.filter(
-  day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length
-);
+  if(!preferredDays.length){
+    return {created:0,remaining:remainingToBook,reason:'This student has no preferred class days/times saved.'};
+  }
+  if(remainingToBook===0){
+    return {created:0,remaining:0,reason:'There are no classes left to book.'};
+  }
 
-if(!preferredDays.length){
-  return {
-    created:0,
-    remaining,
-    reason:'This student has no preferred class days/times saved.'
-  };
-}
-
-if(remaining===0){
-  return {
-    created:0,
-    remaining:0,
-    reason:'There are no classes left to book.'
-  };
-}
-
-let appointments=getAppointments();
+  let appointments=getAppointments();
   let created=0;
   let cursor=new Date(`${startDate}T00:00:00`);
-  for(let i=0;i<730&&created<remaining;i++){
+
+  for(let i=0;i<730&&created<remainingToBook;i++){
     const date=getLocalDateString(cursor);
     const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
     const dayTimes=normalizeScheduleTimes(student.scheduleDetails?.[day]);
+
     for(const mins of dayTimes){
-      if(created>=remaining)break;
+      if(created>=remainingToBook)break;
       if(!Number.isFinite(mins))continue;
+
       const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
       const duration=durationToMinutes(student.duration||'30 Minutes');
+
       if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
         const now=new Date().toISOString();
         appointments.push({
           id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
-          studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:student.currentPackageId||'',createdAt:now,updatedAt:now
+          studentId:student.id,
+          studentName:getStudentDisplayName(student),
+          date,
+          time,
+          duration:student.duration||'30 Minutes',
+          type:type||'Regular Class',
+          status:'Scheduled',
+          scheduleMode:'preferred',
+          packageId:student.currentPackageId||'',
+          createdAt:now,
+          updatedAt:now
         });
         created++;
       }
     }
     cursor.setDate(cursor.getDate()+1);
   }
+
   saveAppointments(appointments);
-  return {created,remaining:Math.max(0,remaining-created),reason:created<remaining?'Some future slots could not be booked because of schedule conflicts.':''};
+  return {
+    created,
+    remaining:Math.max(0,remainingToBook-created),
+    reason:created<remainingToBook?'Some future slots could not be booked because of schedule conflicts.' : ''
+  };
 }
 
 function saveAppointment(){
@@ -11812,7 +11808,7 @@ closeAppointmentModal();
 selectedAppointmentDate=old.date;
 const movedDate=new Date(`${old.date}T00:00:00`);
 appointmentMonthDate=new Date(movedDate.getFullYear(),movedDate.getMonth(),1);
-apptShowMessage(`Appointment updated for ${student.name}. Class Type changed to ${finalType}.`);
+apptShowMessage(`Appointment updated for ${getStudentDisplayName(student)}. Class Type changed to ${finalType}.`);
 refreshLiveUI({records:false,contracts:false,studentId:student.id});
 return;
 }
@@ -11824,7 +11820,7 @@ return fail(result.reason||'No appointments were generated.');
 }
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${result.created} future class${result.created===1?'':'es'} booked automatically for ${student.name}. ${result.remaining?`${result.remaining} class${result.remaining===1?'':'es'} remaining.`:'Classes limit reached.'}`);
+apptShowMessage(`${result.created} future class${result.created===1?'':'es'} booked automatically for ${getStudentDisplayName(student)}. ${result.remaining?`${result.remaining} class${result.remaining===1?'':'es'} remaining.`:'Classes limit reached.'}`);
 renderAppointments();renderDashboard();
 return;
 }
@@ -11839,12 +11835,12 @@ const now=new Date().toISOString();
 const appointments=getAppointments();
 appointments.push({
 id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-studentId:student.id,studentName:student.name,date,time,duration,type,scheduleMode:'preferred',createdAt:now,updatedAt:now
+studentId:student.id,studentName:getStudentDisplayName(student),date,time,duration,type,scheduleMode:'preferred',createdAt:now,updatedAt:now
 });
 saveAppointments(appointments);
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${type} scheduled for ${student.name}.`);
+apptShowMessage(`${type} scheduled for ${getStudentDisplayName(student)}.`);
 refreshLiveUI({students:false,records:false,contracts:false});
 return;
 }
@@ -11865,12 +11861,12 @@ const now=new Date().toISOString();
 const appointments=getAppointments();
 appointments.push({
 id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-studentId:student.id,studentName:student.name,date,time,duration,type,scheduleMode:'manual',packageId:type==='Regular Class'?(currentPackage?.id||student.currentPackageId||''):'',createdAt:now,updatedAt:now
+studentId:student.id,studentName:getStudentDisplayName(student),date,time,duration,type,scheduleMode:'manual',packageId:type==='Regular Class'?(currentPackage?.id||student.currentPackageId||''):'',createdAt:now,updatedAt:now
 });
 saveAppointments(appointments);
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${type} manually booked for ${student.name}. ${type==='Regular Class'&&packageLimit?`Remaining classes: ${Math.max(0,packageLimit-(bookedForClasses+1))}.`:''}`);
+apptShowMessage(`${type} manually booked for ${getStudentDisplayName(student)}. ${type==='Regular Class'&&packageLimit?`Remaining classes: ${Math.max(0,packageLimit-(bookedForClasses+1))}.`:''}`);
 refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id});
 }catch(error){
  console.error('Save Appointment error:',error);
@@ -11894,7 +11890,7 @@ function filteredAppointments(){return getAppointments().filter(aptFilterMatch);
 function appointmentMiniCard(item){
 const status=item.status||'Scheduled';
 const cls=appointmentStatusClass(status);
-return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(item.studentName||'Student')}</div>`;
+return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(getAppointmentStudentDisplayName(item))}</div>`;
 }
 
 function renderAppointmentMonth(items){
@@ -11976,7 +11972,7 @@ const timeline=slots.map(slot=>{
         }
       }
       return `<div class="appointment-time-booking ${status==='Completed'?'completed':'scheduled'}">
-        <div class="appointment-time-booking-main"><strong>${escapeHtml(item.studentName||'Student')}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
+        <div class="appointment-time-booking-main"><strong>${escapeHtml(getAppointmentStudentDisplayName(item))}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
         <div class="appointment-time-booking-actions">${actionButtons}</div>
       </div>`;
     }).join('');
@@ -12511,54 +12507,29 @@ return history.find(p=>p.id===student.currentPackageId)||history[history.length-
 function getStudentProgress(student){
 const current=getCurrentStudentPackage(student);
 const packageCount=current?Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName)):getPackageClassCount(student.packageName);
+const bonus=Math.max(0,parseInt(student.freeClasses,10)||0);
+const totalAvailable=packageCount+bonus;
 let completed=0;
 
-/*
-  Count completed Regular Classes for the current package.
-  Older appointments may not have a packageId, so getPackageRecordCompleted()
-  intentionally includes those unlinked completed appointments as well.
-*/
+/* Count completed Regular Classes for the current package. */
 if(current){
   completed=getPackageRecordCompleted(student.id,current.id);
 }
-
-/* Keep the old evaluation fallback only when there is no current package. */
 if(!current){
   completed=getStudentEvaluations(student.id).length;
 }
 
-const bonus=Math.max(0,parseInt(student.freeClasses,10)||0);
-const totalAvailable=packageCount+bonus;
 const remaining=Math.max(0,totalAvailable-completed);
-
-/* Count future/active Regular Class appointments that are already booked. */
 const bookedFuture=getAppointments().filter(a=>{
   if(String(a.studentId||'')!==String(student.id||''))return false;
   if(String(a.type||'Regular Class')!=='Regular Class')return false;
   if(String(a.status||'')==='Completed'||String(a.status||'')==='Cancelled')return false;
-
   const dt=getAppointmentDateTime(a);
   return dt ? dt.getTime()>=Date.now() : false;
 }).length;
-
-/* Classes that still need to be placed into the student's schedule. */
 const notYetBooked=Math.max(0,remaining-bookedFuture);
-
-const percent=totalAvailable
-  ? Math.min(100,Math.round((completed/totalAvailable)*100))
-  : 0;
-
-return {
-  purchased:packageCount,
-  bonus,
-  totalAvailable,
-  completed,
-  remaining,
-  notYetBooked,
-  percent,
-  currentPackage:current,
-  history:ensureStudentPackageState(student)
-};
+const percent=totalAvailable?Math.min(100,Math.round((completed/totalAvailable)*100)):0;
+return {purchased:packageCount,bonus,totalAvailable,completed,remaining,notYetBooked,percent,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
 function studentAllRecordSafeText(value, fallback='—'){
@@ -12566,8 +12537,8 @@ function studentAllRecordSafeText(value, fallback='—'){
   return text||fallback;
 }
 
-function studentAllRecordPageShell(title, student, bodyHtml, extraClass=''){
-  const name=studentAllRecordSafeText(student?.name || student?.nickname,'Student');
+function studentAllRecordPageShell(title, student, bodyHtml, extraClass='',useFullName=false){
+  const name=studentAllRecordSafeText(useFullName ? (student?.name || student?.nickname) : getStudentDisplayName(student),'Student');
   const id=studentAllRecordSafeText(student?.id,'—');
   return `<div class="student-all-record-pdf-page ${extraClass}">
     <div class="student-all-record-pdf-topline"><span>Teacher Danyeal</span><span>Student Record</span></div>
@@ -12581,7 +12552,7 @@ function buildStudentAllRecordInfoPage(student){
   const currentPackage=getCurrentStudentPackage(student);
   const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
   const fields=[
-    ['Student ID',student.id],['Full Name',student.name],['Nickname',student.nickname],['Birthday',student.birthday],
+    ['Student ID',student.id],['Student Name',getStudentDisplayName(student)],['Birthday',student.birthday],
     ['Age',student.age],['Country',student.country],['Gender',student.gender],['English Level',student.level],
     ['Status',student.status||'Active'],['Parent / Guardian',student.parentName],['Parent Gmail',student.email],
     ['Class Duration',student.duration],['Classes',student.packageName],['Start Date',currentStart]
@@ -12687,11 +12658,11 @@ function buildStudentAllRecordContractPage(student){
 function buildStudentAllRecordPaymentPage(student){
   const receipts=getPaymentReceipts().filter(r=>String(r.studentId||'')===String(student.id||''));
   const receipt=receipts.length?receipts[receipts.length-1]:null;
-  if(!receipt)return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,'<div class="student-all-record-empty">No Payment Receipt has been saved for this student.</div>');
+  if(!receipt)return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,'<div class="student-all-record-empty">No Payment Receipt has been saved for this student.</div>','student-all-record-payment-pdf-page',true);
   const amount=receipt.amount!==''&&receipt.amount!=null?`${receipt.currency||'PHP'} ${Number(receipt.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
   const rows=[['Receipt No.',receipt.receiptNo],['Payment Date',receipt.date],['Student Name',receipt.studentName||student.name],['Student ID',receipt.studentIdNo||receipt.studentId||student.id],['Classes',receipt.packageName||receipt.classes],['Amount Paid',amount],['Payment Method',receipt.method==='Other'?(receipt.otherMethod||''):receipt.method],['Payment Status',receipt.status],['Reference No.',receipt.reference||'—']];
   const body=`<div class="student-all-record-receipt-image"><div class="student-all-record-receipt-banner">PAYMENT RECEIPT</div><div class="student-all-record-receipt-subtitle">Teacher Danyeal's English Class</div><table class="student-all-record-pdf-table student-all-record-receipt-table"><tbody>${rows.map(([k,v])=>`<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(studentAllRecordSafeText(v))}</td></tr>`).join('')}</tbody></table><div class="student-all-record-receipt-notes"><b>Notes</b><div>${escapeHtml(studentAllRecordSafeText(receipt.notes,'Thank you for your payment.'))}</div></div><div class="student-all-record-receipt-footer">This receipt confirms the payment recorded by the teacher.</div></div>`;
-  return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,body,'student-all-record-payment-pdf-page');
+  return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,body,'student-all-record-payment-pdf-page',true);
 }
 
 function studentAllRecordEvaluationPage(student,ev,index){
@@ -12752,7 +12723,7 @@ async function openStudentAllRecord(id){
   if(!student)return;
   const title=document.getElementById('studentAllRecordTitle');
   const content=document.getElementById('studentAllRecordContent');
-  if(title)title.textContent=`${student.nickname||student.name||'Student'} — Student All Record`;
+  if(title)title.textContent=`${getStudentDisplayName(student)} — Student All Record`;
   if(!content)return;
   content.innerHTML='<div class="student-all-record-preview-note">Preparing Student All Record preview...</div>';
   const pages=await buildStudentAllRecordPages(student);
@@ -12804,7 +12775,7 @@ async function downloadStudentAllRecordPDF(){
       pdf.addImage(img,'PNG',0,0,mmWidth,mmHeight,undefined,'FAST');
       currentFormat=format;
     }
-    const safe=String(student.name||student.nickname||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
+    const safe=String(student.nickname||student.name||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
     pdf.save(`Student-All-Record-${safe||'Student'}.pdf`);
   }catch(e){console.error(e);alert(e?.message||'Unable to create the Student All Record PDF.');}
   finally{holder.remove();if(btn){btn.disabled=false;btn.textContent=oldText||'DOWNLOAD PDF';}}
@@ -12820,19 +12791,14 @@ const p=getStudentProgress(student);
 const schedule=scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration);
 const content=document.getElementById('studentProfileContent');
 const title=document.getElementById('studentProfileTitle');
-if(title)title.textContent=`${student.nickname||student.name||'Student'} — Profile`;
+if(title)title.textContent=`${getStudentDisplayName(student)} — Profile`;
 if(!content)return;
 
 const avatar=getStudentAvatarHtml(student,'student-profile-avatar');
-
-const appointments=getAppointments().filter(a=>
-  a.studentId===student.id &&
-  String(a.status||'Scheduled')==='Scheduled'
-).sort((a,b)=>{
+const appointments=getAppointments().filter(a=>a.studentId===student.id&&String(a.status||'Scheduled')==='Scheduled').sort((a,b)=>{
  const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
  return (db?db.getTime():0)-(da?da.getTime():0);
 });
-
 const currentPackage=getCurrentStudentPackage(student);
 const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
 const evaluations=getStudentEvaluations(student.id);
@@ -12854,9 +12820,9 @@ content.innerHTML=`
  <div class="student-profile-side">
   ${avatar}
   <div style="min-width:0;flex:1">
-   <div class="student-profile-name">${escapeHtml(student.nickname||student.name||'Unnamed Student')}</div>
+   <div class="student-profile-name">${escapeHtml(getStudentDisplayName(student,'Unnamed Student'))}</div>
    <div class="student-profile-id">Student ID: ${escapeHtml(student.id||'—')}</div>
-   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Full Name: ${escapeHtml(student.name)}</div>`:''}
+   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Student Name: ${escapeHtml(getStudentDisplayName(student))}</div>`:''}
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
@@ -12873,7 +12839,7 @@ content.innerHTML=`
    <h4>STUDENT INFORMATION</h4>
    <div class="student-profile-info-grid">
     <div class="student-profile-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div>
-    <div class="student-profile-info-box"><label>Full Name</label><div>${escapeHtml(student.name||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Student Name</label><div>${escapeHtml(getStudentDisplayName(student,'Not set'))}</div></div>
     <div class="student-profile-info-box"><label>Nickname</label><div>${escapeHtml(student.nickname||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Birthday</label><div>${escapeHtml(student.birthday||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Age</label><div>${escapeHtml(student.age||'Not set')}</div></div>
@@ -12902,10 +12868,10 @@ content.innerHTML=`
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
-    <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
+    <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
     <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
-    <div class="student-detail-stat"><b>${p.notYetBooked}</b><span>Classes Not Yet Booked</span></div>
+    <div class="student-detail-stat"><b>${p.notYetBooked||0}</b><span>Classes Not Yet Booked</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
     <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
@@ -13124,8 +13090,26 @@ async function copyStudentLessonFlowLinks(){
 }
 
 function getRenewalStartDate(student, renewalDate){
-  if(!student||!renewalDate)return '';
-  return getNextPreferredDate(student,renewalDate);
+if(!student||!renewalDate)return '';
+const current=getCurrentStudentPackage(student);
+const appointments=getAppointments();
+const renewalMs=new Date(`${renewalDate}T00:00:00`).getTime();
+let futureOld=appointments.filter(a=>{
+  if(a.studentId!==student.id)return false;
+  if((a.type||'Regular Class')!=='Regular Class')return false;
+  if(a.status==='Completed'||a.status==='Cancelled')return false;
+  if(current && a.packageId && a.packageId!==current.id)return false;
+  const dt=getAppointmentDateTime(a);
+  return dt && dt.getTime()>=renewalMs;
+});
+futureOld.sort((a,b)=>getAppointmentDateTime(a)-getAppointmentDateTime(b));
+if(futureOld.length){
+  const last=getAppointmentDateTime(futureOld[futureOld.length-1]);
+  const nextBase=new Date(`${getLocalDateString(last)}T00:00:00`);
+  nextBase.setDate(nextBase.getDate()+1);
+  return getNextPreferredDate(student,getLocalDateString(nextBase));
+}
+return getNextPreferredDate(student,renewalDate);
 }
 
 function openRenewPackage(id){
@@ -13137,7 +13121,7 @@ document.getElementById('renewStudentId').value=student.id;
 const current=getCurrentStudentPackage(student);
 const currentCount=current?current.classCount:getPackageClassCount(student.packageName);
 const currentProgress=getStudentProgress(student);
-document.getElementById('renewStudentSummary').innerHTML=`<strong>${escapeHtml(student.name)}</strong><br>Current classes: <strong>${escapeHtml(student.packageName||'Not set')}</strong> · ${currentProgress.completed} / ${currentCount||0} completed · <strong>${currentProgress.remaining} remaining</strong>`;
+document.getElementById('renewStudentSummary').innerHTML=`<strong>${escapeHtml(getStudentDisplayName(student))}</strong><br>Current classes: <strong>${escapeHtml(student.packageName||'Not set')}</strong> · ${currentProgress.completed} / ${currentCount||0} completed · <strong>${currentProgress.remaining} remaining</strong>`;
 document.getElementById('renewClassCount').value='20';
 document.getElementById('renewDuration').value=['30 Minutes','40 Minutes','50 Minutes'].includes(student.duration)?student.duration:'30 Minutes';
 const today=getLocalDateString(new Date());
@@ -13329,7 +13313,7 @@ const bookingMessage=created
  ? `${created} new future class${created===1?'':'es'} booked. ${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining.`
  : `${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining. Existing future appointments were kept; no duplicate classes were created.`;
 
-const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
+const successMessage=`${getStudentDisplayName(student)}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
 showStudentStatus(successMessage,true);
 
 /* LIVE UPDATE: all affected screens are refreshed in memory.
@@ -13528,7 +13512,7 @@ function renderEvaluationQueue(activeId){
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
-      <div class="pending-meta"><span class="pending-name">${escapeHtml(a.studentName||'Student')}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
+      <div class="pending-meta"><span class="pending-name">${escapeHtml(getAppointmentStudentDisplayName(a))}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
       <button type="button" onclick="loadEvaluationFromAppointment('${escapeAttr(a.id)}')">${active?'Evaluating':'Evaluate'}</button>
     </div>`;
   }).join('');
@@ -13562,7 +13546,7 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
     if(el)el.value=value??'';
   };
 
-  const studentName=student?.name || item.studentName || item.student || item.name || '';
+  const studentName=getStudentDisplayName(student,item.studentName || item.student || item.name || '');
   const studentId=student?.id ?? item.studentId ?? '';
   const parentEmail=student?.email || item.parentEmail || item.parent_email || item.parentGmail || item.parentEmailAddress || item.email || '';
 
@@ -13607,6 +13591,17 @@ function selectStudent(){
 /* =========================================================
    SECURITY / HTML HELPERS
 ========================================================= */
+
+function getStudentDisplayName(student,fallback='Student'){
+  const nickname=String(student?.nickname||'').trim();
+  const fullName=String(student?.name||'').trim();
+  return nickname||fullName||fallback;
+}
+
+function getAppointmentStudentDisplayName(item,fallback='Student'){
+  const student=getStudents().find(s=>String(s.id)===String(item?.studentId||''));
+  return getStudentDisplayName(student,item?.studentName||fallback);
+}
 
 function escapeHtml(str){
 
@@ -14995,7 +14990,7 @@ student,
 <div class="evaluation-student-info">
 
 <span class="student-name">
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </span>
 
 <span class="student-id">
@@ -15109,7 +15104,7 @@ student,
 <div class="record-student-header-info">
 
 <b>
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </b>
 
 <span>
@@ -15479,7 +15474,7 @@ student,
 <div>
 
 <div class="record-detail-title">
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </div>
 
 <div class="record-detail-date">
@@ -17346,7 +17341,7 @@ function getPaymentReceiptData(){
     receiptNo:paymentReceiptValue('paymentReceiptNo').trim(),
     date:paymentReceiptValue('paymentReceiptDate'),
     studentId,
-    studentName:student?.name||'',
+    studentName:getStudentDisplayName(student,''),
     studentEmail:student?.email||'',
     studentIdNo:student?.id||'',
     packageName:paymentReceiptValue('paymentReceiptPackage').trim(),
