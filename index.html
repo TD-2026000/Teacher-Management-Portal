@@ -14095,12 +14095,12 @@ function syncEvaluationTopicFields(){
     ['Vocabulary',read('learnedVocabulary')],
     ['Sentences',read('learnedSentences')],
     ['Questions and Answers',read('learnedQuestionsAnswers')]
-  ].filter(([,v])=>v).map(([label,v])=>`${label}:\\n${v}`).join('\\n\\n');
+  ].filter(([,v])=>v).map(([label,v])=>`${label}:\n${v}`).join('\n\n');
   const practice=[
     ['Vocabulary',read('practiceVocabulary')],
     ['Sentences',read('practiceSentences')],
     ['Questions and Answers',read('practiceQuestionsAnswers')]
-  ].filter(([,v])=>v).map(([label,v])=>`${label}:\\n${v}`).join('\\n\\n');
+  ].filter(([,v])=>v).map(([label,v])=>`${label}:\n${v}`).join('\n\n');
   const legacyLearned=document.getElementById('vocabulary');
   const legacyPractice=document.getElementById('improvement');
   if(legacyLearned) legacyLearned.value=learned;
