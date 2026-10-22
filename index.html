@@ -13474,7 +13474,7 @@ function renderEvaluationQueue(activeId){
   }
   const selected=activeId||currentEvaluationAppointmentId||'';
   queue.innerHTML=`<div class="small" style="margin-bottom:10px;font-weight:700">${pending.length} class${pending.length===1?'':'es'} need${pending.length===1?'s':''} evaluation.</div>`+pending.map(a=>{
-    const active=String(a.id)===String(selected);
+    const active=a.id===selected;
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
@@ -13541,16 +13541,6 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
   generateComment();
   markEvaluationUnsaved();
   renderEvaluationQueue(item.id);
-
-  /* Evaluation form should open immediately and scroll into view after the
-     selected class becomes active. */
-  setTimeout(()=>{
-    const form=document.getElementById('evaluationFormPanel');
-    if(form){
-      form.scrollIntoView({behavior:'smooth',block:'start'});
-    }
-    generateComment();
-  },80);
 }
 
 function selectStudent(){
@@ -14022,8 +14012,6 @@ const box=
 document.getElementById(
 'commentPreview'
 );
-
-if(!box)return '';
 
 const comment=buildComment(0);
 box.innerHTML=buildBoldCommentHtml(comment);
