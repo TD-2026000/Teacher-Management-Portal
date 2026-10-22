@@ -12833,6 +12833,15 @@ content.innerHTML=`
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
+    <div class="student-detail-stat"><b>${Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0) || 0)}</b><span>Bonus / Free Lesson</span></div>
+    <div class="student-detail-stat"><b>${Math.max(0, Number(p.remaining || 0) - appointments.filter(a => {
+      const status=String(a.status||'Scheduled').trim().toLowerCase();
+      const type=String(a.type||'Regular Class').trim().toLowerCase();
+      const dt=typeof getAppointmentDateTime==='function' ? getAppointmentDateTime(a) : null;
+      return (a.studentId===student.id || a.student_id===student.id) &&
+        status!=='cancelled' && status!=='completed' &&
+        type==='regular class' && dt && dt.getTime()>=Date.now();
+    }).length)}</b><span>Classes Not Booked Yet</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
     <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
