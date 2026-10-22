@@ -4992,8 +4992,6 @@ onclick="if(event.target===this) closeAddStudent()"
 <option value="50 Minutes">50 Minutes</option>
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
-<div><label>Bonus / Free Lesson</label><input id="newStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
-<div><label>Additional Lessons</label><input id="newStudentAdditionalLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 5"></div>
 
 <div id="newCustomStudentFields" class="custom-student-fields-form"></div>
 
@@ -5596,55 +5594,43 @@ class="rating"
 
 </div>
 
-<style>
-.evaluation-topic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.evaluation-topic-field{min-width:0}
-.evaluation-topic-field label{display:block;font-weight:700;margin-bottom:6px}
-.evaluation-topic-field textarea{width:100%;min-height:115px;box-sizing:border-box;resize:vertical}
-@media(max-width:700px){.evaluation-topic-grid{grid-template-columns:1fr}}
-</style>
-
 <div class="section">
-  <div class="section-title">WHAT WE LEARNED TODAY</div>
-  <div class="section-body">
-    <div class="evaluation-topic-grid">
-      <div class="evaluation-topic-field">
-        <label for="learnedVocabulary">Vocabulary</label>
-        <textarea id="learnedVocabulary" placeholder="Words learned today..."></textarea>
-      </div>
-      <div class="evaluation-topic-field">
-        <label for="learnedSentences">Sentences</label>
-        <textarea id="learnedSentences" placeholder="Sentences learned or practiced..."></textarea>
-      </div>
-      <div class="evaluation-topic-field">
-        <label for="learnedQuestionsAnswers">Questions and Answers</label>
-        <textarea id="learnedQuestionsAnswers" placeholder="Questions and answers practiced..."></textarea>
-      </div>
-    </div>
-  </div>
+
+<div class="section-title">
+WHAT WE LEARNED TODAY / VOCABULARY
+</div>
+
+<div class="section-body">
+
+<textarea
+id="vocabulary"
+placeholder="Example: 
+  ·apple 
+  ·banana
+  ·watermelon
+  ·grapes......."
+></textarea>
+
+</div>
 </div>
 
 <div class="section">
-  <div class="section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div>
-  <div class="section-body">
-    <div class="evaluation-topic-grid">
-      <div class="evaluation-topic-field">
-        <label for="practiceVocabulary">Vocabulary</label>
-        <textarea id="practiceVocabulary" placeholder="Vocabulary to review..."></textarea>
-      </div>
-      <div class="evaluation-topic-field">
-        <label for="practiceSentences">Sentences</label>
-        <textarea id="practiceSentences" placeholder="Sentences to practice..."></textarea>
-      </div>
-      <div class="evaluation-topic-field">
-        <label for="practiceQuestionsAnswers">Questions and Answers</label>
-        <textarea id="practiceQuestionsAnswers" placeholder="Questions and answers to practice..."></textarea>
-      </div>
-    </div>
-  </div>
-  <!-- Legacy fields retained for compatibility with existing comment and evaluation logic. -->
-  <textarea id="vocabulary" hidden></textarea>
-  <textarea id="improvement" hidden></textarea>
+
+<div class="section-title">
+NEEDS IMPROVEMENT / AREAS TO PRACTICE
+</div>
+
+<div class="section-body">
+
+<textarea
+id="improvement"
+placeholder="Example: 
+  ·I like apple
+  ·I like banana
+  ·I like watermelon......"
+></textarea>
+
+</div>
 </div>
 
 <div class="section">
@@ -6254,8 +6240,6 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
-      <div class="edit-student-field"><label>Bonus / Free Lesson</label><input id="editStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
-      <div class="edit-student-field"><label>Additional Lessons</label><input id="editStudentAdditionalLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 5"></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -10152,8 +10136,6 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
-const bonusFreeLessons=Math.max(0,Math.floor(Number(document.getElementById('newStudentBonusFreeLessons')?.value||0)||0));
-const additionalLessons=Math.max(0,Math.floor(Number(document.getElementById('newStudentAdditionalLessons')?.value||0)||0));
 const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
@@ -10216,8 +10198,6 @@ students.push({
   level,
   duration,
   packageName,
-  bonusFreeLessons,
-  additionalLessons,
   status,
   preferredSchedule:schedule,
   scheduleDetails,
@@ -10240,9 +10220,7 @@ syncStudentToSupabase(students[students.length - 1]);
 'newStudentId',
 'newStudentAge',
 'newStudentParentName',
-'newStudentClasses',
-'newStudentBonusFreeLessons',
-'newStudentAdditionalLessons'
+'newStudentClasses'
 ].forEach(id=>{
 const el=document.getElementById(id);
 if(el)el.value='';
@@ -10416,8 +10394,6 @@ document.getElementById('editStudentDuration').value=
 :'30 Minutes';
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
-document.getElementById('editStudentBonusFreeLessons').value=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
-document.getElementById('editStudentAdditionalLessons').value=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10702,8 +10678,6 @@ parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
-bonusFreeLessons:Math.max(0,Math.floor(Number(document.getElementById('editStudentBonusFreeLessons')?.value||0)||0)),
-additionalLessons:Math.max(0,Math.floor(Number(document.getElementById('editStudentAdditionalLessons')?.value||0)||0)),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -11103,13 +11077,6 @@ return String(status||'Scheduled').toLowerCase().replace(/\s+/g,'-');
 
 function getAppointmentStudent(id){
 return getStudents().find(s=>s.id===id)||null;
-}
-
-/* Display nickname in teacher-facing appointment/evaluation lists.
-   Official receipts and contracts continue using the student's full name. */
-function getAppointmentDisplayName(item){
-  const student=item ? getAppointmentStudent(item.studentId) : null;
-  return String(student?.nickname || item?.studentName || student?.name || item?.student || item?.name || 'Student').trim() || 'Student';
 }
 
 function getStudentBookedCountForCurrentClasses(student){
@@ -11895,7 +11862,7 @@ function filteredAppointments(){return getAppointments().filter(aptFilterMatch);
 function appointmentMiniCard(item){
 const status=item.status||'Scheduled';
 const cls=appointmentStatusClass(status);
-return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(getAppointmentDisplayName(item))}</div>`;
+return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(item.studentName||'Student')}</div>`;
 }
 
 function renderAppointmentMonth(items){
@@ -11977,7 +11944,7 @@ const timeline=slots.map(slot=>{
         }
       }
       return `<div class="appointment-time-booking ${status==='Completed'?'completed':'scheduled'}">
-        <div class="appointment-time-booking-main"><strong>${escapeHtml(getAppointmentDisplayName(item))}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
+        <div class="appointment-time-booking-main"><strong>${escapeHtml(item.studentName||'Student')}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
         <div class="appointment-time-booking-actions">${actionButtons}</div>
       </div>`;
     }).join('');
@@ -12007,7 +11974,7 @@ function viewAppointmentDetails(id){
   const time=formatAppointmentTime(item.time||'');
   const endTime=(()=>{try{const d=parseAppointmentDate(date,item.time||''); if(!d)return ''; d.setMinutes(d.getMinutes()+durationToMinutes(item.duration||'30 Minutes')); return formatAppointmentTime(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);}catch(e){return '';}})();
   content.innerHTML=`<div class="appointment-view-grid">
-    <div class="label">Student</div><div>${escapeHtml(getAppointmentDisplayName(item))}</div>
+    <div class="label">Student</div><div>${escapeHtml(item.studentName||student?.name||'Student')}</div>
     <div class="label">Date</div><div>${escapeHtml(date)}</div>
     <div class="label">Time</div><div>${escapeHtml(time)}${endTime?` – ${escapeHtml(endTime)}`:''}</div>
     <div class="label">Duration</div><div>${escapeHtml(item.duration||'30 Minutes')}</div>
@@ -12319,20 +12286,22 @@ async function refreshDashboardSummaryCounts(){
 
     if(appointmentError) throw appointmentError;
 
+    const {count:todayCount,error:todayError} =
+      await supabaseClient
+        .from('appointments')
+        .select('id',{count:'exact',head:true})
+        .eq('user_id',currentUser.id)
+        .eq('class_date',today);
+
+    if(todayError) throw todayError;
+
     const studentEl=document.getElementById('dashboardStudentCount');
     const appointmentEl=document.getElementById('dashboardAppointmentCount');
+    const todayEl=document.getElementById('dashboardTodayClassCount');
 
     if(studentEl) studentEl.textContent=studentCount || 0;
     if(appointmentEl) appointmentEl.textContent=appointmentCount || 0;
-
-    /*
-      IMPORTANT:
-      Do not calculate "CLASSES FOR TODAY" from a separate Supabase
-      class_date count here. The dashboard To-Do List uses getAppointments()
-      and getAppointmentDateTime(), which applies the portal's local date/time
-      logic and excludes cancelled appointments. renderDashboard() below
-      updates the class count from that same list so the two totals agree.
-    */
+    if(todayEl) todayEl.textContent=todayCount || 0;
 
   }catch(error){
     console.error('Dashboard summary count failed:',error);
@@ -12388,22 +12357,25 @@ const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
 .filter(x=>x.date && !isNaN(x.date.getTime()));
 
-/*
-  Use one shared set of today's appointments for both the summary card
-  and the To-Do List. Cancelled appointments are excluded from both.
-*/
+const todayCount=validAppointments.filter(x=>
+ x.date.getFullYear()===now.getFullYear() &&
+ x.date.getMonth()===now.getMonth() &&
+ x.date.getDate()===now.getDate()
+).length;
+
+/* Do not overwrite the dashboard appointment count from localStorage here.
+   The dashboard summary count is authoritative from Supabase and is updated
+   by refreshDashboardSummaryCounts(). This prevents the brief stale-count
+   flicker during page reload/login. */
+const todayClassCountDash=document.getElementById('dashboardTodayClassCount');
+if(todayClassCountDash) todayClassCountDash.textContent=todayCount;
+
 const todayAppointments=validAppointments
 .filter(x=>{
   const d=x.date;
-  return d.getFullYear()===now.getFullYear() &&
-         d.getMonth()===now.getMonth() &&
-         d.getDate()===now.getDate() &&
-         String(x.item.status||'Scheduled').trim().toLowerCase()!=='cancelled';
+  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate() && String(x.item.status||'Scheduled').toLowerCase()!=='cancelled';
 })
 .sort((a,b)=>a.date-b.date);
-
-const todayClassCountDash=document.getElementById('dashboardTodayClassCount');
-if(todayClassCountDash) todayClassCountDash.textContent=todayAppointments.length;
 
 const dashboardClasses=todayAppointments.map(x=>{
   const item=x.item;
@@ -12426,7 +12398,7 @@ if(activeBox){
   }else{
     activeBox.innerHTML=activeToShow.map(x=>{
       const item=x.item;
-      const studentName=getAppointmentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -12440,7 +12412,7 @@ if(completedBox){
   }else{
     completedBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">COMPLETED CLASSES TODAY · ${completedToday.length}</div>${completedToShow.map(x=>{
       const item=x.item;
-      const studentName=getAppointmentDisplayName(item);
+      const studentName=item.studentName||item.student||item.name||'Student';
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -12666,7 +12638,7 @@ function studentAllRecordEvaluationPage(student,ev,index){
   const dateTime=ev.dateTime||ev.createdAt||ev.evaluationSavedAt||ev.date||'';
   const stars=value=>{let count=0;const text=String(value||'');if(typeof value==='number')count=value;else if((text.match(/★/g)||[]).length)count=(text.match(/★/g)||[]).length;else if(/^\s*\d+(?:\.\d+)?\s*$/.test(text))count=Number(text);count=Math.max(0,Math.min(5,Math.round(count)));return '★★★★★'.split('').map((x,i)=>`<span class="student-all-record-star ${i<count?'on':''}">${x}</span>`).join('');};
   const bullets=value=>{const items=String(value||'').split(/\n+/).map(x=>x.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);return items.length?`<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'<div>—</div>';};
-  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY</div><div class="student-all-record-eval-grid">${[['Vocabulary',ev.learnedVocabulary],['Sentences',ev.learnedSentences],['Questions and Answers',ev.learnedQuestionsAnswers]].map(([label,value])=>`<div><label>${label}</label>${bullets(value||(label==='Vocabulary'?ev.vocabulary:''))}</div>`).join('')}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-grid">${[['Vocabulary',ev.practiceVocabulary],['Sentences',ev.practiceSentences],['Questions and Answers',ev.practiceQuestionsAnswers]].map(([label,value])=>`<div><label>${label}</label>${bullets(value||(label==='Vocabulary'?ev.improvement:''))}</div>`).join('')}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
+  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY / VOCABULARY</div><div class="student-all-record-eval-body">${bullets(ev.vocabulary)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body">${bullets(ev.improvement)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
   return studentAllRecordPageShell(`STUDENT EVALUATION RECORD — ${index+1}`,student,body,'student-all-record-evaluation-pdf-page');
 }
 
@@ -12816,8 +12788,9 @@ content.innerHTML=`
  <div class="student-profile-side">
   ${avatar}
   <div style="min-width:0;flex:1">
-   <div class="student-profile-name">${escapeHtml(getStudentDisplayName(student))}</div>
+   <div class="student-profile-name">${escapeHtml(student.nickname||student.name||'Unnamed Student')}</div>
    <div class="student-profile-id">Student ID: ${escapeHtml(student.id||'—')}</div>
+   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Full Name: ${escapeHtml(student.name)}</div>`:''}
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
@@ -12844,9 +12817,7 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Class Duration</label><div>${escapeHtml(student.duration||'Not set')}</div></div>
-    <div class="student-profile-info-box"><label>Classes (Purchased Package)</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
-    <div class="student-profile-info-box"><label>Bonus / Free Lesson</label><div>${Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0))}</div></div>
-    <div class="student-profile-info-box"><label>Additional Lessons</label><div>${Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0))}</div></div>
+    <div class="student-profile-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
    ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
@@ -12864,29 +12835,13 @@ content.innerHTML=`
   <div class="student-profile-section">
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
-    ${(()=>{
-      const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
-      const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
-      const totalAvailable=Math.max(0,Number(p.purchased||0)+bonus+additional);
-      const totalRemaining=Math.max(0,totalAvailable-Number(p.completed||0));
-      const percent=totalAvailable?Math.min(100,Math.round((Number(p.completed||0)/totalAvailable)*100)):0;
-      const booked=appointments.filter(a=>{
-        const status=String(a.status||'Scheduled').trim().toLowerCase();
-        const type=String(a.type||'Regular Class').trim().toLowerCase();
-        const dt=typeof getAppointmentDateTime==='function' ? getAppointmentDateTime(a) : null;
-        return (a.studentId===student.id || a.student_id===student.id) && status!=='cancelled' && status!=='completed' && type==='regular class' && dt && dt.getTime()>=Date.now();
-      }).length;
-      return `<div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
-      <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
-      <div class="student-detail-stat"><b>${totalRemaining}</b><span>Classes Remaining</span></div>
-      <div class="student-detail-stat"><b>${bonus}</b><span>Bonus / Free Lesson</span></div>
-      <div class="student-detail-stat"><b>${additional}</b><span>Additional Lessons</span></div>
-      <div class="student-detail-stat"><b>${Math.max(0,totalRemaining-booked)}</b><span>Classes Not Booked Yet</span></div>`;
-    })()}
+    <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
+    <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
+    <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
-    <div class="student-progress-head"><span>Course Progress</span><span>${(()=>{const total=Math.max(0,Number(p.purchased||0)+Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0)+Math.max(0,Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));return total?Math.min(100,Math.round((Number(p.completed||0)/total)*100)):0;})()}%</span></div>
-    <div class="student-progress-track"><div class="student-progress-fill" style="width:${(()=>{const total=Math.max(0,Number(p.purchased||0)+Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0)+Math.max(0,Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));return total?Math.min(100,Math.round((Number(p.completed||0)/total)*100)):0;})()}%"></div></div>
+    <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
+    <div class="student-progress-track"><div class="student-progress-fill" style="width:${p.percent}%"></div></div>
    </div>
   </div>
 
@@ -13523,7 +13478,7 @@ function renderEvaluationQueue(activeId){
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
-      <div class="pending-meta"><span class="pending-name">${escapeHtml(getAppointmentDisplayName(a))}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
+      <div class="pending-meta"><span class="pending-name">${escapeHtml(a.studentName||'Student')}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
       <button type="button" onclick="loadEvaluationFromAppointment('${escapeAttr(a.id)}')">${active?'Evaluating':'Evaluate'}</button>
     </div>`;
   }).join('');
@@ -13534,43 +13489,9 @@ function populateStudentSelect(selectedId){
   renderEvaluationQueue(selectedId);
 }
 
-function resetEvaluationDraftForStudentSwitch(){
-  /* Clear unsaved inputs whenever the teacher switches to another class/student.
-     Saved evaluation records are not touched. */
-  const ids=[
-    'lessonTopic','vocabulary','improvement',
-    'learnedVocabulary','learnedSentences','learnedQuestionsAnswers',
-    'practiceVocabulary','practiceSentences','practiceQuestionsAnswers',
-    'commentPreview'
-  ];
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(id==='commentPreview') el.textContent='';
-    else el.value='';
-  });
-  ['date','time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const duration=document.getElementById('duration');
-  if(duration)duration.value='25 minutes';
-  const teacher=document.getElementById('teacher');
-  if(teacher)teacher.value='';
-  Object.keys(stars).forEach(field=>{
-    stars[field]=5;
-    const wrap=document.querySelector(`[data-field="${field}"]`);
-    if(wrap) [...wrap.querySelectorAll('button')].forEach((button,index)=>button.style.opacity=index<5?'1':'0.28');
-  });
-  updateOverallScore();
-  commentVersion=0;
-  markEvaluationUnsaved();
-  syncEvaluationTopicFields();
-}
-
 function loadEvaluationFromAppointment(appointmentId,options={}){
   const item=getAppointments().find(a=>String(a.id)===String(appointmentId));
   if(!item)return;
-
-  const switchingToDifferentClass=String(currentEvaluationAppointmentId||'')!==String(item.id||'');
-  if(switchingToDifferentClass) resetEvaluationDraftForStudentSwitch();
 
   /*
      IMPORTANT: Evaluation is opened directly from a completed appointment.
@@ -13620,12 +13541,6 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
   generateComment();
   markEvaluationUnsaved();
   renderEvaluationQueue(item.id);
-
-  // Automatically scroll/slide the evaluation form into view after selecting a student/class.
-  setTimeout(()=>{
-    const panel=document.getElementById('evaluationFormPanel');
-    if(panel && panel.style.display!=='none') panel.scrollIntoView({behavior:'smooth',block:'start'});
-  },80);
 }
 
 function selectStudent(){
@@ -14089,35 +14004,7 @@ function buildBoldCommentHtml(commentText){
   return html;
 }
 
-function syncEvaluationTopicFields(){
-  const read=id=>document.getElementById(id)?.value.trim()||'';
-  const learned=[
-    ['Vocabulary',read('learnedVocabulary')],
-    ['Sentences',read('learnedSentences')],
-    ['Questions and Answers',read('learnedQuestionsAnswers')]
-  ].filter(([,v])=>v).map(([label,v])=>`${label}:\\n${v}`).join('\\n\\n');
-  const practice=[
-    ['Vocabulary',read('practiceVocabulary')],
-    ['Sentences',read('practiceSentences')],
-    ['Questions and Answers',read('practiceQuestionsAnswers')]
-  ].filter(([,v])=>v).map(([label,v])=>`${label}:\\n${v}`).join('\\n\\n');
-  const legacyLearned=document.getElementById('vocabulary');
-  const legacyPractice=document.getElementById('improvement');
-  if(legacyLearned) legacyLearned.value=learned;
-  if(legacyPractice) legacyPractice.value=practice;
-  return {learnedVocabulary:read('learnedVocabulary'),learnedSentences:read('learnedSentences'),
-    learnedQuestionsAnswers:read('learnedQuestionsAnswers'),practiceVocabulary:read('practiceVocabulary'),
-    practiceSentences:read('practiceSentences'),practiceQuestionsAnswers:read('practiceQuestionsAnswers')};
-}
-document.addEventListener('input',event=>{
-  if(event.target?.matches('#learnedVocabulary,#learnedSentences,#learnedQuestionsAnswers,#practiceVocabulary,#practiceSentences,#practiceQuestionsAnswers')){
-    syncEvaluationTopicFields();
-    if(document.getElementById('studentName')?.value) generateComment();
-  }
-});
-
 function generateComment(){
-syncEvaluationTopicFields();
 
 commentVersion=0;
 
@@ -14344,8 +14231,6 @@ improvement:
 document.getElementById('improvement').value.trim() ||
 'No specific improvement areas noted.',
 
-...syncEvaluationTopicFields(),
-
 participation:starText(stars.participation),
 pronunciation:starText(stars.pronunciation),
 behavior:starText(stars.behavior),
@@ -14418,6 +14303,16 @@ function buildEvaluationParentReport(){
   if(!evaluationPage) throw new Error('Evaluation page not found.');
 
   const report=evaluationPage.cloneNode(true);
+  // Keep the preview/export synchronized with the live form values. cloneNode()
+  // does not reliably copy the current value/selection state of form controls.
+  evaluationPage.querySelectorAll('input, select, textarea').forEach((source)=>{
+    if(!source.id) return;
+    const target=report.querySelector(`#${source.id}`);
+    if(!target) return;
+    if(source.tagName==='SELECT') target.selectedIndex=source.selectedIndex;
+    else if(source.type==='checkbox' || source.type==='radio') target.checked=source.checked;
+    else target.value=source.value;
+  });
   report.id='parentEvaluationReportPreview';
   report.style.display='block';
   report.style.visibility='visible';
@@ -14429,6 +14324,10 @@ function buildEvaluationParentReport(){
   report.style.background='#ffffff';
   report.style.boxSizing='border-box';
   report.style.color='#111827';
+  // The evaluation form is hidden in the live page until a class is selected;
+  // make it visible in the exported report so its original grid/layout is kept.
+  const reportFormPanel=report.querySelector('#evaluationFormPanel');
+  if(reportFormPanel) reportFormPanel.style.display='block';
 
   report.querySelectorAll('.page-back-wrap, .buttons, #status').forEach(el=>el.remove());
 
@@ -14458,7 +14357,7 @@ function buildEvaluationParentReport(){
   [...report.querySelectorAll('.small')].forEach(el=>el.remove());
 
   report.querySelectorAll('input, select, textarea').forEach(control=>{
-    if(['learnedVocabulary','learnedSentences','learnedQuestionsAnswers','practiceVocabulary','practiceSentences','practiceQuestionsAnswers','vocabulary','improvement'].includes(control.id)){
+    if(control.id==='vocabulary' || control.id==='improvement'){
       const items=(control.value||'').split(/\n+/).map(item=>item.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);
       const list=document.createElement('ul');
       list.style.margin='0';
@@ -14502,10 +14401,15 @@ function buildEvaluationParentReport(){
 #parentEvaluationReportPreview .parent-report-value{
   min-height:42px !important;padding:10px 12px !important;border:1px solid #d1d5db !important;
   border-radius:8px !important;background:#f9fafb !important;color:#111827 !important;
-  display:flex !important;align-items:center !important;white-space:pre-wrap !important;overflow-wrap:anywhere !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;
+  text-align:center !important;white-space:pre-wrap !important;overflow-wrap:anywhere !important;
 }
-#parentEvaluationReportPreview .section-body .parent-report-value{min-height:54px !important;align-items:flex-start !important;}
-#parentEvaluationReportPreview .comment-box{background:#f9fafb !important;border:1px solid #d1d5db !important;color:#111827 !important;}
+#parentEvaluationReportPreview .section-body .parent-report-value{min-height:54px !important;align-items:center !important;justify-content:center !important;text-align:center !important;}
+#parentEvaluationReportPreview .comment-box{background:#f9fafb !important;border:1px solid #d1d5db !important;color:#111827 !important;text-align:center !important;white-space:pre-wrap !important;overflow-wrap:anywhere !important;}
+#parentEvaluationReportPreview .section-title{text-align:center !important;}
+#parentEvaluationReportPreview .section-body{text-align:center !important;}
+#parentEvaluationReportPreview ul{list-style-position:inside !important;padding-left:0 !important;text-align:center !important;}
+#parentEvaluationReportPreview li{text-align:center !important;}
 #parentEvaluationReportPreview .score-box{border:1px solid #d1d5db !important;background:#f9fafb !important;}
 #parentEvaluationReportPreview .performance{break-inside:avoid !important;page-break-inside:avoid !important;}
 #parentEvaluationReportPreview .stars{pointer-events:none !important;}
@@ -14624,6 +14528,35 @@ async function renderEvaluationParentImage(){
   }
 }
 
+function evaluationFilenamePart(value, fallback=''){
+  return String(value || fallback).trim()
+    .replace(/[\/:*?\"<>|]+/g,' ')
+    .replace(/\s+/g,'-')
+    .replace(/[^a-z0-9.,()'&+-]/gi,'')
+    .replace(/-+/g,'-')
+    .replace(/^-+|-+$/g,'') || fallback;
+}
+
+function getEvaluationDownloadFilename(){
+  const studentId=String(document.getElementById('studentId')?.value || '').trim();
+  const typedName=String(document.getElementById('studentName')?.value || '').trim();
+  const student=getStudents().find(s=>String(s.id)===studentId || String(s.name||'').trim()===typedName || String(s.nickname||'').trim()===typedName);
+  const nickname=student?.nickname || typedName || 'Student';
+  const topic=String(document.getElementById('lessonTopic')?.value || '').trim() || 'Lesson-Topic';
+  const rawDate=String(document.getElementById('date')?.value || '').trim();
+  const rawTime=String(document.getElementById('time')?.value || '').trim();
+  let formattedDate='Date-Not-Set';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(rawDate)){
+    const [y,m,d]=rawDate.split('-'); formattedDate=`${m}-${d}-${y}`;
+  }
+  let formattedTime='Time-Not-Set';
+  if(/^\d{2}:\d{2}$/.test(rawTime)){
+    // Colons are not valid in Windows filenames, so use a hyphen between hour/minute.
+    formattedTime=rawTime.replace(':','-');
+  }
+  return `${evaluationFilenamePart(nickname,'Student')}-${evaluationFilenamePart(topic,'Lesson-Topic')}-${formattedDate}-at-${formattedTime}.png`;
+}
+
 async function downloadEvaluationImage(){
 
 const downloadBtn=document.getElementById('downloadEvaluationBtn');
@@ -14631,16 +14564,11 @@ if(downloadBtn && downloadBtn.disabled){
   return showStatus('Please save the evaluation first before downloading the report.',false);
 }
 
-const studentName=(document.getElementById('studentName')?.value || 'Student')
-.trim()
-.replace(/[^a-z0-9]+/gi,'-')
-.replace(/^-+|-+$/g,'') || 'Student';
-
-showStatus('Preparing formal evaluation report...',true);
+showStatus('Preparing evaluation image...',true);
 
 try{
   const dataUrl=await renderEvaluationParentImage();
-  const filename=`Teacher-Danyeal-Evaluation-${studentName}.png`;
+  const filename=getEvaluationDownloadFilename();
 
   if(typeof window.showSaveFilePicker==='function'){
     try{
@@ -14703,13 +14631,7 @@ currentEvaluationAppointmentId='';
 'time',
 'lessonTopic',
 'vocabulary',
-'improvement',
-'learnedVocabulary',
-'learnedSentences',
-'learnedQuestionsAnswers',
-'practiceVocabulary',
-'practiceSentences',
-'practiceQuestionsAnswers'
+'improvement'
 ].forEach(
 id=>
 document.getElementById(id).value=''
@@ -14842,10 +14764,6 @@ parts[parts.length-1].charAt(0)
 /* =========================================================
    STUDENT AVATAR
 ========================================================= */
-
-function getStudentDisplayName(student){
-  return String(student?.nickname||student?.name||'Unnamed Student').trim() || 'Unnamed Student';
-}
 
 function getStudentAvatarHtml(student,extraClass=''){
 
@@ -15070,7 +14988,7 @@ student,
 <div class="evaluation-student-info">
 
 <span class="student-name">
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </span>
 
 <span class="student-id">
@@ -15184,7 +15102,7 @@ student,
 <div class="record-student-header-info">
 
 <b>
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </b>
 
 <span>
@@ -15554,7 +15472,7 @@ student,
 <div>
 
 <div class="record-detail-title">
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </div>
 
 <div class="record-detail-date">
@@ -15661,22 +15579,25 @@ evaluation.rating ||
 
 <div class="record-detail-section">
 
-<div class="record-detail-section-title">WHAT WE LEARNED TODAY</div>
-<div class="record-detail-section-body record-detail-grid">
-<div class="record-detail-box"><label>Vocabulary</label>${evaluationBulletsHtml(evaluation.learnedVocabulary||evaluation.vocabulary,'—')}</div>
-<div class="record-detail-box"><label>Sentences</label>${evaluationBulletsHtml(evaluation.learnedSentences,'—')}</div>
-<div class="record-detail-box"><label>Questions and Answers</label>${evaluationBulletsHtml(evaluation.learnedQuestionsAnswers,'—')}</div>
+<div class="record-detail-section-title">
+WHAT WE LEARNED TODAY / VOCABULARY
+</div>
+
+<div class="record-detail-section-body">
+${evaluationBulletsHtml(evaluation.vocabulary,'No vocabulary/lesson notes provided.')}
 </div>
 
 </div>
 
 
 <div class="record-detail-section">
-<div class="record-detail-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div>
-<div class="record-detail-section-body record-detail-grid">
-<div class="record-detail-box"><label>Vocabulary</label>${evaluationBulletsHtml(evaluation.practiceVocabulary||evaluation.improvement,'—')}</div>
-<div class="record-detail-box"><label>Sentences</label>${evaluationBulletsHtml(evaluation.practiceSentences,'—')}</div>
-<div class="record-detail-box"><label>Questions and Answers</label>${evaluationBulletsHtml(evaluation.practiceQuestionsAnswers,'—')}</div>
+
+<div class="record-detail-section-title">
+NEEDS IMPROVEMENT / AREAS TO PRACTICE
+</div>
+
+<div class="record-detail-section-body">
+${evaluationBulletsHtml(evaluation.improvement,'No specific improvement areas noted.')}
 </div>
 
 </div>
