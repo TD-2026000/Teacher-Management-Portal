@@ -4993,6 +4993,7 @@ onclick="if(event.target===this) closeAddStudent()"
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
 <div><label>Bonus / Free Lesson</label><input id="newStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
+<div><label>Additional Lessons</label><input id="newStudentAdditionalLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 5"></div>
 
 <div id="newCustomStudentFields" class="custom-student-fields-form"></div>
 
@@ -6254,6 +6255,7 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
       <div class="edit-student-field"><label>Bonus / Free Lesson</label><input id="editStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
+      <div class="edit-student-field"><label>Additional Lessons</label><input id="editStudentAdditionalLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 5"></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -10151,6 +10153,7 @@ const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
 const bonusFreeLessons=Math.max(0,Math.floor(Number(document.getElementById('newStudentBonusFreeLessons')?.value||0)||0));
+const additionalLessons=Math.max(0,Math.floor(Number(document.getElementById('newStudentAdditionalLessons')?.value||0)||0));
 const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
@@ -10214,6 +10217,7 @@ students.push({
   duration,
   packageName,
   bonusFreeLessons,
+  additionalLessons,
   status,
   preferredSchedule:schedule,
   scheduleDetails,
@@ -10237,7 +10241,8 @@ syncStudentToSupabase(students[students.length - 1]);
 'newStudentAge',
 'newStudentParentName',
 'newStudentClasses',
-'newStudentBonusFreeLessons'
+'newStudentBonusFreeLessons',
+'newStudentAdditionalLessons'
 ].forEach(id=>{
 const el=document.getElementById(id);
 if(el)el.value='';
@@ -10412,6 +10417,7 @@ document.getElementById('editStudentDuration').value=
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
 document.getElementById('editStudentBonusFreeLessons').value=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
+document.getElementById('editStudentAdditionalLessons').value=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10697,6 +10703,7 @@ level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
 bonusFreeLessons:Math.max(0,Math.floor(Number(document.getElementById('editStudentBonusFreeLessons')?.value||0)||0)),
+additionalLessons:Math.max(0,Math.floor(Number(document.getElementById('editStudentAdditionalLessons')?.value||0)||0)),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -12837,7 +12844,9 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Parent / Guardian</label><div>${escapeHtml(student.parentName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Parent Gmail</label><div>${escapeHtml(student.email||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Class Duration</label><div>${escapeHtml(student.duration||'Not set')}</div></div>
-    <div class="student-profile-info-box"><label>Classes</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Classes (Purchased Package)</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
+    <div class="student-profile-info-box"><label>Bonus / Free Lesson</label><div>${Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0))}</div></div>
+    <div class="student-profile-info-box"><label>Additional Lessons</label><div>${Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0))}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
    ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
@@ -12855,22 +12864,29 @@ content.innerHTML=`
   <div class="student-profile-section">
    <h4>CLASS SUMMARY</h4>
    <div class="student-detail-summary" style="margin:0">
-    <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
-    <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
-    <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
-    <div class="student-detail-stat"><b>${Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0) || 0)}</b><span>Bonus / Free Lesson</span></div>
-    <div class="student-detail-stat"><b>${Math.max(0, Number(p.remaining || 0) - appointments.filter(a => {
-      const status=String(a.status||'Scheduled').trim().toLowerCase();
-      const type=String(a.type||'Regular Class').trim().toLowerCase();
-      const dt=typeof getAppointmentDateTime==='function' ? getAppointmentDateTime(a) : null;
-      return (a.studentId===student.id || a.student_id===student.id) &&
-        status!=='cancelled' && status!=='completed' &&
-        type==='regular class' && dt && dt.getTime()>=Date.now();
-    }).length)}</b><span>Classes Not Booked Yet</span></div>
+    ${(()=>{
+      const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
+      const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
+      const totalAvailable=Math.max(0,Number(p.purchased||0)+bonus+additional);
+      const totalRemaining=Math.max(0,totalAvailable-Number(p.completed||0));
+      const percent=totalAvailable?Math.min(100,Math.round((Number(p.completed||0)/totalAvailable)*100)):0;
+      const booked=appointments.filter(a=>{
+        const status=String(a.status||'Scheduled').trim().toLowerCase();
+        const type=String(a.type||'Regular Class').trim().toLowerCase();
+        const dt=typeof getAppointmentDateTime==='function' ? getAppointmentDateTime(a) : null;
+        return (a.studentId===student.id || a.student_id===student.id) && status!=='cancelled' && status!=='completed' && type==='regular class' && dt && dt.getTime()>=Date.now();
+      }).length;
+      return `<div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
+      <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
+      <div class="student-detail-stat"><b>${totalRemaining}</b><span>Classes Remaining</span></div>
+      <div class="student-detail-stat"><b>${bonus}</b><span>Bonus / Free Lesson</span></div>
+      <div class="student-detail-stat"><b>${additional}</b><span>Additional Lessons</span></div>
+      <div class="student-detail-stat"><b>${Math.max(0,totalRemaining-booked)}</b><span>Classes Not Booked Yet</span></div>`;
+    })()}
    </div>
    <div class="student-progress" style="margin-top:12px">
-    <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
-    <div class="student-progress-track"><div class="student-progress-fill" style="width:${p.percent}%"></div></div>
+    <div class="student-progress-head"><span>Course Progress</span><span>${(()=>{const total=Math.max(0,Number(p.purchased||0)+Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0)+Math.max(0,Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));return total?Math.min(100,Math.round((Number(p.completed||0)/total)*100)):0;})()}%</span></div>
+    <div class="student-progress-track"><div class="student-progress-fill" style="width:${(()=>{const total=Math.max(0,Number(p.purchased||0)+Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0)+Math.max(0,Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));return total?Math.min(100,Math.round((Number(p.completed||0)/total)*100)):0;})()}%"></div></div>
    </div>
   </div>
 
