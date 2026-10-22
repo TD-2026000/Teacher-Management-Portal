@@ -2739,6 +2739,38 @@ body .student-profile-custom-field-box label{
     max-height:94vh !important;
   }
 }
+
+.evaluation-three-column{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+
+.evaluation-field{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.evaluation-field-title{
+  font-weight:800;
+  font-size:14px;
+  color:var(--global-text,#333);
+}
+
+.evaluation-field textarea{
+  width:100%;
+  min-height:150px;
+  resize:vertical;
+  box-sizing:border-box;
+}
+
+@media(max-width:800px){
+  .evaluation-three-column{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -5597,19 +5629,46 @@ class="rating"
 <div class="section">
 
 <div class="section-title">
-WHAT WE LEARNED TODAY / VOCABULARY
+WHAT WE LEARNED TODAY
 </div>
 
-<div class="section-body">
+<div class="section-body evaluation-three-column">
 
-<textarea
-id="vocabulary"
-placeholder="Example: 
-  ·apple 
-  ·banana
-  ·watermelon
-  ·grapes......."
-></textarea>
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Vocabulary</div>
+    <textarea
+      id="vocabulary"
+      placeholder="Example:
+· apple
+· banana
+· watermelon
+· grapes..."
+    ></textarea>
+  </div>
+
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Sentences</div>
+    <textarea
+      id="sentences"
+      placeholder="Example:
+· I like apples.
+· This is a banana.
+· I eat watermelon."
+    ></textarea>
+  </div>
+
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Questions and Answers</div>
+    <textarea
+      id="questionsAnswers"
+      placeholder="Example:
+Q: What is this?
+A: This is an apple.
+
+Q: Do you like bananas?
+A: Yes, I do."
+    ></textarea>
+  </div>
 
 </div>
 </div>
@@ -5620,21 +5679,48 @@ placeholder="Example:
 NEEDS IMPROVEMENT / AREAS TO PRACTICE
 </div>
 
-<div class="section-body">
+<div class="section-body evaluation-three-column">
 
-<textarea
-id="improvement"
-placeholder="Example: 
-  ·I like apple
-  ·I like banana
-  ·I like watermelon......"
-></textarea>
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Vocabulary</div>
+    <textarea
+      id="improvementVocabulary"
+      placeholder="Example:
+· apple
+· banana
+· watermelon
+· grapes..."
+    ></textarea>
+  </div>
+
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Sentences</div>
+    <textarea
+      id="improvementSentences"
+      placeholder="Example:
+· I like apple.
+· I like banana.
+· I like watermelon."
+    ></textarea>
+  </div>
+
+  <div class="evaluation-field">
+    <div class="evaluation-field-title">Questions and Answers</div>
+    <textarea
+      id="improvementQuestionsAnswers"
+      placeholder="Example:
+Q: What is this?
+A: This is an apple.
+
+Q: What color is it?
+A: It is red."
+    ></textarea>
+  </div>
 
 </div>
 </div>
 
 <div class="section">
-
 <div
 class="section-title"
 style="text-align:left"
@@ -14274,9 +14360,25 @@ vocabulary:
 document.getElementById('vocabulary').value.trim() ||
 'No vocabulary/lesson notes provided.',
 
-improvement:
-document.getElementById('improvement').value.trim() ||
-'No specific improvement areas noted.',
+sentences:
+document.getElementById('sentences').value.trim() ||
+'No sentences provided.',
+
+questionsAnswers:
+document.getElementById('questionsAnswers').value.trim() ||
+'No questions and answers provided.',
+
+improvementVocabulary:
+document.getElementById('improvementVocabulary').value.trim() ||
+'No vocabulary improvement areas noted.',
+
+improvementSentences:
+document.getElementById('improvementSentences').value.trim() ||
+'No sentence improvement areas noted.',
+
+improvementQuestionsAnswers:
+document.getElementById('improvementQuestionsAnswers').value.trim() ||
+'No questions and answers improvement areas noted.',
 
 participation:starText(stars.participation),
 pronunciation:starText(stars.pronunciation),
@@ -15641,11 +15743,35 @@ evaluation.rating ||
 <div class="record-detail-section">
 
 <div class="record-detail-section-title">
-WHAT WE LEARNED TODAY / VOCABULARY
+WHAT WE LEARNED TODAY
 </div>
 
 <div class="record-detail-section-body">
-${evaluationBulletsHtml(evaluation.vocabulary,'No vocabulary/lesson notes provided.')}
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Vocabulary</div>
+${evaluationBulletsHtml(
+  evaluation.vocabulary,
+  'No vocabulary/lesson notes provided.'
+)}
+</div>
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Sentences</div>
+${evaluationBulletsHtml(
+  evaluation.sentences,
+  'No sentences provided.'
+)}
+</div>
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Questions and Answers</div>
+${evaluationBulletsHtml(
+  evaluation.questionsAnswers,
+  'No questions and answers provided.'
+)}
+</div>
+
 </div>
 
 </div>
@@ -15658,7 +15784,31 @@ NEEDS IMPROVEMENT / AREAS TO PRACTICE
 </div>
 
 <div class="record-detail-section-body">
-${evaluationBulletsHtml(evaluation.improvement,'No specific improvement areas noted.')}
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Vocabulary</div>
+${evaluationBulletsHtml(
+  evaluation.improvementVocabulary,
+  'No vocabulary improvement areas noted.'
+)}
+</div>
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Sentences</div>
+${evaluationBulletsHtml(
+  evaluation.improvementSentences,
+  'No sentence improvement areas noted.'
+)}
+</div>
+
+<div class="record-detail-subsection">
+<div class="record-detail-subsection-title">Questions and Answers</div>
+${evaluationBulletsHtml(
+  evaluation.improvementQuestionsAnswers,
+  'No questions and answers improvement areas noted.'
+)}
+</div>
+
 </div>
 
 </div>
