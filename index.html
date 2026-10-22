@@ -4689,6 +4689,18 @@ Teacher
   </div>
 </div>
 
+<div class="chat-support-wrap" id="chatSupportWrap">
+  <button type="button" id="chatSupportBtn" class="chat-support-btn" aria-expanded="false" aria-controls="chatSupportPanel" onclick="toggleChatSupport(event)">Chat Support</button>
+  <div id="chatSupportPanel" class="chat-support-panel" aria-hidden="true">
+    <a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" class="chat-support-link">
+      <span aria-hidden="true">📘</span><span><strong>Facebook Page</strong><small>Message Teacher Danyeal</small></span>
+    </a>
+    <a href="mailto:teacherdanyeal@gmail.com" class="chat-support-link">
+      <span aria-hidden="true">✉️</span><span><strong>Gmail</strong><small>teacherdanyeal@gmail.com</small></span>
+    </a>
+  </div>
+</div>
+
 <button type="button" id="portalReloadBtn" class="portal-reload-btn" onclick="reloadPortalData(event)" aria-label="Reload portal" title="Reload Portal">↻</button>
 
 <button type="button" id="settingsGearBtn" class="settings-gear-btn" onclick="togglePortalSettings(event)" aria-label="Open Settings" title="Settings">⚙️</button>
@@ -17845,6 +17857,18 @@ function drawPaymentReceiptCanvas(){
 
 
 .portal-notification-wrap{position:relative;margin-left:auto;margin-right:8px;display:flex;align-items:center}
+.chat-support-wrap{position:relative;display:flex;align-items:center;margin-right:2px}
+.chat-support-btn{height:42px;padding:0 14px;border:1px solid var(--portal-accent);border-radius:10px;background:var(--portal-accent);color:#fff;font-size:13px;font-weight:800;white-space:nowrap;cursor:pointer;transition:.15s ease}
+.chat-support-btn:hover,.chat-support-btn[aria-expanded="true"]{filter:brightness(.96);box-shadow:0 2px 8px rgba(0,0,0,.10)}
+.chat-support-panel{position:absolute;z-index:10030;top:calc(100% + 10px);right:0;width:260px;padding:8px;background:var(--portal-surface,#fff);color:var(--portal-text,#111);border:1px solid var(--portal-border,#d9e1e5);border-radius:13px;box-shadow:0 12px 35px rgba(0,0,0,.18);display:none}
+.chat-support-panel.show{display:block}
+.chat-support-link{display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:9px;color:inherit;text-decoration:none}
+.chat-support-link:hover{background:var(--portal-accent-soft,#e8ffff)}
+.chat-support-link>span:first-child{font-size:21px;flex:0 0 26px;text-align:center}
+.chat-support-link strong,.chat-support-link small{display:block}
+.chat-support-link strong{font-size:13px;font-weight:800}
+.chat-support-link small{font-size:11px;color:var(--portal-muted,#667085);margin-top:3px;overflow-wrap:anywhere}
+@media(max-width:600px){.chat-support-btn{height:38px;padding:0 9px;font-size:11px}.chat-support-wrap{margin-right:2px}.chat-support-panel{right:-80px;width:min(260px,calc(100vw - 24px))}}
 .notification-bell-btn{position:relative;width:42px;height:42px;border:1px solid #d8e0e3;border-radius:10px;background:#fff;color:#111;font-size:21px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s ease}
 .notification-bell-btn:hover{background:var(--portal-accent-soft);border-color:var(--portal-accent)}
 .notification-bell-btn.has-new .notification-bell-icon{animation:portalBellRing .75s ease-in-out 0s 2}
@@ -19000,5 +19024,27 @@ async function submitSubscriptionPayment(){
 
 
 
+<script>
+function toggleChatSupport(event){
+  if(event) event.stopPropagation();
+  const panel=document.getElementById('chatSupportPanel');
+  const button=document.getElementById('chatSupportBtn');
+  if(!panel||!button) return;
+  const open=!panel.classList.contains('show');
+  panel.classList.toggle('show',open);
+  panel.setAttribute('aria-hidden',String(!open));
+  button.setAttribute('aria-expanded',String(open));
+}
+document.addEventListener('click',function(event){
+  const wrap=document.getElementById('chatSupportWrap');
+  const panel=document.getElementById('chatSupportPanel');
+  const button=document.getElementById('chatSupportBtn');
+  if(wrap&&panel&&!wrap.contains(event.target)){
+    panel.classList.remove('show');
+    panel.setAttribute('aria-hidden','true');
+    if(button) button.setAttribute('aria-expanded','false');
+  }
+});
+</script>
 </body>
 </html>
