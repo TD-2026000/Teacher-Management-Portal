@@ -11098,6 +11098,13 @@ function getAppointmentStudent(id){
 return getStudents().find(s=>s.id===id)||null;
 }
 
+/* Display nickname in teacher-facing appointment/evaluation lists.
+   Official receipts and contracts continue using the student's full name. */
+function getAppointmentDisplayName(item){
+  const student=item ? getAppointmentStudent(item.studentId) : null;
+  return String(student?.nickname || item?.studentName || student?.name || item?.student || item?.name || 'Student').trim() || 'Student';
+}
+
 function getStudentBookedCountForCurrentClasses(student){
 if(!student)return 0;
 const current=getCurrentStudentPackage(student);
@@ -11881,7 +11888,7 @@ function filteredAppointments(){return getAppointments().filter(aptFilterMatch);
 function appointmentMiniCard(item){
 const status=item.status||'Scheduled';
 const cls=appointmentStatusClass(status);
-return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(item.studentName||'Student')}</div>`;
+return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(getAppointmentDisplayName(item))}</div>`;
 }
 
 function renderAppointmentMonth(items){
@@ -11963,7 +11970,7 @@ const timeline=slots.map(slot=>{
         }
       }
       return `<div class="appointment-time-booking ${status==='Completed'?'completed':'scheduled'}">
-        <div class="appointment-time-booking-main"><strong>${escapeHtml(item.studentName||'Student')}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
+        <div class="appointment-time-booking-main"><strong>${escapeHtml(getAppointmentDisplayName(item))}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
         <div class="appointment-time-booking-actions">${actionButtons}</div>
       </div>`;
     }).join('');
@@ -11993,7 +12000,7 @@ function viewAppointmentDetails(id){
   const time=formatAppointmentTime(item.time||'');
   const endTime=(()=>{try{const d=parseAppointmentDate(date,item.time||''); if(!d)return ''; d.setMinutes(d.getMinutes()+durationToMinutes(item.duration||'30 Minutes')); return formatAppointmentTime(`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`);}catch(e){return '';}})();
   content.innerHTML=`<div class="appointment-view-grid">
-    <div class="label">Student</div><div>${escapeHtml(item.studentName||student?.name||'Student')}</div>
+    <div class="label">Student</div><div>${escapeHtml(getAppointmentDisplayName(item))}</div>
     <div class="label">Date</div><div>${escapeHtml(date)}</div>
     <div class="label">Time</div><div>${escapeHtml(time)}${endTime?` – ${escapeHtml(endTime)}`:''}</div>
     <div class="label">Duration</div><div>${escapeHtml(item.duration||'30 Minutes')}</div>
@@ -12412,7 +12419,7 @@ if(activeBox){
   }else{
     activeBox.innerHTML=activeToShow.map(x=>{
       const item=x.item;
-      const studentName=item.studentName||item.student||item.name||'Student';
+      const studentName=getAppointmentDisplayName(item);
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -12426,7 +12433,7 @@ if(completedBox){
   }else{
     completedBox.innerHTML=`<div class="dashboard-todo-section"><div class="dashboard-todo-section-title">COMPLETED CLASSES TODAY · ${completedToday.length}</div>${completedToShow.map(x=>{
       const item=x.item;
-      const studentName=item.studentName||item.student||item.name||'Student';
+      const studentName=getAppointmentDisplayName(item);
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
       return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div>`;
@@ -13500,7 +13507,7 @@ function renderEvaluationQueue(activeId){
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
-      <div class="pending-meta"><span class="pending-name">${escapeHtml(a.studentName||'Student')}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
+      <div class="pending-meta"><span class="pending-name">${escapeHtml(getAppointmentDisplayName(a))}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
       <button type="button" onclick="loadEvaluationFromAppointment('${escapeAttr(a.id)}')">${active?'Evaluating':'Evaluate'}</button>
     </div>`;
   }).join('');
