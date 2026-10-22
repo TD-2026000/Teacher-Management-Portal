@@ -2455,10 +2455,10 @@ body .student-profile-custom-field-box label{
 .appointment-more-menu button.absent{color:#8b0000}
 .appointment-reason-modal{max-width:520px}
 .appointment-reason-help{font-size:12px;color:#666;line-height:1.45;margin-top:5px}
-.appointment-modal{width:80vw;max-width:80vw;max-height:90vh}
+.appointment-modal{max-width:700px}
 .appointment-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .appointment-form-grid .full{grid-column:1/-1}
-.appointment-info-box{border:1px solid #ddd;border-radius:8px;padding:12px;background:#fafafa;font-size:13px;line-height:1.5}.appointment-preferred-schedule-label{font-weight:800;margin-top:6px}.appointment-preferred-schedule-list{margin:6px 0 8px;padding-left:22px}.appointment-preferred-schedule-list li{margin:3px 0}
+.appointment-info-box{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;font-size:12px;line-height:1.5}
 .appointment-conflict{display:none;margin-top:10px;padding:10px;border-radius:8px;background:#ffe1e1;color:#8b0000;font-size:12px;font-weight:800}
 .appointment-conflict.show{display:block}
 .appointment-mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -2642,6 +2642,9 @@ body .student-profile-custom-field-box label{
 #contractFontFamily option[value="Roboto"]{font-family:Roboto,sans-serif}
 #contractFontFamily option[value="Poppins"]{font-family:Poppins,sans-serif}
 #contractFontFamily option[value="Montserrat"]{font-family:Montserrat,sans-serif}
+.record-detail-subsection{margin-bottom:12px;}
+.record-detail-subsection:last-child{margin-bottom:0;}
+.record-detail-subsection-title{font-weight:800;margin-bottom:5px;}
 </style>
 
 
@@ -2739,38 +2742,6 @@ body .student-profile-custom-field-box label{
     max-height:94vh !important;
   }
 }
-
-.evaluation-three-column{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-}
-
-.evaluation-field{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.evaluation-field-title{
-  font-weight:800;
-  font-size:14px;
-  color:var(--global-text,#333);
-}
-
-.evaluation-field textarea{
-  width:100%;
-  min-height:150px;
-  resize:vertical;
-  box-sizing:border-box;
-}
-
-@media(max-width:800px){
-  .evaluation-three-column{
-    grid-template-columns:1fr;
-  }
-}
-
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -5634,41 +5605,32 @@ WHAT WE LEARNED TODAY
 
 <div class="section-body evaluation-three-column">
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Vocabulary</div>
-    <textarea
-      id="vocabulary"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Vocabulary</div>
+<textarea id="vocabulary" placeholder="Example:
 · apple
 · banana
 · watermelon
-· grapes..."
-    ></textarea>
-  </div>
+· grapes..."></textarea>
+</div>
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Sentences</div>
-    <textarea
-      id="sentences"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Sentences</div>
+<textarea id="sentences" placeholder="Example:
 · I like apples.
 · This is a banana.
-· I eat watermelon."
-    ></textarea>
-  </div>
+· I eat watermelon."></textarea>
+</div>
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Questions and Answers</div>
-    <textarea
-      id="questionsAnswers"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Questions and Answers</div>
+<textarea id="questionsAnswers" placeholder="Example:
 Q: What is this?
 A: This is an apple.
 
 Q: Do you like bananas?
-A: Yes, I do."
-    ></textarea>
-  </div>
+A: Yes, I do."></textarea>
+</div>
 
 </div>
 </div>
@@ -5681,46 +5643,38 @@ NEEDS IMPROVEMENT / AREAS TO PRACTICE
 
 <div class="section-body evaluation-three-column">
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Vocabulary</div>
-    <textarea
-      id="improvementVocabulary"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Vocabulary</div>
+<textarea id="improvementVocabulary" placeholder="Example:
 · apple
 · banana
 · watermelon
-· grapes..."
-    ></textarea>
-  </div>
+· grapes..."></textarea>
+</div>
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Sentences</div>
-    <textarea
-      id="improvementSentences"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Sentences</div>
+<textarea id="improvementSentences" placeholder="Example:
 · I like apple.
 · I like banana.
-· I like watermelon."
-    ></textarea>
-  </div>
+· I like watermelon."></textarea>
+</div>
 
-  <div class="evaluation-field">
-    <div class="evaluation-field-title">Questions and Answers</div>
-    <textarea
-      id="improvementQuestionsAnswers"
-      placeholder="Example:
+<div class="evaluation-field">
+<div class="evaluation-field-title">Questions and Answers</div>
+<textarea id="improvementQuestionsAnswers" placeholder="Example:
 Q: What is this?
 A: This is an apple.
 
 Q: What color is it?
-A: It is red."
-    ></textarea>
-  </div>
+A: It is red."></textarea>
+</div>
 
 </div>
 </div>
 
 <div class="section">
+
 <div
 class="section-title"
 style="text-align:left"
@@ -6860,6 +6814,8 @@ return currentUser
 :base;
 
 }
+
+function getStudentDisplayName(student,fallback='Student'){const nickname=String(student?.nickname||'').trim();const fullName=String(student?.name||'').trim();return nickname||fullName||fallback;}
 
 function getStudents(){
 
@@ -9924,7 +9880,7 @@ function getScheduleConflicts(excludeStudentId=''){
         conflicts[day].push({
           start,
           end,
-          studentName:getStudentDisplayName(student,'Another student')
+          studentName:student.nickname||student.name||'Another student'
         });
       });
     });
@@ -10631,7 +10587,7 @@ async function syncStudentScheduleToAppointments(studentId, oldStudent, newStude
       const updated={
         ...appointment,
         studentId:newStudentId,
-        studentName:getStudentDisplayName(newStudent),
+        studentName:newStudent.name,
         date:slot.date,
         time:slot.time,
         duration:newDuration,
@@ -11105,7 +11061,7 @@ async function loadAppointmentsFromSupabase(){
       return {
         id:String(row.id),
         studentId:String(row.student_id||''),
-        studentName:getStudentDisplayName(student,''),
+        studentName:student?.name||'',
         date:row.class_date||'',
         time:row.class_time
           ?String(row.class_time).slice(0,5)
@@ -11181,13 +11137,14 @@ return regular.length;
 }
 
 function studentHasBookableClasses(student){
-  if(!student) return false;
-
-  const progress=getStudentProgress(student);
-
-  // Keep the student visible in the Add Appointment
-  // selection even when all classes are already booked.
-  return true;
+if(!student)return false;
+const current=getCurrentStudentPackage(student);
+const packageCount=current
+  ? Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName))
+  : getPackageClassCount(student.packageName);
+if(!packageCount)return true; /* keep students with no readable limit selectable */
+const booked=getStudentBookedCountForCurrentClasses(student);
+return booked < packageCount;
 }
 
 function populateAppointmentStudentSelect(selectedId=''){
@@ -11197,7 +11154,7 @@ const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompar
 const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
 const visibleStudents=students.filter(s=>studentHasBookableClasses(s)||s.id===selectedId||s.id===editingStudentId);
 select.innerHTML='<option value="">Select student</option>'+visibleStudents.map(s=>
-`<option value="${escapeAttr(s.id)}">${escapeHtml(getStudentDisplayName(s))} — ${escapeHtml(s.id)}</option>`
+`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
 if(selectedId)select.value=selectedId;
 }
@@ -11335,19 +11292,14 @@ const box=document.getElementById('appointmentAutoInfo');
 if(!box)return;
 const student=getAppointmentStudent(document.getElementById('appointmentStudent')?.value||'');
 if(!student){box.textContent='Select a student to see the saved preferred schedule and class limit.';return;}
-const progress=getStudentProgress(student);
-const packageCount=progress.totalAvailable;
+const packageCount=getPackageClassCount(student.packageName);
 const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
-const scheduleHtml=preferredDays.length
-  ?`<ul class="appointment-preferred-schedule-list">${preferredDays.map(day=>{
-      const times=normalizeScheduleTimes(student.scheduleDetails?.[day]);
-      const text=times.map(mins=>minutesToTimeLabel(mins)).join(' / ');
-      return `<li><strong>${escapeHtml(day)}</strong> — ${escapeHtml(text)}</li>`;
-    }).join('')}</ul>`
-  :'<span>No preferred schedule saved.</span>';
+const scheduleText=preferredDays.length
+?preferredDays.map(day=>`${day} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>minutesToTimeLabel(mins)).join(' / ')}`).join(' · ')
+:'No preferred schedule saved.';
 const existing=getStudentBookedCountForCurrentClasses(student);
 const mode=getAppointmentScheduleMode();
-box.innerHTML=`<strong>${escapeHtml(getStudentDisplayName(student))}</strong><br>Classes: <strong>${packageCount?packageCount+' classes':'No class limit found'}</strong> · Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong><br><div class="appointment-preferred-schedule-label">Preferred schedule:</div>${scheduleHtml}<div>Classes used in active classes: <strong>${existing}</strong>${packageCount?` · Remaining: <strong>${Math.max(0,progress.remaining)}</strong>`:''}</div><div>Classes not yet booked: <strong>${progress.notYetBooked}</strong></div><br><span style="font-weight:700">Booking mode: ${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</span>`;
+box.innerHTML=`<strong>${escapeHtml(student.name)}</strong><br>Classes: <strong>${packageCount?packageCount+' classes':'No class limit found'}</strong> · Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong><br>Preferred schedule: ${escapeHtml(scheduleText)}<br>Classes used in active classes: <strong>${existing}</strong>${packageCount?` · Remaining: <strong>${Math.max(0,packageCount-existing)}</strong>`:''}<br><span style="font-weight:700">Booking mode: ${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</span>`;
 }
 
 function updateAppointmentSummary(){
@@ -11463,7 +11415,7 @@ const select=document.getElementById('appointmentDeleteStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 select.innerHTML='<option value="">Select student</option>'+students.map(s=>
-`<option value="${escapeAttr(s.id)}">${escapeHtml(getStudentDisplayName(s))} — ${escapeHtml(s.id)}</option>`
+`<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
 if(selectedId)select.value=selectedId;
 updateAppointmentDeleteInfo();
@@ -11758,61 +11710,38 @@ return getAppointments().some(a=>a.studentId===studentId&&a.date===date&&a.time=
 }
 
 function generatePreferredAppointments(student,startDate,type){
-  const progress=getStudentProgress(student);
-  const remainingToBook=Math.max(0,Number(progress.notYetBooked)||0);
+  const packageLimit=getPackageClassCount(student.packageName);
+  if(!packageLimit)return {created:0,remaining:0,reason:'No class limit was found in the Classes field. Example: 30 Classes.'};
   const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
-
-  if(!preferredDays.length){
-    return {created:0,remaining:remainingToBook,reason:'This student has no preferred class days/times saved.'};
-  }
-  if(remainingToBook===0){
-    return {created:0,remaining:0,reason:'There are no classes left to book.'};
-  }
-
+  if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
   let appointments=getAppointments();
+  const existingCount=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class').length;
+  let remaining=Math.max(0,packageLimit-existingCount);
+  if(remaining===0)return {created:0,remaining:0,reason:'The class limit has already been reached.'};
   let created=0;
   let cursor=new Date(`${startDate}T00:00:00`);
-
-  for(let i=0;i<730&&created<remainingToBook;i++){
+  for(let i=0;i<730&&created<remaining;i++){
     const date=getLocalDateString(cursor);
     const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
     const dayTimes=normalizeScheduleTimes(student.scheduleDetails?.[day]);
-
     for(const mins of dayTimes){
-      if(created>=remainingToBook)break;
+      if(created>=remaining)break;
       if(!Number.isFinite(mins))continue;
-
       const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
       const duration=durationToMinutes(student.duration||'30 Minutes');
-
       if(!hasExactStudentAppointment(student.id,date,time)&&!hasAppointmentConflict(date,time,duration)){
         const now=new Date().toISOString();
         appointments.push({
           id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}_${created}`,
-          studentId:student.id,
-          studentName:getStudentDisplayName(student),
-          date,
-          time,
-          duration:student.duration||'30 Minutes',
-          type:type||'Regular Class',
-          status:'Scheduled',
-          scheduleMode:'preferred',
-          packageId:student.currentPackageId||'',
-          createdAt:now,
-          updatedAt:now
+          studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:student.currentPackageId||'',createdAt:now,updatedAt:now
         });
         created++;
       }
     }
     cursor.setDate(cursor.getDate()+1);
   }
-
   saveAppointments(appointments);
-  return {
-    created,
-    remaining:Math.max(0,remainingToBook-created),
-    reason:created<remainingToBook?'Some future slots could not be booked because of schedule conflicts.' : ''
-  };
+  return {created,remaining:Math.max(0,remaining-created),reason:created<remaining?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
 function saveAppointment(){
@@ -11893,7 +11822,7 @@ closeAppointmentModal();
 selectedAppointmentDate=old.date;
 const movedDate=new Date(`${old.date}T00:00:00`);
 appointmentMonthDate=new Date(movedDate.getFullYear(),movedDate.getMonth(),1);
-apptShowMessage(`Appointment updated for ${getStudentDisplayName(student)}. Class Type changed to ${finalType}.`);
+apptShowMessage(`Appointment updated for ${student.name}. Class Type changed to ${finalType}.`);
 refreshLiveUI({records:false,contracts:false,studentId:student.id});
 return;
 }
@@ -11905,7 +11834,7 @@ return fail(result.reason||'No appointments were generated.');
 }
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${result.created} future class${result.created===1?'':'es'} booked automatically for ${getStudentDisplayName(student)}. ${result.remaining?`${result.remaining} class${result.remaining===1?'':'es'} remaining.`:'Classes limit reached.'}`);
+apptShowMessage(`${result.created} future class${result.created===1?'':'es'} booked automatically for ${student.name}. ${result.remaining?`${result.remaining} class${result.remaining===1?'':'es'} remaining.`:'Classes limit reached.'}`);
 renderAppointments();renderDashboard();
 return;
 }
@@ -11920,12 +11849,12 @@ const now=new Date().toISOString();
 const appointments=getAppointments();
 appointments.push({
 id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-studentId:student.id,studentName:getStudentDisplayName(student),date,time,duration,type,scheduleMode:'preferred',createdAt:now,updatedAt:now
+studentId:student.id,studentName:student.name,date,time,duration,type,scheduleMode:'preferred',createdAt:now,updatedAt:now
 });
 saveAppointments(appointments);
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${type} scheduled for ${getStudentDisplayName(student)}.`);
+apptShowMessage(`${type} scheduled for ${student.name}.`);
 refreshLiveUI({students:false,records:false,contracts:false});
 return;
 }
@@ -11946,12 +11875,12 @@ const now=new Date().toISOString();
 const appointments=getAppointments();
 appointments.push({
 id:`appt_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-studentId:student.id,studentName:getStudentDisplayName(student),date,time,duration,type,scheduleMode:'manual',packageId:type==='Regular Class'?(currentPackage?.id||student.currentPackageId||''):'',createdAt:now,updatedAt:now
+studentId:student.id,studentName:student.name,date,time,duration,type,scheduleMode:'manual',packageId:type==='Regular Class'?(currentPackage?.id||student.currentPackageId||''):'',createdAt:now,updatedAt:now
 });
 saveAppointments(appointments);
 closeAppointmentModal();
 selectedAppointmentDate=date;
-apptShowMessage(`${type} manually booked for ${getStudentDisplayName(student)}. ${type==='Regular Class'&&packageLimit?`Remaining classes: ${Math.max(0,packageLimit-(bookedForClasses+1))}.`:''}`);
+apptShowMessage(`${type} manually booked for ${student.name}. ${type==='Regular Class'&&packageLimit?`Remaining classes: ${Math.max(0,packageLimit-(bookedForClasses+1))}.`:''}`);
 refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id});
 }catch(error){
  console.error('Save Appointment error:',error);
@@ -11975,7 +11904,7 @@ function filteredAppointments(){return getAppointments().filter(aptFilterMatch);
 function appointmentMiniCard(item){
 const status=item.status||'Scheduled';
 const cls=appointmentStatusClass(status);
-return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(getAppointmentStudentDisplayName(item))}</div>`;
+return `<div class="appointment-mini-card ${cls}" onclick="event.stopPropagation();openAppointmentModal('${escapeAttr(item.id)}')"><strong>${escapeHtml(formatAppointmentTime(item.time))}</strong> · ${escapeHtml(item.studentName||'Student')}</div>`;
 }
 
 function renderAppointmentMonth(items){
@@ -12057,7 +11986,7 @@ const timeline=slots.map(slot=>{
         }
       }
       return `<div class="appointment-time-booking ${status==='Completed'?'completed':'scheduled'}">
-        <div class="appointment-time-booking-main"><strong>${escapeHtml(getAppointmentStudentDisplayName(item))}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
+        <div class="appointment-time-booking-main"><strong>${escapeHtml(item.studentName||'Student')}</strong><span>${escapeHtml(item.type||'Regular Class')} · ${escapeHtml(duration)} · ${escapeHtml(status)}${attendance}</span></div>
         <div class="appointment-time-booking-actions">${actionButtons}</div>
       </div>`;
     }).join('');
@@ -12380,7 +12309,7 @@ async function refreshDashboardSummaryCounts(){
   if(!currentUser || !supabaseClient) return;
 
   try{
-    const today=getLocalDateString(new Date());
+    const today = getLocalDateString(new Date());
 
     const {count:studentCount,error:studentError} =
       await supabaseClient
@@ -12391,11 +12320,11 @@ async function refreshDashboardSummaryCounts(){
     if(studentError) throw studentError;
 
     const {count:appointmentCount,error:appointmentError} =
-      await supabaseClient
-        .from('appointments')
-        .select('id',{count:'exact',head:true})
-        .eq('user_id',currentUser.id)
-        .neq('status','Completed');
+          await supabaseClient
+            .from('appointments')
+            .select('id',{count:'exact',head:true})
+            .eq('user_id',currentUser.id)
+            .neq('status','Completed');
 
     if(appointmentError) throw appointmentError;
 
@@ -12410,8 +12339,6 @@ async function refreshDashboardSummaryCounts(){
 
     const studentEl=document.getElementById('dashboardStudentCount');
     const appointmentEl=document.getElementById('dashboardAppointmentCount');
-    const todayEl=document.getElementById('dashboardTodayClassCount');
-
     if(studentEl) studentEl.textContent=studentCount || 0;
     if(appointmentEl) appointmentEl.textContent=appointmentCount || 0;
 
@@ -12469,15 +12396,11 @@ const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
 .filter(x=>x.date && !isNaN(x.date.getTime()));
 
-const todayCount=validAppointments.filter(x=>{
-  const d=x.date;
-
-  return d.getFullYear()===now.getFullYear() &&
-         d.getMonth()===now.getMonth() &&
-         d.getDate()===now.getDate() &&
-         String(x.item.status||'Scheduled').toLowerCase()!=='cancelled' &&
-         String(x.item.type||'Regular Class')==='Regular Class';
-}).length;
+const todayCount=validAppointments.filter(x=>
+ x.date.getFullYear()===now.getFullYear() &&
+ x.date.getMonth()===now.getMonth() &&
+ x.date.getDate()===now.getDate()
+).length;
 
 /* Do not overwrite the dashboard appointment count from localStorage here.
    The dashboard summary count is authoritative from Supabase and is updated
@@ -12595,29 +12518,25 @@ return history.find(p=>p.id===student.currentPackageId)||history[history.length-
 function getStudentProgress(student){
 const current=getCurrentStudentPackage(student);
 const packageCount=current?Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName)):getPackageClassCount(student.packageName);
-const bonus=Math.max(0,parseInt(student.freeClasses,10)||0);
-const totalAvailable=packageCount+bonus;
 let completed=0;
 
-/* Count completed Regular Classes for the current package. */
+/*
+  Count completed Regular Classes for the current package.
+  Older appointments may not have a packageId, so getPackageRecordCompleted()
+  intentionally includes those unlinked completed appointments as well.
+*/
 if(current){
   completed=getPackageRecordCompleted(student.id,current.id);
 }
+
+/* Keep the old evaluation fallback only when there is no current package. */
 if(!current){
   completed=getStudentEvaluations(student.id).length;
 }
 
-const remaining=Math.max(0,totalAvailable-completed);
-const bookedFuture=getAppointments().filter(a=>{
-  if(String(a.studentId||'')!==String(student.id||''))return false;
-  if(String(a.type||'Regular Class')!=='Regular Class')return false;
-  if(String(a.status||'')==='Completed'||String(a.status||'')==='Cancelled')return false;
-  const dt=getAppointmentDateTime(a);
-  return dt ? dt.getTime()>=Date.now() : false;
-}).length;
-const notYetBooked=Math.max(0,remaining-bookedFuture);
-const percent=totalAvailable?Math.min(100,Math.round((completed/totalAvailable)*100)):0;
-return {purchased:packageCount,bonus,totalAvailable,completed,remaining,notYetBooked,percent,currentPackage:current,history:ensureStudentPackageState(student)};
+const remaining=Math.max(0,packageCount-completed);
+const percent=packageCount?Math.min(100,Math.round((completed/packageCount)*100)):0;
+return {purchased:packageCount,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
 function studentAllRecordSafeText(value, fallback='—'){
@@ -12625,8 +12544,8 @@ function studentAllRecordSafeText(value, fallback='—'){
   return text||fallback;
 }
 
-function studentAllRecordPageShell(title, student, bodyHtml, extraClass='',useFullName=false){
-  const name=studentAllRecordSafeText(useFullName ? (student?.name || student?.nickname) : getStudentDisplayName(student),'Student');
+function studentAllRecordPageShell(title, student, bodyHtml, extraClass=''){
+  const name=studentAllRecordSafeText(student?.name || student?.nickname,'Student');
   const id=studentAllRecordSafeText(student?.id,'—');
   return `<div class="student-all-record-pdf-page ${extraClass}">
     <div class="student-all-record-pdf-topline"><span>Teacher Danyeal</span><span>Student Record</span></div>
@@ -12640,7 +12559,7 @@ function buildStudentAllRecordInfoPage(student){
   const currentPackage=getCurrentStudentPackage(student);
   const currentStart=(currentPackage&&currentPackage.startDate)||student.startDate||'—';
   const fields=[
-    ['Student ID',student.id],['Student Name',getStudentDisplayName(student)],['Birthday',student.birthday],
+    ['Student ID',student.id],['Full Name',student.name],['Nickname',student.nickname],['Birthday',student.birthday],
     ['Age',student.age],['Country',student.country],['Gender',student.gender],['English Level',student.level],
     ['Status',student.status||'Active'],['Parent / Guardian',student.parentName],['Parent Gmail',student.email],
     ['Class Duration',student.duration],['Classes',student.packageName],['Start Date',currentStart]
@@ -12746,11 +12665,11 @@ function buildStudentAllRecordContractPage(student){
 function buildStudentAllRecordPaymentPage(student){
   const receipts=getPaymentReceipts().filter(r=>String(r.studentId||'')===String(student.id||''));
   const receipt=receipts.length?receipts[receipts.length-1]:null;
-  if(!receipt)return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,'<div class="student-all-record-empty">No Payment Receipt has been saved for this student.</div>','student-all-record-payment-pdf-page',true);
+  if(!receipt)return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,'<div class="student-all-record-empty">No Payment Receipt has been saved for this student.</div>');
   const amount=receipt.amount!==''&&receipt.amount!=null?`${receipt.currency||'PHP'} ${Number(receipt.amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`:'—';
   const rows=[['Receipt No.',receipt.receiptNo],['Payment Date',receipt.date],['Student Name',receipt.studentName||student.name],['Student ID',receipt.studentIdNo||receipt.studentId||student.id],['Classes',receipt.packageName||receipt.classes],['Amount Paid',amount],['Payment Method',receipt.method==='Other'?(receipt.otherMethod||''):receipt.method],['Payment Status',receipt.status],['Reference No.',receipt.reference||'—']];
   const body=`<div class="student-all-record-receipt-image"><div class="student-all-record-receipt-banner">PAYMENT RECEIPT</div><div class="student-all-record-receipt-subtitle">Teacher Danyeal's English Class</div><table class="student-all-record-pdf-table student-all-record-receipt-table"><tbody>${rows.map(([k,v])=>`<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(studentAllRecordSafeText(v))}</td></tr>`).join('')}</tbody></table><div class="student-all-record-receipt-notes"><b>Notes</b><div>${escapeHtml(studentAllRecordSafeText(receipt.notes,'Thank you for your payment.'))}</div></div><div class="student-all-record-receipt-footer">This receipt confirms the payment recorded by the teacher.</div></div>`;
-  return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,body,'student-all-record-payment-pdf-page',true);
+  return studentAllRecordPageShell('STUDENT PAYMENT RECEIPT',student,body,'student-all-record-payment-pdf-page');
 }
 
 function studentAllRecordEvaluationPage(student,ev,index){
@@ -12758,7 +12677,7 @@ function studentAllRecordEvaluationPage(student,ev,index){
   const dateTime=ev.dateTime||ev.createdAt||ev.evaluationSavedAt||ev.date||'';
   const stars=value=>{let count=0;const text=String(value||'');if(typeof value==='number')count=value;else if((text.match(/★/g)||[]).length)count=(text.match(/★/g)||[]).length;else if(/^\s*\d+(?:\.\d+)?\s*$/.test(text))count=Number(text);count=Math.max(0,Math.min(5,Math.round(count)));return '★★★★★'.split('').map((x,i)=>`<span class="student-all-record-star ${i<count?'on':''}">${x}</span>`).join('');};
   const bullets=value=>{const items=String(value||'').split(/\n+/).map(x=>x.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);return items.length?`<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'<div>—</div>';};
-  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY / VOCABULARY</div><div class="student-all-record-eval-body">${bullets(ev.vocabulary)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body">${bullets(ev.improvement)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
+  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY</div><div class="student-all-record-eval-body"><b>Vocabulary</b>${bullets(ev.vocabulary)}<b>Sentences</b>${bullets(ev.sentences)}<b>Questions and Answers</b>${bullets(ev.questionsAnswers)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body"><b>Vocabulary</b>${bullets(ev.improvementVocabulary)}<b>Sentences</b>${bullets(ev.improvementSentences)}<b>Questions and Answers</b>${bullets(ev.improvementQuestionsAnswers)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
   return studentAllRecordPageShell(`STUDENT EVALUATION RECORD — ${index+1}`,student,body,'student-all-record-evaluation-pdf-page');
 }
 
@@ -12811,7 +12730,7 @@ async function openStudentAllRecord(id){
   if(!student)return;
   const title=document.getElementById('studentAllRecordTitle');
   const content=document.getElementById('studentAllRecordContent');
-  if(title)title.textContent=`${getStudentDisplayName(student)} — Student All Record`;
+  if(title)title.textContent=`${student.nickname||student.name||'Student'} — Student All Record`;
   if(!content)return;
   content.innerHTML='<div class="student-all-record-preview-note">Preparing Student All Record preview...</div>';
   const pages=await buildStudentAllRecordPages(student);
@@ -12863,7 +12782,7 @@ async function downloadStudentAllRecordPDF(){
       pdf.addImage(img,'PNG',0,0,mmWidth,mmHeight,undefined,'FAST');
       currentFormat=format;
     }
-    const safe=String(student.nickname||student.name||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
+    const safe=String(student.name||student.nickname||student.id||'Student').replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'');
     pdf.save(`Student-All-Record-${safe||'Student'}.pdf`);
   }catch(e){console.error(e);alert(e?.message||'Unable to create the Student All Record PDF.');}
   finally{holder.remove();if(btn){btn.disabled=false;btn.textContent=oldText||'DOWNLOAD PDF';}}
@@ -12879,11 +12798,11 @@ const p=getStudentProgress(student);
 const schedule=scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration);
 const content=document.getElementById('studentProfileContent');
 const title=document.getElementById('studentProfileTitle');
-if(title)title.textContent=`${getStudentDisplayName(student)} — Profile`;
+if(title)title.textContent=`${student.nickname||student.name||'Student'} — Profile`;
 if(!content)return;
 
 const avatar=getStudentAvatarHtml(student,'student-profile-avatar');
-const appointments=getAppointments().filter(a=>a.studentId===student.id&&String(a.status||'Scheduled')==='Scheduled').sort((a,b)=>{
+const appointments=getAppointments().filter(a=>a.studentId===student.id).sort((a,b)=>{
  const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);
  return (db?db.getTime():0)-(da?da.getTime():0);
 });
@@ -12908,9 +12827,9 @@ content.innerHTML=`
  <div class="student-profile-side">
   ${avatar}
   <div style="min-width:0;flex:1">
-   <div class="student-profile-name">${escapeHtml(getStudentDisplayName(student,'Unnamed Student'))}</div>
+   <div class="student-profile-name">${escapeHtml(student.nickname||student.name||'Unnamed Student')}</div>
    <div class="student-profile-id">Student ID: ${escapeHtml(student.id||'—')}</div>
-   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Student Name: ${escapeHtml(getStudentDisplayName(student))}</div>`:''}
+   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Full Name: ${escapeHtml(student.name)}</div>`:''}
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
@@ -12927,7 +12846,7 @@ content.innerHTML=`
    <h4>STUDENT INFORMATION</h4>
    <div class="student-profile-info-grid">
     <div class="student-profile-info-box"><label>Student ID</label><div>${escapeHtml(student.id||'—')}</div></div>
-    <div class="student-profile-info-box"><label>Student Name</label><div>${escapeHtml(getStudentDisplayName(student,'Not set'))}</div></div>
+    <div class="student-profile-info-box"><label>Full Name</label><div>${escapeHtml(student.name||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Nickname</label><div>${escapeHtml(student.nickname||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Birthday</label><div>${escapeHtml(student.birthday||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Age</label><div>${escapeHtml(student.age||'Not set')}</div></div>
@@ -12958,8 +12877,6 @@ content.innerHTML=`
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
-    <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
-    <div class="student-detail-stat"><b>${p.notYetBooked||0}</b><span>Classes Not Yet Booked</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
     <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
@@ -13209,7 +13126,7 @@ document.getElementById('renewStudentId').value=student.id;
 const current=getCurrentStudentPackage(student);
 const currentCount=current?current.classCount:getPackageClassCount(student.packageName);
 const currentProgress=getStudentProgress(student);
-document.getElementById('renewStudentSummary').innerHTML=`<strong>${escapeHtml(getStudentDisplayName(student))}</strong><br>Current classes: <strong>${escapeHtml(student.packageName||'Not set')}</strong> · ${currentProgress.completed} / ${currentCount||0} completed · <strong>${currentProgress.remaining} remaining</strong>`;
+document.getElementById('renewStudentSummary').innerHTML=`<strong>${escapeHtml(student.name)}</strong><br>Current classes: <strong>${escapeHtml(student.packageName||'Not set')}</strong> · ${currentProgress.completed} / ${currentCount||0} completed · <strong>${currentProgress.remaining} remaining</strong>`;
 document.getElementById('renewClassCount').value='20';
 document.getElementById('renewDuration').value=['30 Minutes','40 Minutes','50 Minutes'].includes(student.duration)?student.duration:'30 Minutes';
 const today=getLocalDateString(new Date());
@@ -13401,7 +13318,7 @@ const bookingMessage=created
  ? `${created} new future class${created===1?'':'es'} booked. ${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining.`
  : `${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining. Existing future appointments were kept; no duplicate classes were created.`;
 
-const successMessage=`${getStudentDisplayName(student)}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
+const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
 showStudentStatus(successMessage,true);
 
 /* LIVE UPDATE: all affected screens are refreshed in memory.
@@ -13600,7 +13517,7 @@ function renderEvaluationQueue(activeId){
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
-      <div class="pending-meta"><span class="pending-name">${escapeHtml(getAppointmentStudentDisplayName(a))}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
+      <div class="pending-meta"><span class="pending-name">${escapeHtml(a.studentName||'Student')}</span><span class="pending-sub">${escapeHtml(a.id||'')} · ${escapeHtml(when)} · ${escapeHtml(a.duration||'30 Minutes')}</span></div>
       <button type="button" onclick="loadEvaluationFromAppointment('${escapeAttr(a.id)}')">${active?'Evaluating':'Evaluate'}</button>
     </div>`;
   }).join('');
@@ -13634,7 +13551,7 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
     if(el)el.value=value??'';
   };
 
-  const studentName=getStudentDisplayName(student,item.studentName || item.student || item.name || '');
+  const studentName=student?.name || item.studentName || item.student || item.name || '';
   const studentId=student?.id ?? item.studentId ?? '';
   const parentEmail=student?.email || item.parentEmail || item.parent_email || item.parentGmail || item.parentEmailAddress || item.email || '';
 
@@ -13679,17 +13596,6 @@ function selectStudent(){
 /* =========================================================
    SECURITY / HTML HELPERS
 ========================================================= */
-
-function getStudentDisplayName(student,fallback='Student'){
-  const nickname=String(student?.nickname||'').trim();
-  const fullName=String(student?.name||'').trim();
-  return nickname||fullName||fallback;
-}
-
-function getAppointmentStudentDisplayName(item,fallback='Student'){
-  const student=getStudents().find(s=>String(s.id)===String(item?.studentId||''));
-  return getStudentDisplayName(student,item?.studentName||fallback);
-}
 
 function escapeHtml(str){
 
@@ -13917,15 +13823,18 @@ document.getElementById(
 ).value.trim() ||
 'The student';
 
-const vocab=
-document.getElementById(
-'vocabulary'
-).value.trim();
+const getFieldValue=(id)=>
+  document.getElementById(id)?.value.trim() || '';
 
-const improvement=
-document.getElementById(
-'improvement'
-).value.trim();
+const vocab=getFieldValue('vocabulary');
+const sentences=getFieldValue('sentences');
+const questionsAnswers=getFieldValue('questionsAnswers');
+const improvementVocabulary=getFieldValue('improvementVocabulary');
+const improvementSentences=getFieldValue('improvementSentences');
+const improvementQuestionsAnswers=getFieldValue('improvementQuestionsAnswers');
+
+const learnedInputs=[vocab,sentences,questionsAnswers].filter(Boolean);
+const improvementInputs=[improvementVocabulary,improvementSentences,improvementQuestionsAnswers].filter(Boolean);
 
 /* Convert one-item-per-line teacher inputs into a natural comma-separated phrase. */
 const formatCommentItems=(value)=>{
@@ -13941,8 +13850,8 @@ const formatCommentItems=(value)=>{
   return `${items.slice(0,-1).join(', ')}, and ${items[items.length-1]}`;
 };
 
-const vocabPhrase=formatCommentItems(vocab);
-const improvementPhrase=formatCommentItems(improvement);
+const vocabPhrase=formatCommentItems(learnedInputs.join('\n'));
+const improvementPhrase=formatCommentItems(improvementInputs.join('\n'));
 
 const score=
 document.getElementById(
@@ -14117,7 +14026,7 @@ function escapeHtml(text){
 function buildBoldCommentHtml(commentText){
   let html=escapeHtml(commentText);
   const values=[];
-  ['vocabulary','improvement'].forEach(id=>{
+  ['vocabulary','sentences','questionsAnswers','improvementVocabulary','improvementSentences','improvementQuestionsAnswers'].forEach(id=>{
     const field=document.getElementById(id);
     if(!field) return;
     String(field.value||'').split(/\n+/)
@@ -14176,9 +14085,7 @@ return box.textContent;
    LIVE SCORE / COMMENT
 ========================================================= */
 
-document.getElementById(
-'score'
-).addEventListener(
+document.getElementById('score')?.addEventListener(
 'input',
 ()=>{
 
@@ -14357,27 +14264,27 @@ document.getElementById('teacher').value.trim() ||
 'Teacher Danyeal',
 
 vocabulary:
-document.getElementById('vocabulary').value.trim() ||
+document.getElementById('vocabulary')?.value.trim() ||
 'No vocabulary/lesson notes provided.',
 
 sentences:
-document.getElementById('sentences').value.trim() ||
+document.getElementById('sentences')?.value.trim() ||
 'No sentences provided.',
 
 questionsAnswers:
-document.getElementById('questionsAnswers').value.trim() ||
+document.getElementById('questionsAnswers')?.value.trim() ||
 'No questions and answers provided.',
 
 improvementVocabulary:
-document.getElementById('improvementVocabulary').value.trim() ||
+document.getElementById('improvementVocabulary')?.value.trim() ||
 'No vocabulary improvement areas noted.',
 
 improvementSentences:
-document.getElementById('improvementSentences').value.trim() ||
+document.getElementById('improvementSentences')?.value.trim() ||
 'No sentence improvement areas noted.',
 
 improvementQuestionsAnswers:
-document.getElementById('improvementQuestionsAnswers').value.trim() ||
+document.getElementById('improvementQuestionsAnswers')?.value.trim() ||
 'No questions and answers improvement areas noted.',
 
 participation:starText(stars.participation),
@@ -14492,7 +14399,7 @@ function buildEvaluationParentReport(){
   [...report.querySelectorAll('.small')].forEach(el=>el.remove());
 
   report.querySelectorAll('input, select, textarea').forEach(control=>{
-    if(control.id==='vocabulary' || control.id==='improvement'){
+    if(['vocabulary','sentences','questionsAnswers','improvementVocabulary','improvementSentences','improvementQuestionsAnswers'].includes(control.id)){
       const items=(control.value||'').split(/\n+/).map(item=>item.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);
       const list=document.createElement('ul');
       list.style.margin='0';
@@ -14674,64 +14581,13 @@ showStatus('Preparing formal evaluation report...',true);
 
 try{
   const dataUrl=await renderEvaluationParentImage();
-  const student=getStudents().find(s=>{
-  const fullName=String(s.name||'').trim();
-  const nickname=String(s.nickname||'').trim();
-
-  return (
-    fullName===studentName ||
-    nickname===studentName
-  );
-});
-
-const studentNickname=String(
-  student?.nickname || student?.name || studentName || 'Student'
-)
-.trim()
-.replace(/[^a-z0-9]+/gi,'-')
-.replace(/^-+|-+$/g,'') || 'Student';
-
-const evaluationStudentId=student?.id || '';
-
-const evaluationAppointments=getAppointments()
-  .filter(a=>
-    String(a.studentId||'')===String(evaluationStudentId||'') &&
-    String(a.type||'Regular Class')==='Regular Class'
-  )
-  .sort((a,b)=>{
-    const da=getAppointmentDateTime(a);
-    const db=getAppointmentDateTime(b);
-    return (db?.getTime()||0)-(da?.getTime()||0);
-  });
-
-const evaluationAppointment=evaluationAppointments[0]||null;
-
-const classDate=evaluationAppointment?.date || '';
-const classTime=evaluationAppointment?.time || '';
-
-const lessonTopic=(
-  document.querySelector('#evaluationPage input[placeholder*="lesson" i]')?.value ||
-  document.querySelector('#evaluationPage textarea[placeholder*="lesson" i]')?.value ||
-  document.querySelector('#evaluationPage input[placeholder*="topic" i]')?.value ||
-  document.querySelector('#evaluationPage textarea[placeholder*="topic" i]')?.value ||
-  document.querySelector('#evaluationPage input[aria-label*="lesson" i]')?.value ||
-  document.querySelector('#evaluationPage textarea[aria-label*="lesson" i]')?.value ||
-  document.querySelector('#evaluationPage input[aria-label*="topic" i]')?.value ||
-  document.querySelector('#evaluationPage textarea[aria-label*="topic" i]')?.value ||
-  'Evaluation'
-)
-.trim()
-.replace(/[^a-z0-9]+/gi,'-')
-.replace(/^-+|-+$/g,'') || 'Evaluation';
-
-const safeDate=String(classDate||'')
-.replace(/[^0-9-]/g,'') || 'Unknown-Date';
-
-const safeTime=String(classTime||'')
-.replace(/[^0-9a-z]+/gi,'-')
-.replace(/^-+|-+$/g,'') || 'Unknown-Time';
-
-const filename=`${studentNickname}-TD-Evaluation-${lessonTopic}-${safeDate}-${safeTime}.png`;
+  const studentId=String(document.getElementById('studentId')?.value||'');
+  const student=getStudents().find(s=>String(s.id)===studentId);
+  const nickname=(student?.nickname||student?.name||document.getElementById('studentName')?.value||'Student').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'') || 'Student';
+  const topic=(document.getElementById('lessonTopic')?.value||'Lesson-Topic').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'') || 'Lesson-Topic';
+  const datePart=document.getElementById('date')?.value || 'Date';
+  const timePart=(document.getElementById('time')?.value || 'Time').replace(/:/g,'-');
+  const filename=`${nickname}-TD-Evaluation-${topic}-${datePart}-${timePart}.png`;
 
   if(typeof window.showSaveFilePicker==='function'){
     try{
@@ -14794,11 +14650,15 @@ currentEvaluationAppointmentId='';
 'time',
 'lessonTopic',
 'vocabulary',
-'improvement'
-].forEach(
-id=>
-document.getElementById(id).value=''
-);
+'sentences',
+'questionsAnswers',
+'improvementVocabulary',
+'improvementSentences',
+'improvementQuestionsAnswers'
+].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.value='';
+});
 
 document.getElementById(
 'duration'
@@ -15151,7 +15011,7 @@ student,
 <div class="evaluation-student-info">
 
 <span class="student-name">
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </span>
 
 <span class="student-id">
@@ -15265,7 +15125,7 @@ student,
 <div class="record-student-header-info">
 
 <b>
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </b>
 
 <span>
@@ -15635,7 +15495,7 @@ student,
 <div>
 
 <div class="record-detail-title">
-${escapeHtml(getStudentDisplayName(student))}
+${escapeHtml(student.name)}
 </div>
 
 <div class="record-detail-date">
@@ -15741,76 +15601,21 @@ evaluation.rating ||
 
 
 <div class="record-detail-section">
-
-<div class="record-detail-section-title">
-WHAT WE LEARNED TODAY
-</div>
-
+<div class="record-detail-section-title">WHAT WE LEARNED TODAY</div>
 <div class="record-detail-section-body">
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Vocabulary</div>
-${evaluationBulletsHtml(
-  evaluation.vocabulary,
-  'No vocabulary/lesson notes provided.'
-)}
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Vocabulary</div>${evaluationBulletsHtml(evaluation.vocabulary,'No vocabulary/lesson notes provided.')}</div>
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Sentences</div>${evaluationBulletsHtml(evaluation.sentences,'No sentences provided.')}</div>
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Questions and Answers</div>${evaluationBulletsHtml(evaluation.questionsAnswers,'No questions and answers provided.')}</div>
 </div>
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Sentences</div>
-${evaluationBulletsHtml(
-  evaluation.sentences,
-  'No sentences provided.'
-)}
 </div>
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Questions and Answers</div>
-${evaluationBulletsHtml(
-  evaluation.questionsAnswers,
-  'No questions and answers provided.'
-)}
-</div>
-
-</div>
-
-</div>
-
 
 <div class="record-detail-section">
-
-<div class="record-detail-section-title">
-NEEDS IMPROVEMENT / AREAS TO PRACTICE
-</div>
-
+<div class="record-detail-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div>
 <div class="record-detail-section-body">
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Vocabulary</div>
-${evaluationBulletsHtml(
-  evaluation.improvementVocabulary,
-  'No vocabulary improvement areas noted.'
-)}
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Vocabulary</div>${evaluationBulletsHtml(evaluation.improvementVocabulary,'No vocabulary improvement areas noted.')}</div>
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Sentences</div>${evaluationBulletsHtml(evaluation.improvementSentences,'No sentence improvement areas noted.')}</div>
+<div class="record-detail-subsection"><div class="record-detail-subsection-title">Questions and Answers</div>${evaluationBulletsHtml(evaluation.improvementQuestionsAnswers,'No questions and answers improvement areas noted.')}</div>
 </div>
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Sentences</div>
-${evaluationBulletsHtml(
-  evaluation.improvementSentences,
-  'No sentence improvement areas noted.'
-)}
-</div>
-
-<div class="record-detail-subsection">
-<div class="record-detail-subsection-title">Questions and Answers</div>
-${evaluationBulletsHtml(
-  evaluation.improvementQuestionsAnswers,
-  'No questions and answers improvement areas noted.'
-)}
-</div>
-
-</div>
-
 </div>
 
 
@@ -17550,7 +17355,7 @@ function getPaymentReceiptData(){
     receiptNo:paymentReceiptValue('paymentReceiptNo').trim(),
     date:paymentReceiptValue('paymentReceiptDate'),
     studentId,
-    studentName:getStudentDisplayName(student,''),
+    studentName:student?.name||'',
     studentEmail:student?.email||'',
     studentIdNo:student?.id||'',
     packageName:paymentReceiptValue('paymentReceiptPackage').trim(),
@@ -18636,6 +18441,31 @@ body.portal-dark .payment-student-picker-item small{color:#b9c7cc!important}
 body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 @media(max-width:900px){.payment-receipt-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.payment-receipt-grid{grid-template-columns:1fr}.payment-receipt-full{grid-column:auto}.payment-receipt-header{align-items:flex-start;flex-direction:column}.payment-add-btn{width:100%}}
+
+.evaluation-three-column{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+.evaluation-field{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.evaluation-field-title{
+  font-weight:800;
+  font-size:14px;
+  color:var(--global-text,#333);
+}
+.evaluation-field textarea{
+  width:100%;
+  min-height:150px;
+  resize:vertical;
+  box-sizing:border-box;
+}
+@media(max-width:800px){
+  .evaluation-three-column{grid-template-columns:1fr;}
+}
 </style>
 
 <script id="inspirational-quotes-script">
