@@ -2455,7 +2455,8 @@ body .student-profile-custom-field-box label{
 .appointment-more-menu button.absent{color:#8b0000}
 .appointment-reason-modal{max-width:520px}
 .appointment-reason-help{font-size:12px;color:#666;line-height:1.45;margin-top:5px}
-.appointment-modal{max-width:700px}
+.modal.appointment-modal{width:70vw !important;max-width:1100px;max-height:88vh;overflow-y:auto}
+@media(max-width:700px){.modal.appointment-modal{width:96vw !important;max-width:96vw;max-height:92vh;padding:14px}}
 .appointment-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .appointment-form-grid .full{grid-column:1/-1}
 .appointment-info-box{border:1px solid #ddd;border-radius:8px;padding:10px;background:#fafafa;font-size:12px;line-height:1.5}
@@ -5213,12 +5214,6 @@ onclick="if(event.target===this) closeAddStudent()"
 
     <div class="full">
       <div id="appointmentAutoInfo" class="appointment-info-box">Select a student to see the saved preferred schedule and class limit.</div>
-    </div>
-
-    <div class="full" id="appointmentExtraClassesWrap">
-      <label for="appointmentExtraClasses">Extra / Bonus Classes to Add (optional)</label>
-      <input id="appointmentExtraClasses" type="number" min="0" step="1" value="0" style="width:100%" />
-      <div class="small">Add extra classes beyond the package balance, for example bonus or additional lessons. These extra bookings will not be counted against the purchased package.</div>
     </div>
 
     <div class="full appointment-schedule-mode-wrap" id="appointmentScheduleModeWrap">
@@ -11288,16 +11283,26 @@ function updateAppointmentAutoInfo(){
 const box=document.getElementById('appointmentAutoInfo');
 if(!box)return;
 const student=getAppointmentStudent(document.getElementById('appointmentStudent')?.value||'');
-if(!student){box.textContent='Select a student to see the saved preferred schedule and class limit.';return;}
-const packageCount=getPackageClassCount(student.packageName);
+if(!student){box.textContent='Select a student to see the saved preferred schedule and class balance.';return;}
+const current=getCurrentStudentPackage(student);
+const packageCount=Math.max(0,parseInt(current?.classCount,10)||getPackageClassCount(current?.packageName||student.packageName)||0);
 const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
-const scheduleText=preferredDays.length
-?preferredDays.map(day=>`${day} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>minutesToTimeLabel(mins)).join(' / ')}`).join(' · ')
-:'No preferred schedule saved.';
-const existing=getStudentBookedCountForCurrentClasses(student);
+const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
+const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
+const totalAvailable=packageCount+bonus+additional;
+const appointments=getAppointments();
+const completed=appointments.filter(a=>a.studentId===student.id && String(a.status||'').toLowerCase()==='completed' && String(a.type||'Regular Class').toLowerCase()==='regular class').length;
+const bookedUpcoming=appointments.filter(a=>{
+  const status=String(a.status||'Scheduled').toLowerCase();
+  const type=String(a.type||'Regular Class').toLowerCase();
+  const dt=getAppointmentDateTime(a);
+  return a.studentId===student.id && status!=='cancelled' && status!=='completed' && type==='regular class' && dt && dt.getTime()>=Date.now();
+}).length;
+const remaining=Math.max(0,totalAvailable-completed);
+const notBooked=Math.max(0,remaining-bookedUpcoming);
+const scheduleHtml=preferredDays.length?preferredDays.map(day=>`<li>${escapeHtml(day)} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>escapeHtml(minutesToTimeLabel(mins))).join(' / ')}</li>`).join(''):'<li>No preferred schedule saved.</li>';
 const mode=getAppointmentScheduleMode();
-const remaining=packageCount?Math.max(0,packageCount-existing):'Not available';
-box.innerHTML=`<ul style="margin:0;padding-left:20px;display:grid;gap:4px"><li><strong>${escapeHtml(student.name)}</strong></li><li>Classes: <strong>${packageCount?packageCount+' classes':'No class limit found'}</strong></li><li>Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong></li><li>Preferred schedule: ${escapeHtml(scheduleText)}</li><li>Classes used in active classes: <strong>${existing}</strong></li><li>Remaining package classes: <strong>${remaining}</strong></li><li>Booking mode: <strong>${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</strong></li></ul>`;
+box.innerHTML=`<ul style="margin:0;padding-left:20px;display:grid;gap:4px"><li><strong>${escapeHtml(student.nickname||student.name)}</strong></li><li>Classes purchased: <strong>${packageCount}</strong></li><li>Bonus / free lessons: <strong>${bonus}</strong></li><li>Additional lessons: <strong>${additional}</strong></li><li>Total available classes: <strong>${totalAvailable}</strong></li><li>Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong></li><li>Preferred schedule:<ul style="margin:3px 0 0;padding-left:18px">${scheduleHtml}</ul></li><li>Classes completed: <strong>${completed}</strong></li><li>Remaining classes: <strong>${remaining}</strong></li><li>Classes not booked yet: <strong>${notBooked}</strong></li><li>Booking mode: <strong>${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</strong></li></ul>`;
 }
 
 function updateAppointmentSummary(){
@@ -11717,11 +11722,20 @@ function generatePreferredAppointments(student,startDate,type){
     ? Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName))
     : packageLimit;
   const bookedForPackage=getStudentBookedCountForCurrentClasses(student);
-  const packageRemaining=Math.max(0,activePackageLimit-bookedForPackage);
-  const extraInput=document.getElementById('appointmentExtraClasses');
-  const extraRequested=Math.max(0,parseInt(extraInput?.value||'0',10)||0);
-  const targetCount=packageRemaining+extraRequested;
-  if(targetCount===0)return {created:0,remaining:0,reason:'No package classes remain. Enter the number of Extra / Bonus Classes to Add to book additional lessons.'};
+  const bonusCredits=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
+  const additionalCredits=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
+  const totalAvailable=Math.max(0,activePackageLimit+bonusCredits+additionalCredits);
+  const studentAppointments=appointments.filter(a=>a.studentId===student.id && String(a.type||'Regular Class').toLowerCase()==='regular class');
+  const completedCount=studentAppointments.filter(a=>String(a.status||'').toLowerCase()==='completed').length;
+  const bookedUpcoming=studentAppointments.filter(a=>{
+    const status=String(a.status||'Scheduled').toLowerCase();
+    const dt=getAppointmentDateTime(a);
+    return status!=='cancelled' && status!=='completed' && dt && dt.getTime()>=Date.now();
+  }).length;
+  const totalRemaining=Math.max(0,totalAvailable-completedCount);
+  const targetCount=Math.max(0,totalRemaining-bookedUpcoming);
+  const packageRemaining=Math.max(0,activePackageLimit-completedCount-bookedUpcoming);
+  if(targetCount===0)return {created:0,remaining:0,reason:'There are no unbooked classes left based on this student’s package, bonus, and additional lesson information.'};
 
   /* Continue after the student's latest non-cancelled appointment, filling any later preferred slot on that same day first. */
   const existingForStudent=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&a.date&&a.time)
@@ -11755,7 +11769,6 @@ function generatePreferredAppointments(student,startDate,type){
     cursor.setDate(cursor.getDate()+1);
   }
   saveAppointments(appointments);
-  if(extraInput)extraInput.value='0';
   return {created,remaining:Math.max(0,packageRemaining-packageCreated),reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
