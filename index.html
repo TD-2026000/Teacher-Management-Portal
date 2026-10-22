@@ -4992,6 +4992,7 @@ onclick="if(event.target===this) closeAddStudent()"
 <option value="50 Minutes">50 Minutes</option>
 </select></div>
 <div><label>Classes</label><input id="newStudentClasses" placeholder="e.g. 20 Classes"></div>
+<div><label>Bonus / Free Lesson</label><input id="newStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
 
 <div id="newCustomStudentFields" class="custom-student-fields-form"></div>
 
@@ -6240,6 +6241,7 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
+      <div class="edit-student-field"><label>Bonus / Free Lesson</label><input id="editStudentBonusFreeLessons" type="number" min="0" step="1" value="0" placeholder="e.g. 2"></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -10136,6 +10138,7 @@ const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
 const duration=document.getElementById('newStudentDuration').value;
 const packageName=document.getElementById('newStudentClasses').value.trim();
+const bonusFreeLessons=Math.max(0,Math.floor(Number(document.getElementById('newStudentBonusFreeLessons')?.value||0)||0));
 const status='Active';
 const scheduleData=getSchedulePickerData('new');
 const schedule=scheduleData.selected;
@@ -10198,6 +10201,7 @@ students.push({
   level,
   duration,
   packageName,
+  bonusFreeLessons,
   status,
   preferredSchedule:schedule,
   scheduleDetails,
@@ -10220,7 +10224,8 @@ syncStudentToSupabase(students[students.length - 1]);
 'newStudentId',
 'newStudentAge',
 'newStudentParentName',
-'newStudentClasses'
+'newStudentClasses',
+'newStudentBonusFreeLessons'
 ].forEach(id=>{
 const el=document.getElementById(id);
 if(el)el.value='';
@@ -10394,6 +10399,7 @@ document.getElementById('editStudentDuration').value=
 :'30 Minutes';
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
+document.getElementById('editStudentBonusFreeLessons').value=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10678,6 +10684,7 @@ parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
+bonusFreeLessons:Math.max(0,Math.floor(Number(document.getElementById('editStudentBonusFreeLessons')?.value||0)||0)),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -12783,9 +12790,8 @@ content.innerHTML=`
  <div class="student-profile-side">
   ${avatar}
   <div style="min-width:0;flex:1">
-   <div class="student-profile-name">${escapeHtml(student.nickname||student.name||'Unnamed Student')}</div>
+   <div class="student-profile-name">${escapeHtml(getStudentDisplayName(student))}</div>
    <div class="student-profile-id">Student ID: ${escapeHtml(student.id||'—')}</div>
-   ${student.nickname&&student.name?`<div class="small" style="margin-top:4px">Full Name: ${escapeHtml(student.name)}</div>`:''}
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
@@ -14726,6 +14732,10 @@ parts[parts.length-1].charAt(0)
    STUDENT AVATAR
 ========================================================= */
 
+function getStudentDisplayName(student){
+  return String(student?.nickname||student?.name||'Unnamed Student').trim() || 'Unnamed Student';
+}
+
 function getStudentAvatarHtml(student,extraClass=''){
 
 const picture=
@@ -14949,7 +14959,7 @@ student,
 <div class="evaluation-student-info">
 
 <span class="student-name">
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </span>
 
 <span class="student-id">
@@ -15063,7 +15073,7 @@ student,
 <div class="record-student-header-info">
 
 <b>
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </b>
 
 <span>
@@ -15433,7 +15443,7 @@ student,
 <div>
 
 <div class="record-detail-title">
-${escapeHtml(student.name)}
+${escapeHtml(getStudentDisplayName(student))}
 </div>
 
 <div class="record-detail-date">
