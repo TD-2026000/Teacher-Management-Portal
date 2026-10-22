@@ -13511,9 +13511,43 @@ function populateStudentSelect(selectedId){
   renderEvaluationQueue(selectedId);
 }
 
+function resetEvaluationDraftForStudentSwitch(){
+  /* Clear unsaved inputs whenever the teacher switches to another class/student.
+     Saved evaluation records are not touched. */
+  const ids=[
+    'lessonTopic','vocabulary','improvement',
+    'learnedVocabulary','learnedSentences','learnedQuestionsAnswers',
+    'practiceVocabulary','practiceSentences','practiceQuestionsAnswers',
+    'commentPreview'
+  ];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(id==='commentPreview') el.textContent='';
+    else el.value='';
+  });
+  ['date','time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const duration=document.getElementById('duration');
+  if(duration)duration.value='25 minutes';
+  const teacher=document.getElementById('teacher');
+  if(teacher)teacher.value='';
+  Object.keys(stars).forEach(field=>{
+    stars[field]=5;
+    const wrap=document.querySelector(`[data-field="${field}"]`);
+    if(wrap) [...wrap.querySelectorAll('button')].forEach((button,index)=>button.style.opacity=index<5?'1':'0.28');
+  });
+  updateOverallScore();
+  commentVersion=0;
+  markEvaluationUnsaved();
+  syncEvaluationTopicFields();
+}
+
 function loadEvaluationFromAppointment(appointmentId,options={}){
   const item=getAppointments().find(a=>String(a.id)===String(appointmentId));
   if(!item)return;
+
+  const switchingToDifferentClass=String(currentEvaluationAppointmentId||'')!==String(item.id||'');
+  if(switchingToDifferentClass) resetEvaluationDraftForStudentSwitch();
 
   /*
      IMPORTANT: Evaluation is opened directly from a completed appointment.
@@ -13563,6 +13597,12 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
   generateComment();
   markEvaluationUnsaved();
   renderEvaluationQueue(item.id);
+
+  // Automatically scroll/slide the evaluation form into view after selecting a student/class.
+  setTimeout(()=>{
+    const panel=document.getElementById('evaluationFormPanel');
+    if(panel && panel.style.display!=='none') panel.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
 }
 
 function selectStudent(){
