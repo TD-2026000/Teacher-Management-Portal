@@ -2642,9 +2642,6 @@ body .student-profile-custom-field-box label{
 #contractFontFamily option[value="Roboto"]{font-family:Roboto,sans-serif}
 #contractFontFamily option[value="Poppins"]{font-family:Poppins,sans-serif}
 #contractFontFamily option[value="Montserrat"]{font-family:Montserrat,sans-serif}
-.record-detail-subsection{margin-bottom:12px;}
-.record-detail-subsection:last-child{margin-bottom:0;}
-.record-detail-subsection-title{font-weight:800;margin-bottom:5px;}
 </style>
 
 
@@ -5600,37 +5597,19 @@ class="rating"
 <div class="section">
 
 <div class="section-title">
-WHAT WE LEARNED TODAY
+WHAT WE LEARNED TODAY / VOCABULARY
 </div>
 
-<div class="section-body evaluation-three-column">
+<div class="section-body">
 
-<div class="evaluation-field">
-<div class="evaluation-field-title">Vocabulary</div>
-<textarea id="vocabulary" placeholder="Example:
-· apple
-· banana
-· watermelon
-· grapes..."></textarea>
-</div>
-
-<div class="evaluation-field">
-<div class="evaluation-field-title">Sentences</div>
-<textarea id="sentences" placeholder="Example:
-· I like apples.
-· This is a banana.
-· I eat watermelon."></textarea>
-</div>
-
-<div class="evaluation-field">
-<div class="evaluation-field-title">Questions and Answers</div>
-<textarea id="questionsAnswers" placeholder="Example:
-Q: What is this?
-A: This is an apple.
-
-Q: Do you like bananas?
-A: Yes, I do."></textarea>
-</div>
+<textarea
+id="vocabulary"
+placeholder="Example: 
+  ·apple 
+  ·banana
+  ·watermelon
+  ·grapes......."
+></textarea>
 
 </div>
 </div>
@@ -5641,34 +5620,15 @@ A: Yes, I do."></textarea>
 NEEDS IMPROVEMENT / AREAS TO PRACTICE
 </div>
 
-<div class="section-body evaluation-three-column">
+<div class="section-body">
 
-<div class="evaluation-field">
-<div class="evaluation-field-title">Vocabulary</div>
-<textarea id="improvementVocabulary" placeholder="Example:
-· apple
-· banana
-· watermelon
-· grapes..."></textarea>
-</div>
-
-<div class="evaluation-field">
-<div class="evaluation-field-title">Sentences</div>
-<textarea id="improvementSentences" placeholder="Example:
-· I like apple.
-· I like banana.
-· I like watermelon."></textarea>
-</div>
-
-<div class="evaluation-field">
-<div class="evaluation-field-title">Questions and Answers</div>
-<textarea id="improvementQuestionsAnswers" placeholder="Example:
-Q: What is this?
-A: This is an apple.
-
-Q: What color is it?
-A: It is red."></textarea>
-</div>
+<textarea
+id="improvement"
+placeholder="Example: 
+  ·I like apple
+  ·I like banana
+  ·I like watermelon......"
+></textarea>
 
 </div>
 </div>
@@ -6814,8 +6774,6 @@ return currentUser
 :base;
 
 }
-
-function getStudentDisplayName(student,fallback='Student'){const nickname=String(student?.nickname||'').trim();const fullName=String(student?.name||'').trim();return nickname||fullName||fallback;}
 
 function getStudents(){
 
@@ -12339,8 +12297,11 @@ async function refreshDashboardSummaryCounts(){
 
     const studentEl=document.getElementById('dashboardStudentCount');
     const appointmentEl=document.getElementById('dashboardAppointmentCount');
+    const todayEl=document.getElementById('dashboardTodayClassCount');
+
     if(studentEl) studentEl.textContent=studentCount || 0;
     if(appointmentEl) appointmentEl.textContent=appointmentCount || 0;
+    if(todayEl) todayEl.textContent=todayCount || 0;
 
   }catch(error){
     console.error('Dashboard summary count failed:',error);
@@ -12677,7 +12638,7 @@ function studentAllRecordEvaluationPage(student,ev,index){
   const dateTime=ev.dateTime||ev.createdAt||ev.evaluationSavedAt||ev.date||'';
   const stars=value=>{let count=0;const text=String(value||'');if(typeof value==='number')count=value;else if((text.match(/★/g)||[]).length)count=(text.match(/★/g)||[]).length;else if(/^\s*\d+(?:\.\d+)?\s*$/.test(text))count=Number(text);count=Math.max(0,Math.min(5,Math.round(count)));return '★★★★★'.split('').map((x,i)=>`<span class="student-all-record-star ${i<count?'on':''}">${x}</span>`).join('');};
   const bullets=value=>{const items=String(value||'').split(/\n+/).map(x=>x.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);return items.length?`<ul>${items.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'<div>—</div>';};
-  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY</div><div class="student-all-record-eval-body"><b>Vocabulary</b>${bullets(ev.vocabulary)}<b>Sentences</b>${bullets(ev.sentences)}<b>Questions and Answers</b>${bullets(ev.questionsAnswers)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body"><b>Vocabulary</b>${bullets(ev.improvementVocabulary)}<b>Sentences</b>${bullets(ev.improvementSentences)}<b>Questions and Answers</b>${bullets(ev.improvementQuestionsAnswers)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
+  const body=`<div class="student-all-record-evaluation-image"><div class="student-all-record-eval-section-title">LESSON / CLASS INFORMATION</div><div class="student-all-record-eval-grid"><div><label>Lesson Title</label><b>${escapeHtml(topic)}</b></div><div><label>Date & Time</label><b>${escapeHtml(formatDateTime(dateTime))}</b></div><div><label>Class Duration</label><b>${escapeHtml(ev.duration||'N/A')}</b></div><div><label>Teacher</label><b>${escapeHtml(ev.teacher||'Teacher Danyeal')}</b></div><div><label>Overall Score</label><b>${escapeHtml(ev.score||'N/A')}</b></div><div><label>Rating</label><b>${escapeHtml(ev.rating||'N/A')}</b></div></div><div class="student-all-record-eval-section-title">WHAT WE LEARNED TODAY / VOCABULARY</div><div class="student-all-record-eval-body">${bullets(ev.vocabulary)}</div><div class="student-all-record-eval-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div><div class="student-all-record-eval-body">${bullets(ev.improvement)}</div><div class="student-all-record-eval-section-title">STUDENT PERFORMANCE</div><div class="student-all-record-performance-grid"><div><label>Participation</label><div>${stars(ev.participation)}</div></div><div><label>Pronunciation</label><div>${stars(ev.pronunciation)}</div></div><div><label>Behavior</label><div>${stars(ev.behavior)}</div></div><div><label>Speaking</label><div>${stars(ev.speaking)}</div></div><div><label>Understanding</label><div>${stars(ev.understanding)}</div></div><div><label>Listening</label><div>${stars(ev.listening)}</div></div></div><div class="student-all-record-eval-section-title">TEACHER'S COMMENT / CLASS MEMO</div><div class="student-all-record-eval-body student-all-record-teacher-comment">${escapeHtml(studentAllRecordSafeText(ev.teacher_comment,'No teacher comment recorded.'))}</div></div>`;
   return studentAllRecordPageShell(`STUDENT EVALUATION RECORD — ${index+1}`,student,body,'student-all-record-evaluation-pdf-page');
 }
 
@@ -13513,7 +13474,7 @@ function renderEvaluationQueue(activeId){
   }
   const selected=activeId||currentEvaluationAppointmentId||'';
   queue.innerHTML=`<div class="small" style="margin-bottom:10px;font-weight:700">${pending.length} class${pending.length===1?'':'es'} need${pending.length===1?'s':''} evaluation.</div>`+pending.map(a=>{
-    const active=a.id===selected;
+    const active=String(a.id)===String(selected);
     const d=getAppointmentDateTime(a);
     const when=d?d.toLocaleString(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):`${a.date||''} ${a.time||''}`;
     return `<div class="evaluation-pending-card ${active?'active':''}">
@@ -13580,6 +13541,16 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
   generateComment();
   markEvaluationUnsaved();
   renderEvaluationQueue(item.id);
+
+  /* Evaluation form should open immediately and scroll into view after the
+     selected class becomes active. */
+  setTimeout(()=>{
+    const form=document.getElementById('evaluationFormPanel');
+    if(form){
+      form.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    generateComment();
+  },80);
 }
 
 function selectStudent(){
@@ -13823,18 +13794,15 @@ document.getElementById(
 ).value.trim() ||
 'The student';
 
-const getFieldValue=(id)=>
-  document.getElementById(id)?.value.trim() || '';
+const vocab=
+document.getElementById(
+'vocabulary'
+).value.trim();
 
-const vocab=getFieldValue('vocabulary');
-const sentences=getFieldValue('sentences');
-const questionsAnswers=getFieldValue('questionsAnswers');
-const improvementVocabulary=getFieldValue('improvementVocabulary');
-const improvementSentences=getFieldValue('improvementSentences');
-const improvementQuestionsAnswers=getFieldValue('improvementQuestionsAnswers');
-
-const learnedInputs=[vocab,sentences,questionsAnswers].filter(Boolean);
-const improvementInputs=[improvementVocabulary,improvementSentences,improvementQuestionsAnswers].filter(Boolean);
+const improvement=
+document.getElementById(
+'improvement'
+).value.trim();
 
 /* Convert one-item-per-line teacher inputs into a natural comma-separated phrase. */
 const formatCommentItems=(value)=>{
@@ -13850,8 +13818,8 @@ const formatCommentItems=(value)=>{
   return `${items.slice(0,-1).join(', ')}, and ${items[items.length-1]}`;
 };
 
-const vocabPhrase=formatCommentItems(learnedInputs.join('\n'));
-const improvementPhrase=formatCommentItems(improvementInputs.join('\n'));
+const vocabPhrase=formatCommentItems(vocab);
+const improvementPhrase=formatCommentItems(improvement);
 
 const score=
 document.getElementById(
@@ -14026,7 +13994,7 @@ function escapeHtml(text){
 function buildBoldCommentHtml(commentText){
   let html=escapeHtml(commentText);
   const values=[];
-  ['vocabulary','sentences','questionsAnswers','improvementVocabulary','improvementSentences','improvementQuestionsAnswers'].forEach(id=>{
+  ['vocabulary','improvement'].forEach(id=>{
     const field=document.getElementById(id);
     if(!field) return;
     String(field.value||'').split(/\n+/)
@@ -14054,6 +14022,8 @@ const box=
 document.getElementById(
 'commentPreview'
 );
+
+if(!box)return '';
 
 const comment=buildComment(0);
 box.innerHTML=buildBoldCommentHtml(comment);
@@ -14085,7 +14055,9 @@ return box.textContent;
    LIVE SCORE / COMMENT
 ========================================================= */
 
-document.getElementById('score')?.addEventListener(
+document.getElementById(
+'score'
+).addEventListener(
 'input',
 ()=>{
 
@@ -14264,28 +14236,12 @@ document.getElementById('teacher').value.trim() ||
 'Teacher Danyeal',
 
 vocabulary:
-document.getElementById('vocabulary')?.value.trim() ||
+document.getElementById('vocabulary').value.trim() ||
 'No vocabulary/lesson notes provided.',
 
-sentences:
-document.getElementById('sentences')?.value.trim() ||
-'No sentences provided.',
-
-questionsAnswers:
-document.getElementById('questionsAnswers')?.value.trim() ||
-'No questions and answers provided.',
-
-improvementVocabulary:
-document.getElementById('improvementVocabulary')?.value.trim() ||
-'No vocabulary improvement areas noted.',
-
-improvementSentences:
-document.getElementById('improvementSentences')?.value.trim() ||
-'No sentence improvement areas noted.',
-
-improvementQuestionsAnswers:
-document.getElementById('improvementQuestionsAnswers')?.value.trim() ||
-'No questions and answers improvement areas noted.',
+improvement:
+document.getElementById('improvement').value.trim() ||
+'No specific improvement areas noted.',
 
 participation:starText(stars.participation),
 pronunciation:starText(stars.pronunciation),
@@ -14399,7 +14355,7 @@ function buildEvaluationParentReport(){
   [...report.querySelectorAll('.small')].forEach(el=>el.remove());
 
   report.querySelectorAll('input, select, textarea').forEach(control=>{
-    if(['vocabulary','sentences','questionsAnswers','improvementVocabulary','improvementSentences','improvementQuestionsAnswers'].includes(control.id)){
+    if(control.id==='vocabulary' || control.id==='improvement'){
       const items=(control.value||'').split(/\n+/).map(item=>item.replace(/^\s*(?:[-•*]|\d+[.)])\s*/,'').trim()).filter(Boolean);
       const list=document.createElement('ul');
       list.style.margin='0';
@@ -14581,13 +14537,7 @@ showStatus('Preparing formal evaluation report...',true);
 
 try{
   const dataUrl=await renderEvaluationParentImage();
-  const studentId=String(document.getElementById('studentId')?.value||'');
-  const student=getStudents().find(s=>String(s.id)===studentId);
-  const nickname=(student?.nickname||student?.name||document.getElementById('studentName')?.value||'Student').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'') || 'Student';
-  const topic=(document.getElementById('lessonTopic')?.value||'Lesson-Topic').trim().replace(/[^a-z0-9]+/gi,'-').replace(/^-+|-+$/g,'') || 'Lesson-Topic';
-  const datePart=document.getElementById('date')?.value || 'Date';
-  const timePart=(document.getElementById('time')?.value || 'Time').replace(/:/g,'-');
-  const filename=`${nickname}-TD-Evaluation-${topic}-${datePart}-${timePart}.png`;
+  const filename=`Teacher-Danyeal-Evaluation-${studentName}.png`;
 
   if(typeof window.showSaveFilePicker==='function'){
     try{
@@ -14650,15 +14600,11 @@ currentEvaluationAppointmentId='';
 'time',
 'lessonTopic',
 'vocabulary',
-'sentences',
-'questionsAnswers',
-'improvementVocabulary',
-'improvementSentences',
-'improvementQuestionsAnswers'
-].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el) el.value='';
-});
+'improvement'
+].forEach(
+id=>
+document.getElementById(id).value=''
+);
 
 document.getElementById(
 'duration'
@@ -15601,21 +15547,28 @@ evaluation.rating ||
 
 
 <div class="record-detail-section">
-<div class="record-detail-section-title">WHAT WE LEARNED TODAY</div>
-<div class="record-detail-section-body">
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Vocabulary</div>${evaluationBulletsHtml(evaluation.vocabulary,'No vocabulary/lesson notes provided.')}</div>
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Sentences</div>${evaluationBulletsHtml(evaluation.sentences,'No sentences provided.')}</div>
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Questions and Answers</div>${evaluationBulletsHtml(evaluation.questionsAnswers,'No questions and answers provided.')}</div>
-</div>
+
+<div class="record-detail-section-title">
+WHAT WE LEARNED TODAY / VOCABULARY
 </div>
 
-<div class="record-detail-section">
-<div class="record-detail-section-title">NEEDS IMPROVEMENT / AREAS TO PRACTICE</div>
 <div class="record-detail-section-body">
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Vocabulary</div>${evaluationBulletsHtml(evaluation.improvementVocabulary,'No vocabulary improvement areas noted.')}</div>
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Sentences</div>${evaluationBulletsHtml(evaluation.improvementSentences,'No sentence improvement areas noted.')}</div>
-<div class="record-detail-subsection"><div class="record-detail-subsection-title">Questions and Answers</div>${evaluationBulletsHtml(evaluation.improvementQuestionsAnswers,'No questions and answers improvement areas noted.')}</div>
+${evaluationBulletsHtml(evaluation.vocabulary,'No vocabulary/lesson notes provided.')}
 </div>
+
+</div>
+
+
+<div class="record-detail-section">
+
+<div class="record-detail-section-title">
+NEEDS IMPROVEMENT / AREAS TO PRACTICE
+</div>
+
+<div class="record-detail-section-body">
+${evaluationBulletsHtml(evaluation.improvement,'No specific improvement areas noted.')}
+</div>
+
 </div>
 
 
@@ -18441,31 +18394,6 @@ body.portal-dark .payment-student-picker-item small{color:#b9c7cc!important}
 body.portal-dark .payment-picker-empty{color:#b9c7cc!important}
 @media(max-width:900px){.payment-receipt-layout{grid-template-columns:1fr}}
 @media(max-width:650px){.payment-receipt-grid{grid-template-columns:1fr}.payment-receipt-full{grid-column:auto}.payment-receipt-header{align-items:flex-start;flex-direction:column}.payment-add-btn{width:100%}}
-
-.evaluation-three-column{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-}
-.evaluation-field{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.evaluation-field-title{
-  font-weight:800;
-  font-size:14px;
-  color:var(--global-text,#333);
-}
-.evaluation-field textarea{
-  width:100%;
-  min-height:150px;
-  resize:vertical;
-  box-sizing:border-box;
-}
-@media(max-width:800px){
-  .evaluation-three-column{grid-template-columns:1fr;}
-}
 </style>
 
 <script id="inspirational-quotes-script">
