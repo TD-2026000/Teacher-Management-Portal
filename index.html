@@ -14457,6 +14457,9 @@ function buildEvaluationParentReport(){
 
   [...report.querySelectorAll('.small')].forEach(el=>el.remove());
 
+  // Legacy compatibility fields are hidden in the live form; do not turn them into visible report boxes.
+  report.querySelectorAll('#vocabulary[hidden], #improvement[hidden], textarea[hidden]').forEach(el=>el.remove());
+
   report.querySelectorAll('input, select, textarea').forEach(control=>{
     let value='';
     if(control.tagName==='SELECT') value=control.options[control.selectedIndex]?.textContent?.trim() || '';
