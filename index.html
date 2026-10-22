@@ -2347,7 +2347,7 @@ body .student-profile-custom-field-box label{
 .renew-modal{max-width:620px}
 .renew-summary{border:1px solid #ddd;border-radius:9px;background:#fafafa;padding:10px;margin:10px 0 14px;line-height:1.5}
 .renew-preview{border:1px solid #d8eeee;border-radius:9px;background:#f4ffff;padding:10px;margin-top:10px;font-size:13px}
-.student-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.student-detail-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
 .student-detail-stat{border:1px solid #ddd;border-radius:8px;padding:10px;text-align:center;background:#fff}
 .student-detail-stat b{display:block;font-size:24px}
 .student-detail-stat span{font-size:11px;color:#666}
@@ -6240,7 +6240,6 @@ onclick="if(event.target===this) closeEditStudent()"
       <div class="edit-student-field"><label>English Level</label><select id="editStudentLevel"><option value="">Select level</option><option>Beginner</option><option>Elementary</option><option>Pre-Intermediate</option><option>Intermediate</option><option>Upper-Intermediate</option><option>Advanced</option></select></div>
       <div class="edit-student-field"><label>Class Duration</label><select id="editStudentDuration"><option value="30 Minutes">30 Minutes</option><option value="40 Minutes">40 Minutes</option><option value="50 Minutes">50 Minutes</option></select></div>
       <div class="edit-student-field"><label>Classes</label><input id="editStudentClasses" placeholder="e.g. 20 Classes"></div>
-      <div class="edit-student-field"><label>Bonus / Free Classes</label><input id="editStudentFreeClasses" type="number" min="0" step="1" value="0" placeholder="0"><div class="small" style="margin-top:4px">Extra classes granted for free. These add to the available class balance but are tracked separately from purchased classes.</div></div>
       <div class="edit-student-field"><label>Start Date</label><input id="editStudentStartDate" type="date"><div class="small" style="margin-top:4px">The saved start date of the student's current classes.</div></div>
       <div class="edit-student-field"><label>Status</label><select id="editStudentStatus"><option>Active</option><option>Completed</option></select></div>
       <div id="editCustomStudentFields" class="custom-student-fields-form"></div>
@@ -10395,8 +10394,6 @@ document.getElementById('editStudentDuration').value=
 :'30 Minutes';
 
 document.getElementById('editStudentClasses').value=student.packageName||'';
-const freeClassesInput=document.getElementById('editStudentFreeClasses');
-if(freeClassesInput)freeClassesInput.value=Math.max(0,parseInt(student.freeClasses,10)||0);
 
 const currentPackage=getCurrentStudentPackage(student);
 const savedStartDate=
@@ -10681,7 +10678,6 @@ parentName:document.getElementById('editStudentParentName').value.trim(),
 level:document.getElementById('editStudentLevel').value,
 duration:document.getElementById('editStudentDuration').value,
 packageName:document.getElementById('editStudentClasses').value.trim(),
-freeClasses:Math.max(0,parseInt(document.getElementById('editStudentFreeClasses')?.value,10)||0),
 status:document.getElementById('editStudentStatus').value,
 preferredSchedule:getSchedulePickerData('edit').selected,
 scheduleDetails:getSchedulePickerData('edit').details,
@@ -11114,8 +11110,7 @@ const select=document.getElementById('appointmentStudent');
 if(!select)return;
 const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
-/* Show every student in the master student list, even if they have no appointment or no unbooked classes. The save-time class-limit validation still decides whether a new regular booking is allowed. */
-const visibleStudents=students;
+const visibleStudents=students.filter(s=>studentHasBookableClasses(s)||s.id===selectedId||s.id===editingStudentId);
 select.innerHTML='<option value="">Select student</option>'+visibleStudents.map(s=>
 `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
@@ -12291,22 +12286,20 @@ async function refreshDashboardSummaryCounts(){
 
     if(appointmentError) throw appointmentError;
 
-    const {count:todayCount,error:todayError} =
-      await supabaseClient
-        .from('appointments')
-        .select('id',{count:'exact',head:true})
-        .eq('user_id',currentUser.id)
-        .eq('class_date',today);
-
-    if(todayError) throw todayError;
-
     const studentEl=document.getElementById('dashboardStudentCount');
     const appointmentEl=document.getElementById('dashboardAppointmentCount');
-    const todayEl=document.getElementById('dashboardTodayClassCount');
 
     if(studentEl) studentEl.textContent=studentCount || 0;
     if(appointmentEl) appointmentEl.textContent=appointmentCount || 0;
-   
+
+    /*
+      IMPORTANT:
+      Do not calculate "CLASSES FOR TODAY" from a separate Supabase
+      class_date count here. The dashboard To-Do List uses getAppointments()
+      and getAppointmentDateTime(), which applies the portal's local date/time
+      logic and excludes cancelled appointments. renderDashboard() below
+      updates the class count from that same list so the two totals agree.
+    */
 
   }catch(error){
     console.error('Dashboard summary count failed:',error);
@@ -12362,25 +12355,22 @@ const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
 .filter(x=>x.date && !isNaN(x.date.getTime()));
 
-const todayCount=validAppointments.filter(x=>
- x.date.getFullYear()===now.getFullYear() &&
- x.date.getMonth()===now.getMonth() &&
- x.date.getDate()===now.getDate()
-).length;
-
-/* Do not overwrite the dashboard appointment count from localStorage here.
-   The dashboard summary count is authoritative from Supabase and is updated
-   by refreshDashboardSummaryCounts(). This prevents the brief stale-count
-   flicker during page reload/login. */
-const todayClassCountDash=document.getElementById('dashboardTodayClassCount');
-if(todayClassCountDash) todayClassCountDash.textContent=todayCount;
-
+/*
+  Use one shared set of today's appointments for both the summary card
+  and the To-Do List. Cancelled appointments are excluded from both.
+*/
 const todayAppointments=validAppointments
 .filter(x=>{
   const d=x.date;
-  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate() && String(x.item.status||'Scheduled').toLowerCase()!=='cancelled';
+  return d.getFullYear()===now.getFullYear() &&
+         d.getMonth()===now.getMonth() &&
+         d.getDate()===now.getDate() &&
+         String(x.item.status||'Scheduled').trim().toLowerCase()!=='cancelled';
 })
 .sort((a,b)=>a.date-b.date);
+
+const todayClassCountDash=document.getElementById('dashboardTodayClassCount');
+if(todayClassCountDash) todayClassCountDash.textContent=todayAppointments.length;
 
 const dashboardClasses=todayAppointments.map(x=>{
   const item=x.item;
@@ -12500,11 +12490,9 @@ if(!current){
   completed=getStudentEvaluations(student.id).length;
 }
 
-const bonus=Math.max(0,parseInt(student.freeClasses,10)||0);
-const totalAvailable=packageCount+bonus;
-const remaining=Math.max(0,totalAvailable-completed);
-const percent=totalAvailable?Math.min(100,Math.round((completed/totalAvailable)*100)):0;
-return {purchased:packageCount,bonus,totalAvailable,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
+const remaining=Math.max(0,packageCount-completed);
+const percent=packageCount?Math.min(100,Math.round((completed/packageCount)*100)):0;
+return {purchased:packageCount,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
 function studentAllRecordSafeText(value, fallback='—'){
@@ -12845,8 +12833,6 @@ content.innerHTML=`
     <div class="student-detail-stat"><b>${p.purchased}</b><span>Classes Purchased</span></div>
     <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
     <div class="student-detail-stat"><b>${p.remaining}</b><span>Classes Remaining</span></div>
-    <div class="student-detail-stat"><b>${p.bonus||0}</b><span>Bonus / Free Classes</span></div>
-    <div class="student-detail-stat"><b>${Math.max(0,p.remaining-appointments.filter(a=>a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class'&&a.status!=='Completed').length)}</b><span>Classes Not Yet Booked</span></div>
    </div>
    <div class="student-progress" style="margin-top:12px">
     <div class="student-progress-head"><span>Course Progress</span><span>${p.percent}%</span></div>
