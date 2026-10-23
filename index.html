@@ -3150,7 +3150,8 @@ a,
 .sa-student.active .sa-student-avatar{background:#fff;color:#008c97}
 .sa-student-name{font-weight:900;font-size:12px;display:block;overflow-wrap:anywhere}.sa-student-id{font-size:10px;opacity:.8;display:block;margin-top:3px}
 .sa-table-wrap{width:100%;overflow-x:auto}.sa-table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}.sa-table th{background:#e5fbfc;color:#173c56;text-align:left;padding:10px 8px;border:1px solid #c8f1f3;white-space:nowrap}.sa-table td{padding:9px 8px;border:1px solid #e0f4f5;vertical-align:middle}.sa-table tr:nth-child(even) td{background:#fbffff}
-.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-btn.lesson{background:#2589ef;color:white}.sa-btn:disabled{opacity:.55;cursor:not-allowed}
+.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-btn.lesson{background:#2589ef;color:white}.sa-btn.reschedule{background:#8b5cf6;color:#fff}.sa-btn:disabled{opacity:.55;cursor:not-allowed}
+.sa-table tbody tr.sa-rescheduled-row{background:#e1e1e1!important;color:#666!important}.sa-table tbody tr.sa-rescheduled-row td{background:#e1e1e1!important;color:#666!important}.sa-status.rescheduled{background:#7c3aed;color:#fff}.sa-reschedule-overlay{position:fixed;inset:0;z-index:100001;background:rgba(15,25,35,.48);display:flex;align-items:center;justify-content:center;padding:16px}.sa-reschedule-modal{width:min(440px,94vw);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 65px rgba(0,0,0,.3);text-align:center}.sa-reschedule-modal h3{margin:0 0 10px;color:#5b21b6}.sa-reschedule-modal p{font-size:13px;line-height:1.5;color:#475569}.sa-reschedule-actions{display:flex;justify-content:center;gap:10px;margin-top:16px}.sa-reschedule-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.sa-reschedule-cancel{background:#eef2f7;color:#334155}.sa-reschedule-confirm{background:#7c3aed;color:#fff}
 .sa-section-title{font-size:13px;font-weight:900;color:#007f89;padding:3px 0 9px}.sa-section{margin-bottom:14px}.sa-muted{font-size:11px;color:#687782;line-height:1.5}.sa-profile-top{display:flex;gap:11px;align-items:center;padding:12px;background:#f1fcfc;border-radius:9px;margin-bottom:10px}.sa-profile-avatar{width:60px;height:60px;border-radius:50%;border:2px solid #00cdd2;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#00a1a7;background:#fff;flex-shrink:0}.sa-profile-name{font-size:14px;font-weight:900;overflow-wrap:anywhere}.sa-info-list{list-style:none;padding:0;margin:0}.sa-info-list li{padding:7px 2px;border-bottom:1px solid #e6f5f5;font-size:11px;line-height:1.45}.sa-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}.sa-stat{border:1px solid #c8f1f3;border-radius:8px;text-align:center;padding:10px 3px}.sa-stat b{font-size:19px;display:block;color:#07536c}.sa-stat span{font-size:9px;color:#647b8c}.sa-empty{padding:22px 12px;text-align:center;color:#718096;font-size:12px}
 .student-appointment-calendar-legacy>summary{cursor:pointer;font-weight:800;color:#007f89;padding:10px;border:1px solid #bdebef;border-radius:8px;background:#f4ffff}
 @media(max-width:1150px){.student-appointment-layout{grid-template-columns:minmax(190px,.75fr) minmax(0,2fr)}.sa-profile-card{grid-column:1/-1}}
@@ -11159,7 +11160,7 @@ function getStudentBookedCountForCurrentClasses(student){
 if(!student)return 0;
 const current=getCurrentStudentPackage(student);
 const appointments=getAppointments();
-const regular=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&(a.type||'Regular Class')==='Regular Class');
+const regular=appointments.filter(a=>a.studentId===student.id&&!['Cancelled','Rescheduled'].includes(String(a.status||'').trim())&&(a.type||'Regular Class')==='Regular Class');
 if(current){
   const linked=regular.filter(a=>a.packageId===current.id);
   const legacy=regular.filter(a=>!a.packageId);
@@ -11767,7 +11768,7 @@ function generatePreferredAppointments(student,startDate,type){
   const bonusCredits=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
   const additionalCredits=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
   const totalAvailable=Math.max(0,activePackageLimit+bonusCredits+additionalCredits);
-  const studentAppointments=appointments.filter(a=>a.studentId===student.id && String(a.type||'Regular Class').toLowerCase()==='regular class');
+  const studentAppointments=appointments.filter(a=>a.studentId===student.id && !['cancelled','rescheduled'].includes(String(a.status||'').toLowerCase()) && String(a.type||'Regular Class').toLowerCase()==='regular class');
   const completedCount=studentAppointments.filter(a=>String(a.status||'').toLowerCase()==='completed').length;
   const bookedUpcoming=studentAppointments.filter(a=>{
     const status=String(a.status||'Scheduled').toLowerCase();
@@ -11780,7 +11781,7 @@ function generatePreferredAppointments(student,startDate,type){
   if(targetCount===0)return {created:0,remaining:0,reason:'There are no unbooked classes left based on this student’s package, bonus, and additional lesson information.'};
 
   /* Continue after the student's latest non-cancelled appointment, filling any later preferred slot on that same day first. */
-  const existingForStudent=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&a.date&&a.time)
+  const existingForStudent=appointments.filter(a=>a.studentId===student.id&&!['Cancelled','Rescheduled'].includes(String(a.status||''))&&a.date&&a.time)
     .sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time).localeCompare(String(b.time)));
   const latest=existingForStudent[existingForStudent.length-1];
   /* For continuation bookings, always continue after the student's latest existing
@@ -12203,7 +12204,7 @@ function renderStudentAppointmentDashboard(){
  const all=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
  const now=Date.now();
  const finished=all.filter(a=>{const dt=getAppointmentDateTime(a);const status=String(a.status||'Scheduled').toLowerCase();return status==='completed'||(dt&&dt.getTime()+durationToMinutes(a.duration||student.duration||'30 Minutes')*60000<=now);});
- const upcoming=all.filter(a=>!finished.some(f=>String(f.id)===String(a.id))&&String(a.status||'Scheduled').toLowerCase()!=='cancelled');
+ const upcoming=all.filter(a=>!finished.some(f=>String(f.id)===String(a.id))&&!['cancelled','rescheduled'].includes(String(a.status||'Scheduled').toLowerCase()));
  const p=getStudentProgress(student);
  const bonus=Math.max(0,Number(student.bonusFreeLessons??student.bonusLessons??student.freeLessons??student.bonusClasses??0)||0);
  const additional=Math.max(0,Number(student.additionalLessons??student.addedLessons??student.extraLessons??0)||0);
@@ -12216,10 +12217,11 @@ function renderStudentAppointmentDashboard(){
    const link=saLessonLinkFor(student,a,all);
    let actions='';
    if(mode==='attendance'){
-     if(ended&&!attendance){actions=`<button class="sa-btn present" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Absent')">Absent</button>`;}
-     else if(attendance==='present'){actions=`<span class="sa-status done">Present</span> <button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${String(a.id).replace(/'/g, "\\'")}')">Evaluate</button>`;}
+     if(String(a.status||'').toLowerCase()==='rescheduled'){actions='<span class="sa-status rescheduled">Rescheduled</span>';}
+     else if(ended&&!attendance){actions=`<button class="sa-btn present" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Absent')">Absent</button>`;}
+     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")}',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${String(a.id).replace(/'/g, "\\'")}')">Evaluate</button>`}`;}
      else if(attendance==='absent'){actions='<span class="sa-status">Absent</span>';}
-     else if(!ended){actions='<span class="sa-status wait">Upcoming</span>';}
+     else if(!ended){actions=`<span class="sa-status wait">Upcoming</span> <button class="sa-btn reschedule" onclick="rescheduleStudentAppointment('${String(a.id).replace(/'/g,"\'")}')">Reschedule</button>`;}
      else actions='<span class="sa-status done">Completed · Mark attendance</span>';
    } else {
      if(attendance==='present'){
@@ -12229,13 +12231,62 @@ function renderStudentAppointmentDashboard(){
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
    const linkBtn=link?`<a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Lesson</a>`:'<span class="sa-muted">No lesson link</span>';
-   return `<tr><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
+   const rowClass=String(a.status||'').toLowerCase()==='rescheduled'?' class="sa-rescheduled-row"':'';
+   return `<tr${rowClass}><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
  <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">Upcoming and completed appointments appear here. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
  <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
  <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+}
+function getNextPreferredRescheduleSlot(student, appointments, oldItem){
+  const details=student?.scheduleDetails||{};
+  const days=Array.isArray(SCHEDULE_DAYS)?SCHEDULE_DAYS:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const active=appointments.filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['Cancelled','Rescheduled'].includes(String(a.status||''))&&a.date&&a.time);
+  const latest=active.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time).localeCompare(String(b.time))).pop();
+  let cursor=latest?new Date(`${latest.date}T00:00:00`):new Date(`${oldItem.date}T00:00:00`);
+  if(isNaN(cursor.getTime()))cursor=new Date();
+  const latestDate=latest?.date||oldItem.date||'';const latestTime=latest?.time||oldItem.time||'';
+  for(let offset=0;offset<730;offset++){
+    const date=getLocalDateString(cursor);
+    const day=days[cursor.getDay()===0?6:cursor.getDay()-1];
+    const times=normalizeScheduleTimes(details[day]??details[day?.toLowerCase()]);
+    for(const mins of times){
+      const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+      if(latest && (date<latestDate || (date===latestDate && time<=latestTime)))continue;
+      if(hasExactStudentAppointment(student.id,date,time))continue;
+      const duration=durationToMinutes(oldItem.duration||student.duration||'30 Minutes');
+      if(!hasAppointmentConflict(date,time,duration,String(oldItem.id)))return {date,time,day};
+    }
+    cursor.setDate(cursor.getDate()+1);
+  }
+  return null;
+}
+function rescheduleStudentAppointment(id){
+  const appointments=getAppointments();
+  const index=appointments.findIndex(a=>String(a.id)===String(id));
+  if(index<0)return;
+  const old=appointments[index];
+  if(['Completed','Cancelled','Rescheduled'].includes(String(old.status||''))||old.attendance){alert('Only upcoming classes without attendance can be rescheduled.');return;}
+  const student=getStudents().find(s=>String(s.id)===String(old.studentId||old.student_id));
+  if(!student){alert('Student record not found.');return;}
+  const slot=getNextPreferredRescheduleSlot(student,appointments,old);
+  if(!slot){alert('Could not find an available preferred schedule slot in the next 2 years. Please check the student preferred schedule and other appointments.');return;}
+  const modal=document.createElement('div');modal.className='sa-reschedule-overlay';modal.id='saRescheduleModal';
+  const dateLabel=saDateLabel(slot.date,slot.time);const timeLabel=typeof formatAppointmentTime==='function'?formatAppointmentTime(slot.time):slot.time;
+  modal.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule Class?</h3><p>The original class will remain in the record in dark gray. A replacement appointment will be added after the student's latest scheduled class.</p><div class="sa-attendance-confirm-detail">New appointment: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Student: <strong>${saEscape(student.nickname||student.name||'Student')}</strong><br>Lesson: ${saEscape(old.lessonTopic||old.lessonTitle||old.lesson||'Class lesson')}</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm">Confirm Reschedule</button></div></div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('.sa-reschedule-cancel').onclick=()=>modal.remove();
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+  modal.querySelector('.sa-reschedule-confirm').onclick=()=>{
+    const now=new Date().toISOString();
+    appointments[index]={...old,status:'Rescheduled',rescheduledAt:now,rescheduledToDate:slot.date,rescheduledToTime:slot.time,updatedAt:now};
+    const replacement={...old,id:`appt_rescheduled_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:slot.date,time:slot.time,day:slot.day,status:'Scheduled',attendance:null,createdAt:now,updatedAt:now,rescheduledFromId:String(old.id),rescheduleReason:'Parent/student schedule change'};
+    delete replacement.presentAt;delete replacement.absentAt;delete replacement.completedAt;delete replacement.evaluationId;
+    appointments.push(replacement);saveAppointments(appointments);modal.remove();renderStudentAppointmentDashboard();
+    const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original row is preserved in dark gray, and the replacement class has been added at the end of the schedule.</p><div class="sa-attendance-confirm-detail">${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please double-check the appointment in the class table.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+  };
 }
 function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
 
