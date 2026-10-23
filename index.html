@@ -12227,11 +12227,11 @@ function renderStudentAppointmentDashboard(){
    let actions='';
    if(mode==='attendance'){
      const safeApptId=String(a.id).replace(/'/g, "\\'");
-     const canManageRow=!['rescheduled','cancelled','completed'].includes(String(a.status||'').toLowerCase())&&!attendance;const rowMenu=canManageRow?`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" onclick="editAppointmentTime('${safeApptId}')">Edit Time</button><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button></span></span>`:'';
-     if(String(a.status||'').toLowerCase()==='rescheduled'){actions='<span class="sa-status rescheduled">Rescheduled</span>';}
+     const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" onclick="editAppointmentTime('${safeApptId}')">Edit Time</button><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button></span></span>`;
+     if(String(a.status||'').toLowerCase()==='rescheduled'){actions=`<div class="sa-row-actions"><span class="sa-status rescheduled">Rescheduled</span>${rowMenu}</div>`;}
      else if(ended&&!attendance){actions=`<div class="sa-row-actions"><button class="sa-btn present" onclick="confirmAppointmentAttendance('${safeApptId}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${safeApptId}','Absent')">Absent</button>${rowMenu}</div>`;}
-     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}</div>`;}
-     else if(attendance==='absent'){actions='<span class="sa-status">Absent</span>';}
+     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
+     else if(attendance==='absent'){actions=`<div class="sa-row-actions"><span class="sa-status">Absent</span>${rowMenu}</div>`;}
      else if(!ended){actions=`<div class="sa-row-actions"><span class="sa-status wait">Upcoming</span>${rowMenu}</div>`;}
      else actions='<span class="sa-status done">Completed · Mark attendance</span>';
    } else {
@@ -12312,7 +12312,6 @@ function editAppointmentTime(id){
   const appointments=getAppointments();const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0){alert('Appointment not found.');return;}
   const item=appointments[index];
-  if(['Completed','Cancelled','Rescheduled'].includes(String(item.status||''))||item.attendance){alert('Only upcoming classes without attendance can have their time edited. Use Reschedule if the parent needs another slot.');return;}
   const current=String(item.time||'').trim();
   const proposed=prompt('Edit the time for this class only. Use 24-hour format HH:MM (example: 15:00). Date will remain unchanged.',current);
   if(proposed===null)return;
