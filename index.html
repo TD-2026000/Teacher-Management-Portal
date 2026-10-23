@@ -11348,7 +11348,7 @@ const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bon
 const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
 const totalAvailable=packageCount+bonus+additional;
 const appointments=getAppointments();
-const completed=appointments.filter(a=>a.studentId===student.id && String(a.status||'').toLowerCase()==='completed' && String(a.type||'Regular Class').toLowerCase()==='regular class').length;
+const completed=appointments.filter(a=>String(a.studentId??a.student_id??'')===String(student.id) && ['present','absent'].includes(String(a.attendance||'').trim().toLowerCase()) && String(a.type||'Regular Class').toLowerCase()==='regular class').length;
 const bookedUpcoming=appointments.filter(a=>{
   const status=String(a.status||'Scheduled').toLowerCase();
   const type=String(a.type||'Regular Class').toLowerCase();
@@ -11783,7 +11783,7 @@ function generatePreferredAppointments(student,startDate,type){
   const additionalCredits=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
   const totalAvailable=Math.max(0,activePackageLimit+bonusCredits+additionalCredits);
   const studentAppointments=appointments.filter(a=>a.studentId===student.id && !['cancelled','rescheduled'].includes(String(a.status||'').toLowerCase()) && String(a.type||'Regular Class').toLowerCase()==='regular class');
-  const completedCount=studentAppointments.filter(a=>String(a.status||'').toLowerCase()==='completed').length;
+  const completedCount=studentAppointments.filter(a=>['present','absent'].includes(String(a.attendance||'').trim().toLowerCase())).length;
   const bookedUpcoming=studentAppointments.filter(a=>{
     const status=String(a.status||'Scheduled').toLowerCase();
     const dt=getAppointmentDateTime(a);
@@ -12161,6 +12161,12 @@ function selectAppointmentDay(dateString){
 selectedAppointmentDate=dateString;
 const d=new Date(`${dateString}T00:00:00`);
 if(d.getMonth()!==appointmentMonthDate.getMonth()||d.getFullYear()!==appointmentMonthDate.getFullYear())appointmentMonthDate=new Date(d.getFullYear(),d.getMonth(),1);
+// If the calendar was opened from a student's record, refresh only that student's calendar.
+if(document.getElementById('studentAppointmentCalendarModal')){
+  renderStudentCalendarModal();
+  setTimeout(()=>document.querySelector('#studentAppointmentCalendarModal #appointmentDayDetail')?.scrollIntoView({behavior:'smooth',block:'nearest'}),0);
+  return;
+}
 renderAppointments();
 setTimeout(()=>document.getElementById('appointmentDayDetail')?.scrollIntoView({behavior:'smooth',block:'nearest'}),0);
 }
@@ -12217,10 +12223,12 @@ function renderStudentCalendarModal(){
   const root=document.getElementById('appointmentCalendar');if(!root)return;
   const selectedId=String(window.currentStudentAppointmentBoardId||'');
   const selectedStudent=getStudents().find(st=>String(st.id)===selectedId);
-  const items=getAppointments().filter(a=>
-    selectedStudent && String(a.studentId||a.student_id)===selectedId &&
-    !['cancelled','rescheduled','deleted'].includes(String(a.status||'Scheduled').trim().toLowerCase())
-  );
+  // Filter all appointment records by the selected student's canonical ID before rendering.
+  const items=getAppointments().filter(a=>{
+    const appointmentStudentId=String(a.studentId??a.student_id??'');
+    const status=String(a.status||'Scheduled').trim().toLowerCase();
+    return !!selectedStudent && appointmentStudentId===selectedId && !['cancelled','canceled','rescheduled','deleted','removed'].includes(status);
+  });
   const first=new Date(appointmentMonthDate.getFullYear(),appointmentMonthDate.getMonth(),1);
   const label=document.getElementById('studentCalendarMonthLabel');
   if(label)label.textContent=`${selectedStudent?(selectedStudent.nickname||selectedStudent.name||'Student')+' · ':''}${first.toLocaleDateString(undefined,{month:'long',year:'numeric'})}`;
@@ -15563,15 +15571,14 @@ function getLocalPackageClassRecord(studentId,packageId){try{return JSON.parse(l
 function saveLocalPackageClassRecord(record){localStorage.setItem(packageClassRecordStorageKey(record.studentId,record.packageId),JSON.stringify(record));}
 function packageRecordEntriesFromAppointments(studentId,packageId){return getAppointments().filter(a=>String(a.studentId)===String(studentId)&&String(a.packageId||'')===String(packageId)&&String(a.type||'Regular Class')==='Regular Class').sort((a,b)=>(getAppointmentDateTime(a)?.getTime()||0)-(getAppointmentDateTime(b)?.getTime()||0)).map((a,i)=>{const dt=getAppointmentDateTime(a);return {'Class Number':i+1,'Date':a.date|| (dt?getLocalDateString(dt):''),'Day':a.day|| (dt?dt.toLocaleDateString([], {weekday:'long'}):''),'Time':a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''),'Attendance':a.attendance|| (a.status==='Completed'?'Present':''),'Late':a.late||'','Homework Score':a.homeworkScore||''};});}
 function getPackageRecordCompleted(studentId,packageId){
-  return getAppointments().filter(a =>
-    String(a.studentId) === String(studentId) &&
-    String(a.type || 'Regular Class') === 'Regular Class' &&
-    a.status === 'Completed' &&
-    (
-      String(a.packageId || '') === String(packageId) ||
-      !a.packageId
-    )
-  ).length;
+  return getAppointments().filter(a => {
+    const attendance=String(a.attendance||'').trim().toLowerCase();
+    const hasRecordedAttendance=attendance==='present'||attendance==='absent';
+    return String(a.studentId??a.student_id??'')===String(studentId) &&
+      String(a.type||'Regular Class').trim().toLowerCase()==='regular class' &&
+      hasRecordedAttendance &&
+      (String(a.packageId||'')===String(packageId)||!a.packageId);
+  }).length;
 }
 function buildPackageClassRecord(studentId,packageId,existing){const student=getStudents().find(s=>String(s.id)===String(studentId));const pkg=student?ensureStudentPackageState(student).find(p=>String(p.id)===String(packageId)):null;const rows=Array.isArray(existing?.classEntries)?existing.classEntries:packageRecordEntriesFromAppointments(studentId,packageId);return {id:existing?.id||'',studentId,packageId,packageNumber:existing?.packageNumber||((student?ensureStudentPackageState(student):[]).findIndex(p=>String(p.id)===String(packageId))+1||1),packageName:pkg?.packageName||existing?.packageName||'',totalClasses:Number(pkg?.classCount||existing?.totalClasses||0),status:getPackageRecordCompleted(studentId,packageId)>=Number(pkg?.classCount||existing?.totalClasses||0)&&Number(pkg?.classCount||existing?.totalClasses||0)>0?'COMPLETED':'ACTIVE',studentInfo:existing?.studentInfo||{name:student?.name||'',nickname:student?.nickname||'',studentId:student?.id||'',country:student?.country||'',level:student?.level||'',birthday:student?.birthday||'',duration:student?.duration||''},preferredSchedule:existing?.preferredSchedule||student?.preferredSchedule||[],columns:Array.isArray(existing?.columns)&&existing.columns.length?existing.columns:PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT.slice(),classEntries:rows};}
 async function loadPackageClassRecord(studentId,packageId){let local=getLocalPackageClassRecord(studentId,packageId);if(local)return buildPackageClassRecord(studentId,packageId,local);if(currentUser&&supabaseClient){try{const {data,error}=await supabaseClient.from('class_records').select('*').eq('user_id',currentUser.id).eq('student_id',String(studentId)).eq('package_id',String(packageId)).maybeSingle();if(error)throw error;if(data){const ce=data.class_entries;const parsed=Array.isArray(ce)?{rows:ce}:{columns:ce?.columns,rows:ce?.rows};return buildPackageClassRecord(studentId,packageId,{...data,columns:parsed.columns,classEntries:parsed.rows});}}catch(e){console.warn('Package class record load failed:',e)}}return buildPackageClassRecord(studentId,packageId,null);}
