@@ -12312,7 +12312,7 @@ function rescheduleStudentAppointment(id){
   const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0)return;
   const old=appointments[index];
-  if(['Completed','Cancelled','Rescheduled'].includes(String(old.status||''))||old.attendance){alert('Only upcoming classes without attendance can be rescheduled.');return;}
+  if(['completed','cancelled','canceled','rescheduled','deleted','removed'].includes(String(old.status||'').trim().toLowerCase())||old.attendance){alert('Only upcoming classes without attendance can be rescheduled.');return;}
   const student=getStudents().find(s=>String(s.id)===String(old.studentId||old.student_id));
   if(!student){alert('Student record not found.');return;}
   const slot=getNextPreferredRescheduleSlot(student,appointments,old);
@@ -12342,21 +12342,40 @@ function toggleAppointmentRowMenu(button,event){
 document.addEventListener('click',function(e){if(!e.target.closest('.sa-row-more'))document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));});
 function editAppointmentTime(id){
   document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));
-  const appointments=getAppointments();const index=appointments.findIndex(a=>String(a.id)===String(id));
+  const appointments=getAppointments();
+  const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0){alert('Appointment not found.');return;}
   const item=appointments[index];
-  const current=String(item.time||'').trim();
-  const proposed=prompt('Edit the time for this class only. Use 24-hour format HH:MM (example: 15:00). Date will remain unchanged.',current);
-  if(proposed===null)return;
-  const value=proposed.trim();
-  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)){alert('Please enter a valid time in HH:MM format, for example 15:00.');return;}
-  const studentId=String(item.studentId||item.student_id||'');
-  const duration=durationToMinutes(item.duration||'30 Minutes');
-  if(hasAppointmentConflict(item.date,value,duration,String(item.id))){alert('That time conflicts with another appointment. Please choose another time.');return;}
-  appointments[index]={...item,time:value,updatedAt:new Date().toISOString(),timeEditedAt:new Date().toISOString()};
-  saveAppointments(appointments);renderStudentAppointmentDashboard();
-  const display=typeof formatAppointmentTime==='function'?formatAppointmentTime(value):value;
-  const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3 style="color:#087a48">✓ Class Time Updated</h3><p>Only this appointment's time was changed. Its original date and class record remain the same.</p><div class="sa-attendance-confirm-detail">${saEscape(saDateLabel(item.date,value))} · ${saEscape(display)}</div><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+  const student=getStudents().find(st=>String(st.id)===String(item.studentId||item.student_id));
+  const currentDate=String(item.date||'');
+  const currentTime=String(item.time||'').trim();
+  const overlay=document.createElement('div');
+  overlay.className='sa-reschedule-overlay';
+  overlay.id='saEditAppointmentModal';
+  overlay.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true" style="width:min(500px,94vw);text-align:left"><h3 style="color:#008f99;text-align:center">Edit Class Date & Time</h3><p style="text-align:center">Update the date and time for this class only. The day will update automatically from the selected date.</p><label for="saEditDate" style="display:block;font-size:12px;font-weight:800;margin:12px 0 5px">Date</label><input id="saEditDate" type="date" value="${saEscape(currentDate)}" style="box-sizing:border-box;width:100%;padding:11px;border:1px solid #b8dfe2;border-radius:8px;font:inherit"><label for="saEditTime" style="display:block;font-size:12px;font-weight:800;margin:12px 0 5px">Time (24-hour format)</label><input id="saEditTime" type="time" value="${saEscape(currentTime)}" style="box-sizing:border-box;width:100%;padding:11px;border:1px solid #b8dfe2;border-radius:8px;font:inherit"><p id="saEditDayPreview" style="font-size:12px;color:#087e86;margin-top:8px"></p><p style="font-size:12px;color:#64748b">Student: <strong>${saEscape(student?.nickname||student?.name||'Student')}</strong></p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm" id="saSaveEditedDateTime">Save Changes</button></div></div>`;
+  document.body.appendChild(overlay);
+  const dateInput=overlay.querySelector('#saEditDate');
+  const timeInput=overlay.querySelector('#saEditTime');
+  const dayPreview=overlay.querySelector('#saEditDayPreview');
+  const updateDayPreview=()=>{if(!dateInput.value){dayPreview.textContent='Please select a date.';return;}const d=new Date(dateInput.value+'T12:00:00');dayPreview.textContent='Day: '+(isNaN(d.getTime())?'—':d.toLocaleDateString(undefined,{weekday:'long'}));};
+  updateDayPreview();dateInput.addEventListener('change',updateDayPreview);
+  overlay.querySelector('.sa-reschedule-cancel').onclick=()=>overlay.remove();
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.querySelector('#saSaveEditedDateTime').onclick=()=>{
+    const date=dateInput.value;const time=timeInput.value;
+    if(!date||!time){alert('Please select both the date and time.');return;}
+    if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)){alert('Please choose a valid time.');return;}
+    const duration=durationToMinutes(item.duration||student?.duration||'30 Minutes');
+    if(hasAppointmentConflict(date,time,duration,String(item.id))){alert('That date and time conflicts with another appointment. Please choose another slot.');return;}
+    const day=new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'long'});
+    const now=new Date().toISOString();
+    appointments[index]={...item,date,time,day,updatedAt:now,timeEditedAt:now,dateEditedAt:now,dayEditedAt:now};
+    saveAppointments(appointments);overlay.remove();renderStudentAppointmentDashboard();
+    const display=typeof formatAppointmentTime==='function'?formatAppointmentTime(time):time;
+    const success=document.createElement('div');success.className='sa-reschedule-overlay';
+    success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3 style="color:#087a48">✓ Class Updated</h3><p>The date, day, and time for this class have been updated.</p><div class="sa-attendance-confirm-detail">${saEscape(saDateLabel(date,time))}<br>${saEscape(day)} · ${saEscape(display)}</div><p>Please double-check the updated class in the table and Student All Record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;
+    document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+  };
 }
 function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
 
@@ -12715,10 +12734,12 @@ const validAppointments=appointments
 const todayAppointments=validAppointments
 .filter(x=>{
   const d=x.date;
+  const status=String(x.item.status||'Scheduled').trim().toLowerCase();
+  // A rescheduled/cancelled original is historical only: never count it as a live class today.
+  const inactive=['cancelled','canceled','rescheduled','reschedule','deleted','removed'].includes(status);
   return d.getFullYear()===now.getFullYear() &&
          d.getMonth()===now.getMonth() &&
-         d.getDate()===now.getDate() &&
-         !['cancelled','rescheduled'].includes(String(x.item.status||'Scheduled').trim().toLowerCase());
+         d.getDate()===now.getDate() && !inactive;
 })
 .sort((a,b)=>a.date-b.date);
 
@@ -12729,8 +12750,12 @@ const dashboardClasses=todayAppointments.map(x=>{
   const item=x.item;
   const duration=durationToMinutes(item.duration||'30 Minutes');
   const end=new Date(x.date.getTime()+duration*60000);
-  const status=String(item.status||'Scheduled').toLowerCase();
-  return {...x,end,completed:status==='completed'||now>=end};
+  const status=String(item.status||'Scheduled').trim().toLowerCase();
+  const attendance=String(item.attendance||'').trim().toLowerCase();
+  // Time passing alone does not complete a class. Teacher must mark attendance or status.
+  // This prevents rescheduled/unmarked classes being shown as completed automatically.
+  const completed=['completed','complete'].includes(status) || ['present','absent'].includes(attendance);
+  return {...x,end,completed};
 });
 
 const activeToday=dashboardClasses.filter(x=>!x.completed);
