@@ -10805,6 +10805,26 @@ if(scheduleChanged || studentNameChanged){
   await syncStudentScheduleToAppointments(originalId,originalStudentSnapshot,editedStudent);
 }
 
+/* If bonus/free or additional lesson credits were increased, create the new
+   class appointments immediately so they appear in PREFERRED CLASS SCHEDULE
+   AND CLASS RECORD. Existing appointments are retained; only missing slots
+   are generated based on total credits minus completed/already-booked classes. */
+const oldLessonCapacity=typeof getStudentLessonFlowClassCount==='function'
+  ? getStudentLessonFlowClassCount(originalStudentSnapshot)
+  : Math.max(0,getPackageClassCount(originalStudentSnapshot?.packageName))
+    + Math.max(0,Number(originalStudentSnapshot?.bonusFreeLessons||0))
+    + Math.max(0,Number(originalStudentSnapshot?.additionalLessons||0));
+const newLessonCapacity=typeof getStudentLessonFlowClassCount==='function'
+  ? getStudentLessonFlowClassCount(editedStudent)
+  : Math.max(0,getPackageClassCount(editedStudent.packageName))
+    + Math.max(0,Number(editedStudent.bonusFreeLessons||0))
+    + Math.max(0,Number(editedStudent.additionalLessons||0));
+let addedLessonAppointments=0;
+if(newLessonCapacity>oldLessonCapacity && typeof generatePreferredAppointments==='function'){
+  const generated=generatePreferredAppointments(editedStudent,editedStartDate,'Regular Class');
+  addedLessonAppointments=Math.max(0,Number(generated?.created)||0);
+}
+
 closeEditStudent();
 renderDashboard();
 populateStudentSelect(id);
@@ -10813,7 +10833,9 @@ renderStudents();
 renderAppointments();
 
 if(scheduleChanged){
-  showStudentStatus('Schedule updated successfully. All future appointments and calendar entries have been automatically moved to the new preferred schedule. No rebooking is required.',true);
+  showStudentStatus(`Schedule updated successfully. All future appointments and calendar entries have been automatically moved to the new preferred schedule. No rebooking is required.${addedLessonAppointments?` ${addedLessonAppointments} additional class appointment(s) were added to the student record.`:''}`,true);
+}else if(addedLessonAppointments){
+  showStudentStatus(`Student record updated successfully. ${addedLessonAppointments} additional class appointment(s) were added to PREFERRED CLASS SCHEDULE AND CLASS RECORD.`,true);
 }else{
   showStudentStatus('Student record updated successfully.',true);
 }
@@ -11787,7 +11809,11 @@ function generatePreferredAppointments(student,startDate,type){
   const bookedUpcoming=studentAppointments.filter(a=>{
     const status=String(a.status||'Scheduled').toLowerCase();
     const dt=getAppointmentDateTime(a);
-    return status!=='cancelled' && status!=='completed' && dt && dt.getTime()>=Date.now();
+    /* Count every active, unmarked appointment, including a past class that
+       has not had attendance recorded, so adding credits does not duplicate it. */
+    return !['cancelled','canceled','rescheduled','deleted','removed','completed'].includes(status)
+      && !String(a.attendance||'').trim()
+      && !!dt;
   }).length;
   const totalRemaining=Math.max(0,totalAvailable-completedCount);
   const targetCount=Math.max(0,totalRemaining-bookedUpcoming);
@@ -12356,17 +12382,41 @@ function rescheduleStudentAppointment(id){
   if(!slot){alert('Could not find an available preferred schedule slot in the next 2 years. Please check the student preferred schedule and other appointments.');return;}
   const modal=document.createElement('div');modal.className='sa-reschedule-overlay';modal.id='saRescheduleModal';
   const dateLabel=saDateLabel(slot.date,slot.time);const timeLabel=typeof formatAppointmentTime==='function'?formatAppointmentTime(slot.time):slot.time;
-  modal.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule Class?</h3><p>The original class will remain in the record in dark gray. A replacement appointment will be added after the student's latest scheduled class.</p><div class="sa-attendance-confirm-detail">New appointment: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Student: <strong>${saEscape(student.nickname||student.name||'Student')}</strong><br>Lesson: ${saEscape(old.lessonTopic||old.lessonTitle||old.lesson||'Class lesson')}</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm">Confirm Reschedule</button></div></div>`;
+  modal.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule Class?</h3><p>The class will be removed from its current position and moved to the end of this student's schedule. The remaining classes will automatically shift up one class number.</p><div class="sa-attendance-confirm-detail">New appointment: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Student: <strong>${saEscape(student.nickname||student.name||'Student')}</strong><br>Lesson: ${saEscape(old.lessonTopic||old.lessonTitle||old.lesson||'Class lesson')}</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm">Confirm Reschedule</button></div></div>`;
   document.body.appendChild(modal);
   modal.querySelector('.sa-reschedule-cancel').onclick=()=>modal.remove();
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-  modal.querySelector('.sa-reschedule-confirm').onclick=()=>{
+  modal.querySelector('.sa-reschedule-confirm').onclick=async()=>{
+    const confirmButton=modal.querySelector('.sa-reschedule-confirm');
+    confirmButton.disabled=true;confirmButton.textContent='Rescheduling…';
     const now=new Date().toISOString();
-    appointments[index]={...old,status:'Rescheduled',rescheduledAt:now,rescheduledToDate:slot.date,rescheduledToTime:slot.time,updatedAt:now};
-    const replacement={...old,id:`appt_rescheduled_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:slot.date,time:slot.time,day:slot.day,status:'Scheduled',attendance:null,createdAt:now,updatedAt:now,rescheduledFromId:String(old.id),rescheduleReason:'Parent/student schedule change'};
+    const replacement={...old,id:`appt_rescheduled_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:slot.date,time:slot.time,day:slot.day,status:'Scheduled',attendance:null,createdAt:now,updatedAt:now,rescheduledFromId:String(old.id),rescheduleReason:'Moved to end of schedule'};
     delete replacement.presentAt;delete replacement.absentAt;delete replacement.completedAt;delete replacement.evaluationId;
-    appointments.push(replacement);saveAppointments(appointments);modal.remove();renderStudentAppointmentDashboard();
-    const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original row is preserved in dark gray, and the replacement class has been added at the end of the schedule.</p><div class="sa-attendance-confirm-detail">${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please double-check the appointment in the class table.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+    try{
+      // Remove the original database row first so it cannot return on refresh.
+      if(currentUser && supabaseClient){
+        if(!old.date || !old.time)throw new Error('Original appointment is missing date/time; refusing unsafe database deletion.');
+        const {error}=await supabaseClient.from('appointments').delete()
+          .eq('user_id',currentUser.id)
+          .eq('student_id',String(old.studentId||old.student_id||''))
+          .eq('class_date',old.date)
+          .eq('class_time',`${String(old.time).slice(0,5)}:00`);
+        if(error)throw error;
+      }
+      const latest=getAppointments();
+      const oldIndex=latest.findIndex(a=>String(a.id)===String(old.id));
+      if(oldIndex>=0)latest.splice(oldIndex,1);
+      latest.push(replacement);
+      localStorage.setItem(appointmentStorageKey(),JSON.stringify(latest));
+      // Persist the replacement after the original row has been removed.
+      await syncAppointmentsToSupabase(latest);
+      modal.remove();renderStudentAppointmentDashboard();
+      const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original class has been removed from its old position and moved to the end of the student's schedule. All classes after its old position have shifted up one number automatically.</p><div class="sa-attendance-confirm-detail">New class date and time: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please check the updated class numbers in the student's record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+    }catch(error){
+      console.error('Reschedule failed:',error);
+      confirmButton.disabled=false;confirmButton.textContent='Confirm Reschedule';
+      alert('The class could not be fully rescheduled in the database. No success was reported. Please try again or check the database connection.');
+    }
   };
 }
 function toggleAppointmentRowMenu(button,event){
@@ -12458,7 +12508,7 @@ function editAppointmentTime(id){
     document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
   };
 }
-function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
+function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();if(document.getElementById('studentAppointmentCalendarModal'))renderStudentCalendarModal();}
 
 
 function autoCompleteFinishedAppointments(){
