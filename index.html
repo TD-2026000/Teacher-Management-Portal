@@ -4320,6 +4320,14 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #appointmentStatusFilter{display:none!important}
 @media(max-width:700px){.sa-card-head.sa-centered-heading{padding:12px;text-align:center}.sa-card-head.sa-centered-heading .sa-status{position:static;margin-left:8px}}
 </style>
+
+<style id="student-attendance-confirm-and-schedule-bullets-v1">
+.sa-preferred-bullets{margin:5px 0 0;padding-left:18px;display:grid;gap:4px}.sa-preferred-bullets li{padding:0;border:0;list-style:disc}
+.sa-attendance-confirm-overlay{position:fixed;inset:0;z-index:100000;background:rgba(15,35,42,.48);display:flex;align-items:center;justify-content:center;padding:16px}
+.sa-attendance-confirm{width:min(360px,92vw);background:#fff;border-radius:16px;padding:22px 20px 18px;box-shadow:0 20px 65px rgba(0,0,0,.28);text-align:center;border:1px solid #d7f4f4;animation:saConfirmIn .16s ease-out}
+.sa-attendance-confirm-icon{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;margin:0 auto 10px;background:#e8fbf3;color:#07834f;font-size:23px;font-weight:900}
+.sa-attendance-confirm h3{margin:0 0 10px;font-size:18px;color:#123b4a}.sa-attendance-confirm p{font-size:12px;line-height:1.5;color:#4b626c;margin:7px 0}.sa-attendance-confirm-detail{padding:9px;border-radius:8px;background:#f2fbfc;color:#07536c;font-size:12px;font-weight:800;margin:12px 0}.sa-attendance-confirm-note{font-weight:700}.sa-attendance-confirm-actions{display:flex;gap:8px;justify-content:center;margin-top:15px}.sa-attendance-confirm-actions button{border:0;border-radius:8px;padding:10px 12px;font-weight:800;font-size:11px;cursor:pointer}.sa-confirm-cancel{background:#edf1f3;color:#41515a}.sa-confirm-yes.is-present{background:#d8f8e7;color:#087a48;border:1px solid #a8e9c6}.sa-confirm-yes.is-absent{background:#ffe1e1;color:#b42318;border:1px solid #ffc4c4}@keyframes saConfirmIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+</style>
 </head>
 
 <body>
@@ -12208,7 +12216,7 @@ function renderStudentAppointmentDashboard(){
    const link=saLessonLinkFor(student,a,all);
    let actions='';
    if(mode==='attendance'){
-     if(ended&&!attendance){actions=`<button class="sa-btn present" onclick="markAppointmentPresent('${String(a.id).replace(/'/g,"\'")}');renderStudentAppointmentDashboard()">Present</button><button class="sa-btn absent" onclick="markAppointmentAbsent('${String(a.id).replace(/'/g,"\'")}');renderStudentAppointmentDashboard()">Absent</button>`;}
+     if(ended&&!attendance){actions=`<button class="sa-btn present" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${String(a.id).replace(/'/g,"\'")}','Absent')">Absent</button>`;}
      else if(attendance==='present'){actions=`<span class="sa-status done">Present</span> <button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${String(a.id).replace(/'/g, "\\'")}')">Evaluate</button>`;}
      else if(attendance==='absent'){actions='<span class="sa-status">Absent</span>';}
      else if(!ended){actions='<span class="sa-status wait">Upcoming</span>';}
@@ -12225,9 +12233,9 @@ function renderStudentAppointmentDashboard(){
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
- <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">Upcoming and completed appointments appear here. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
+ <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">Upcoming and completed appointments appear here. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
  <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
- <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b> ${saEscape(schedule)}</li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+ <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
 function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
 
@@ -12267,6 +12275,50 @@ if(menu)menu.classList.toggle('show');
 document.addEventListener('click',()=>{
 document.querySelectorAll('.appointment-more-menu.show').forEach(menu=>menu.classList.remove('show'));
 });
+
+function getPreferredScheduleLines(student){
+  const details=student?.scheduleDetails||{};
+  const dayOrder=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const lines=[];
+  dayOrder.forEach(day=>{
+    const raw=details[day] ?? details[day.toLowerCase()];
+    if(raw){
+      let times=[];
+      if(Array.isArray(raw)) times=raw;
+      else if(typeof raw==='string') times=raw.split(/[,;|]/).map(x=>x.trim()).filter(Boolean);
+      else if(typeof raw==='object') times=Object.values(raw);
+      const formatted=times.map(t=>typeof t==='number'&&typeof minutesToTimeLabel==='function'?minutesToTimeLabel(t):String(t||'').trim()).filter(Boolean);
+      lines.push(`${day}${formatted.length?' — '+formatted.join(' / '):''}`);
+    }
+  });
+  if(lines.length)return lines;
+  const text=typeof scheduleDataToText==='function'?scheduleDataToText(student?.scheduleDetails,student?.preferredSchedule,student?.duration):(student?.preferredSchedule||'');
+  return String(text||'').split(/\n|;|\s*\|\s*/).map(x=>x.trim()).filter(Boolean);
+}
+function confirmAppointmentAttendance(id, attendance){
+  const item=getAppointments().find(a=>String(a.id)===String(id));
+  if(!item)return;
+  const student=getStudents().find(s=>String(s.id)===String(item.studentId||item.student_id));
+  const nickname=student?.nickname||student?.name||'this student';
+  const date=item.date||'';
+  const time=typeof formatAppointmentTime==='function'?formatAppointmentTime(item.time||''):(item.time||'');
+  const existing=document.getElementById('saAttendanceConfirmModal');
+  if(existing)existing.remove();
+  const overlay=document.createElement('div');
+  overlay.id='saAttendanceConfirmModal';
+  overlay.className='sa-attendance-confirm-overlay';
+  overlay.innerHTML=`<div class="sa-attendance-confirm" role="dialog" aria-modal="true" aria-labelledby="saAttendanceConfirmTitle"><div class="sa-attendance-confirm-icon">${attendance==='Present'?'✓':'!'}</div><h3 id="saAttendanceConfirmTitle">Confirm ${attendance}?</h3><p>Are you sure you want to mark <strong>${saEscape(nickname)}</strong> as <strong>${attendance}</strong> for this class?</p><div class="sa-attendance-confirm-detail">${saEscape(date)}${time?' · '+saEscape(time):''}</div><p class="sa-attendance-confirm-note">Please double-check before confirming.</p><div class="sa-attendance-confirm-actions"><button type="button" class="sa-confirm-cancel">Cancel</button><button type="button" class="sa-confirm-yes ${attendance==='Present'?'is-present':'is-absent'}">Yes, mark ${attendance}</button></div></div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.querySelector('.sa-confirm-cancel').addEventListener('click',()=>overlay.remove());
+  overlay.querySelector('.sa-confirm-yes').addEventListener('click',()=>{
+    overlay.remove();
+    if(attendance==='Present')markAppointmentPresent(String(id));else markAppointmentAbsent(String(id));
+    renderStudentAppointmentDashboard();
+  });
+  const closeOnEscape=e=>{if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',closeOnEscape);}};
+  document.addEventListener('keydown',closeOnEscape);
+}
 
 function markAppointmentPresent(id){
 const appointments=getAppointments();
