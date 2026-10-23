@@ -3150,7 +3150,8 @@ a,
 .sa-student.active .sa-student-avatar{background:#fff;color:#008c97}
 .sa-student-name{font-weight:900;font-size:12px;display:block;overflow-wrap:anywhere}.sa-student-id{font-size:10px;opacity:.8;display:block;margin-top:3px}
 .sa-table-wrap{width:100%;overflow-x:auto}.sa-table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}.sa-table th{background:#e5fbfc;color:#173c56;text-align:left;padding:10px 8px;border:1px solid #c8f1f3;white-space:nowrap}.sa-table td{padding:9px 8px;border:1px solid #e0f4f5;vertical-align:middle}.sa-table tr:nth-child(even) td{background:#fbffff}
-.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-btn.lesson{background:#2589ef;color:white}.sa-btn.reschedule{background:#8b5cf6;color:#fff} .sa-btn:disabled{opacity:.55;cursor:not-allowed}
+.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-lesson-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sa-btn.lesson-download{border:1px solid #b8c9e4;background:#edf4ff;color:#244d83;cursor:pointer}
+.sa-btn.lesson{background:#2589ef;color:white}.sa-btn.reschedule{background:#8b5cf6;color:#fff} .sa-btn:disabled{opacity:.55;cursor:not-allowed}
 .sa-row-actions{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap;width:100%;min-width:0}.sa-row-actions .sa-row-more{margin-left:auto}.sa-row-actions .sa-row-more-trigger{flex:0 0 28px}.sa-table td:nth-child(5){min-width:245px}
 .sa-row-more{position:relative;display:inline-flex;flex:0 0 auto}
 .sa-row-more-trigger{width:28px;height:28px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;color:#334155;font-size:19px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
@@ -12220,6 +12221,26 @@ function renderStudentCalendarModal(){
 }
 function closeStudentAppointmentCalendar(){document.getElementById('studentAppointmentCalendarModal')?.remove()}
 function changeAppointmentMonth(delta){appointmentMonthDate=new Date(appointmentMonthDate.getFullYear(),appointmentMonthDate.getMonth()+delta,1);renderStudentCalendarModal()}
+async function downloadStudentLessonLink(url, lessonTitle='Lesson'){
+  const safeUrl=String(url||'').trim();
+  if(!safeUrl){alert('No lesson URL is available.');return;}
+  const filename=(String(lessonTitle||'Lesson').replace(/[\\/:*?"<>|]+/g,'-').trim()||'Lesson')+'.html';
+  try{
+    const response=await fetch(safeUrl,{mode:'cors'});
+    if(!response.ok)throw new Error('Download request failed');
+    const blob=await response.blob();
+    const blobUrl=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=blobUrl;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(blobUrl),1500);
+  }catch(error){
+    // External lesson hosts (e.g. Google Drive or learning platforms) may block direct downloads.
+    // Open the resource so the user can use its own Download option without losing the link.
+    const opened=window.open(safeUrl,'_blank','noopener,noreferrer');
+    if(!opened)alert('This lesson host does not allow direct downloading. The link could not be opened automatically; please allow pop-ups or open the link first and use its Download option.');
+    else alert('This lesson host does not allow direct downloading from the portal. The lesson opened in a new tab; use its Download option if available.');
+  }
+}
+
 function renderStudentAppointmentDashboard(){
  const root=document.getElementById('studentAppointmentDashboard'); if(!root)return;
  const students=getStudents().slice().sort((a,b)=>String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||'')));
@@ -12259,7 +12280,7 @@ function renderStudentAppointmentDashboard(){
      } else if(attendance==='absent') actions='<span class="sa-status">Absent</span>';
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
-   const linkBtn=link?`<a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Lesson</a>`:'<span class="sa-muted">No lesson link</span>';
+   const linkBtn=link?`<div class="sa-row-actions sa-lesson-actions"><a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Link</a><button type="button" class="sa-btn lesson-download" onclick="downloadStudentLessonLink(decodeURIComponent('${encodeURIComponent(link)}'),decodeURIComponent('${encodeURIComponent(lessonTitle)}'))">Download</button></div>`:'<span class="sa-muted">No lesson link</span>';
    const rowClass=String(a.status||'').toLowerCase()==='rescheduled'?' class="sa-rescheduled-row"':'';
    return `<tr${rowClass}><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
  }).join('');
@@ -13331,13 +13352,12 @@ function getStudentLessonFlow(student){
 
 function getStudentLessonFlowClassCount(student){
   if(!student)return 0;
+  // Lesson URL slots must cover every available class: purchased + bonus/free + additional lessons.
   const progress=getStudentProgress(student);
-  const count=Number.parseInt(progress?.purchased,10);
-  if(Number.isFinite(count)&&count>0)return count;
-  const current=getCurrentStudentPackage(student);
-  const currentCount=Number.parseInt(current?.classCount,10);
-  if(Number.isFinite(currentCount)&&currentCount>0)return currentCount;
-  return Math.max(0,Number.parseInt(getPackageClassCount(student.packageName),10)||0);
+  const purchased=Math.max(0,Number(progress?.purchased)||0) || Math.max(0,Number(getCurrentStudentPackage(student)?.classCount)||0) || Math.max(0,Number(getPackageClassCount(student.packageName))||0);
+  const bonus=Math.max(0,Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0);
+  const additional=Math.max(0,Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0);
+  return Math.floor(purchased+bonus+additional);
 }
 
 function openStudentLessonFlow(studentId){
@@ -13359,7 +13379,7 @@ function renderStudentLessonFlowRows(savedRows=[],classCount=0){
   if(!box)return;
   const count=Math.max(0,Number.parseInt(classCount,10)||0);
   if(!count){
-    box.innerHTML='<div class="small">No purchased classes found for this student.</div>';
+    box.innerHTML='<div class="small">No classes found for this student yet. Add purchased, bonus/free, or additional classes in Student Information.</div>';
     return;
   }
 
