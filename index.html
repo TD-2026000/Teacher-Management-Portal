@@ -3160,6 +3160,7 @@ a,
 .sa-row-more-menu button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:9px 10px;border-radius:6px;font-size:11px;font-weight:800;color:#243746;cursor:pointer}
 .sa-row-more-menu button:hover{background:#eafafb;color:#007c87}
 .sa-row-more-menu button.reschedule-option{color:#6d28d9}
+.sa-row-more-menu button.delete-option{color:#b91c1c}.sa-row-more-menu button.delete-option:hover{background:#fef2f2;color:#991b1b}
 
 .sa-table tbody tr.sa-rescheduled-row{background:#e1e1e1!important;color:#666!important}.sa-table tbody tr.sa-rescheduled-row td{background:#e1e1e1!important;color:#666!important}.sa-status.rescheduled{background:#7c3aed;color:#fff}.student-calendar-overlay{position:fixed;inset:0;z-index:100100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}.student-calendar-modal{width:min(1100px,96vw);height:min(88vh,900px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.32);padding:18px}.student-calendar-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;padding:4px 0 12px;z-index:2;border-bottom:1px solid #d8eeee;margin-bottom:12px}.student-calendar-modal-head h3{margin:0;color:#00aeb8}.student-calendar-modal-close{border:0;border-radius:8px;padding:8px 12px;background:#e7fbfb;color:#006f75;font-weight:800;cursor:pointer}.student-calendar-modal .appointment-day-detail-footer{display:none!important}.student-calendar-modal .appointment-day-slot-actions,.student-calendar-modal .appointment-slot-actions,.student-calendar-modal button.add-class{display:none!important}.appointment-toolbar-right{display:flex;align-items:flex-end;justify-content:flex-end}.appointment-calendar-open{border:0;border-radius:8px;padding:10px 15px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer;white-space:nowrap}@media(max-width:700px){.student-calendar-modal{width:98vw;height:92vh;padding:12px}.appointment-toolbar{gap:10px;flex-wrap:wrap}.appointment-toolbar-right{width:100%;justify-content:flex-end}}
 .sa-reschedule-overlay{position:fixed;inset:0;z-index:100001;background:rgba(15,25,35,.48);display:flex;align-items:center;justify-content:center;padding:16px}.sa-reschedule-modal{width:min(440px,94vw);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 65px rgba(0,0,0,.3);text-align:center}.sa-reschedule-modal h3{margin:0 0 10px;color:#5b21b6}.sa-reschedule-modal p{font-size:13px;line-height:1.5;color:#475569}.sa-reschedule-actions{display:flex;justify-content:center;gap:10px;margin-top:16px}.sa-reschedule-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.sa-reschedule-cancel{background:#eef2f7;color:#334155}.sa-reschedule-confirm{background:#7c3aed;color:#fff}
@@ -12266,7 +12267,7 @@ function renderStudentAppointmentDashboard(){
    let actions='';
    if(mode==='attendance'){
      const safeApptId=String(a.id).replace(/'/g, "\\'");
-     const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" onclick="editAppointmentTime('${safeApptId}')">Edit Time</button><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button></span></span>`;
+     const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" onclick="editAppointmentTime('${safeApptId}')">Edit Time</button><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button><button type="button" class="delete-option" onclick="deleteStudentAppointmentRecord('${safeApptId}')">Delete</button></span></span>`;
      if(String(a.status||'').toLowerCase()==='rescheduled'){actions=`<div class="sa-row-actions"><span class="sa-status rescheduled">Rescheduled</span>${rowMenu}</div>`;}
      else if(ended&&!attendance){actions=`<div class="sa-row-actions"><button class="sa-btn present" onclick="confirmAppointmentAttendance('${safeApptId}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${safeApptId}','Absent')">Absent</button>${rowMenu}</div>`;}
      else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
@@ -12359,6 +12360,21 @@ function toggleAppointmentRowMenu(button,event){
   if(!wrap)return;
   document.querySelectorAll('.sa-row-more.open').forEach(el=>{if(el!==wrap)el.classList.remove('open');});
   wrap.classList.toggle('open');
+}
+function deleteStudentAppointmentRecord(id){
+  document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));
+  const appointments=getAppointments();
+  const item=appointments.find(a=>String(a.id)===String(id));
+  if(!item){alert('Appointment not found.');return;}
+  const student=getStudents().find(st=>String(st.id)===String(item.studentId||item.student_id));
+  const studentName=student?.nickname||student?.name||item.studentName||'this student';
+  const lesson=item.lessonTopic||item.lessonTitle||item.lesson||item.topic||'this class';
+  if(!confirm(`Delete this class appointment?\n\nStudent: ${studentName}\nLesson: ${lesson}\nDate: ${item.date||'—'}\nTime: ${item.time||'—'}\n\nThis removes the appointment record and cannot be undone.`))return;
+  saveAppointments(appointments.filter(a=>String(a.id)!==String(id)));
+  renderStudentAppointmentDashboard();
+  if(typeof renderAppointments==='function')renderAppointments();
+  if(typeof renderDashboard==='function')renderDashboard();
+  if(typeof refreshLiveUI==='function')refreshLiveUI({students:false,records:false,contracts:false});
 }
 document.addEventListener('click',function(e){if(!e.target.closest('.sa-row-more'))document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));});
 function editAppointmentTime(id){
