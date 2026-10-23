@@ -12215,9 +12215,13 @@ function openStudentAppointmentCalendar(){
 }
 function renderStudentCalendarModal(){
   const root=document.getElementById('appointmentCalendar');if(!root)return;
-  const items=getAppointments().filter(a=>!['cancelled','rescheduled'].includes(String(a.status||'Scheduled').trim().toLowerCase()));
+  // The calendar belongs to the student currently selected on the Student Board.
+  const selectedId=String(window.currentStudentAppointmentBoardId||'');
+  const selectedStudent=getStudents().find(st=>String(st.id)===selectedId);
+  const items=getAppointments().filter(a=>String(a.studentId||a.student_id||'')===selectedId&&!['cancelled','rescheduled'].includes(String(a.status||'Scheduled').trim().toLowerCase()));
   const first=new Date(appointmentMonthDate.getFullYear(),appointmentMonthDate.getMonth(),1);
-  const label=document.getElementById('studentCalendarMonthLabel');if(label)label.textContent=first.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  const label=document.getElementById('studentCalendarMonthLabel');
+  if(label)label.textContent=`${selectedStudent?(selectedStudent.nickname||selectedStudent.name||'Student')+' · ':''}${first.toLocaleDateString(undefined,{month:'long',year:'numeric'})}`;
   root.innerHTML=renderAppointmentMonth(items)+`<div id="appointmentDayDetail"></div>`;renderAppointmentDayDetail(items);
 }
 function closeStudentAppointmentCalendar(){document.getElementById('studentAppointmentCalendarModal')?.remove()}
@@ -12361,7 +12365,7 @@ function toggleAppointmentRowMenu(button,event){
   document.querySelectorAll('.sa-row-more.open').forEach(el=>{if(el!==wrap)el.classList.remove('open');});
   wrap.classList.toggle('open');
 }
-function deleteStudentAppointmentRecord(id){
+async function deleteStudentAppointmentRecord(id){
   document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));
   const appointments=getAppointments();
   const item=appointments.find(a=>String(a.id)===String(id));
@@ -12369,12 +12373,33 @@ function deleteStudentAppointmentRecord(id){
   const student=getStudents().find(st=>String(st.id)===String(item.studentId||item.student_id));
   const studentName=student?.nickname||student?.name||item.studentName||'this student';
   const lesson=item.lessonTopic||item.lessonTitle||item.lesson||item.topic||'this class';
-  if(!confirm(`Delete this class appointment?\n\nStudent: ${studentName}\nLesson: ${lesson}\nDate: ${item.date||'—'}\nTime: ${item.time||'—'}\n\nThis removes the appointment record and cannot be undone.`))return;
-  saveAppointments(appointments.filter(a=>String(a.id)!==String(id)));
+  if(!confirm(`Permanently delete this class appointment?\n\nStudent: ${studentName}\nLesson: ${lesson}\nDate: ${item.date||'—'}\nTime: ${item.time||'—'}\n\nThis removes it from this device and the synced appointment database, if available.`))return;
+
+  // Remove the matching server record first so it cannot reappear after reload.
+  // The app's Supabase sync identifies appointment rows by student/date/time.
+  if(currentUser && supabaseClient){
+    try{
+      let remoteDelete=supabaseClient.from('appointments').delete()
+        .eq('user_id',currentUser.id)
+        .eq('student_id',String(item.studentId||item.student_id||''));
+      if(item.date) remoteDelete=remoteDelete.eq('class_date',item.date);
+      if(item.time) remoteDelete=remoteDelete.eq('class_time',`${String(item.time).slice(0,5)}:00`);
+      const {error}=await remoteDelete;
+      if(error) throw error;
+    }catch(error){
+      console.error('Could not delete appointment from Supabase:',error);
+      alert('The appointment could not be confirmed deleted from the online database. It has NOT been removed locally, to avoid it returning after reload. Please check your connection and try again.');
+      return;
+    }
+  }
+
+  const remaining=getAppointments().filter(a=>String(a.id)!==String(id));
+  localStorage.setItem(appointmentStorageKey(),JSON.stringify(remaining));
   renderStudentAppointmentDashboard();
   if(typeof renderAppointments==='function')renderAppointments();
   if(typeof renderDashboard==='function')renderDashboard();
   if(typeof refreshLiveUI==='function')refreshLiveUI({students:false,records:false,contracts:false});
+  if(document.getElementById('studentAppointmentCalendarModal'))renderStudentCalendarModal();
 }
 document.addEventListener('click',function(e){if(!e.target.closest('.sa-row-more'))document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));});
 function editAppointmentTime(id){
