@@ -3136,6 +3136,26 @@ a,
 }
 </style>
 <style id="td-student-profile-info-theme-fix">
+
+/* STUDENT APPOINTMENT BOARD */
+.student-appointment-layout{display:grid;grid-template-columns:minmax(220px, .78fr) minmax(0,2.25fr) minmax(250px,.95fr);gap:14px;align-items:start}
+.sa-card{border:1px solid #8be9ed;border-radius:12px;background:#fff;overflow:hidden;min-width:0}
+.sa-card-head{background:#e6fcfd;color:#007f89;padding:13px 15px;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sa-card-body{padding:10px}
+.sa-search{width:100%;padding:10px;border:1px solid #bdebef;border-radius:8px;margin-bottom:9px;box-sizing:border-box}
+.sa-student-list{display:flex;flex-direction:column;gap:7px;max-height:720px;overflow:auto}
+.sa-student{width:100%;display:flex;gap:10px;align-items:center;text-align:left;border:1px solid #d9f4f5;border-radius:9px;background:#fff;padding:10px;cursor:pointer;color:#20344a}
+.sa-student.active{background:#00c9cf;color:#fff;border-color:#00bfc5}
+.sa-student-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dff9fa;color:#008c97;font-weight:900;flex-shrink:0}
+.sa-student.active .sa-student-avatar{background:#fff;color:#008c97}
+.sa-student-name{font-weight:900;font-size:12px;display:block;overflow-wrap:anywhere}.sa-student-id{font-size:10px;opacity:.8;display:block;margin-top:3px}
+.sa-table-wrap{width:100%;overflow-x:auto}.sa-table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}.sa-table th{background:#e5fbfc;color:#173c56;text-align:left;padding:10px 8px;border:1px solid #c8f1f3;white-space:nowrap}.sa-table td{padding:9px 8px;border:1px solid #e0f4f5;vertical-align:middle}.sa-table tr:nth-child(even) td{background:#fbffff}
+.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-btn.lesson{background:#2589ef;color:white}.sa-btn:disabled{opacity:.55;cursor:not-allowed}
+.sa-section-title{font-size:13px;font-weight:900;color:#007f89;padding:3px 0 9px}.sa-section{margin-bottom:14px}.sa-muted{font-size:11px;color:#687782;line-height:1.5}.sa-profile-top{display:flex;gap:11px;align-items:center;padding:12px;background:#f1fcfc;border-radius:9px;margin-bottom:10px}.sa-profile-avatar{width:60px;height:60px;border-radius:50%;border:2px solid #00cdd2;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#00a1a7;background:#fff;flex-shrink:0}.sa-profile-name{font-size:14px;font-weight:900;overflow-wrap:anywhere}.sa-info-list{list-style:none;padding:0;margin:0}.sa-info-list li{padding:7px 2px;border-bottom:1px solid #e6f5f5;font-size:11px;line-height:1.45}.sa-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}.sa-stat{border:1px solid #c8f1f3;border-radius:8px;text-align:center;padding:10px 3px}.sa-stat b{font-size:19px;display:block;color:#07536c}.sa-stat span{font-size:9px;color:#647b8c}.sa-empty{padding:22px 12px;text-align:center;color:#718096;font-size:12px}
+.student-appointment-calendar-legacy>summary{cursor:pointer;font-weight:800;color:#007f89;padding:10px;border:1px solid #bdebef;border-radius:8px;background:#f4ffff}
+@media(max-width:1150px){.student-appointment-layout{grid-template-columns:minmax(190px,.75fr) minmax(0,2fr)}.sa-profile-card{grid-column:1/-1}}
+@media(max-width:700px){.student-appointment-layout{grid-template-columns:1fr}.sa-student-list{max-height:260px}.sa-profile-card{grid-column:auto}.sa-card-head{font-size:13px}}
+
 /* STUDENT PROFILE + STUDENT RECORDS: follow the selected global theme. */
 body .student-card,
 body .student-profile-side,
@@ -4886,7 +4906,7 @@ Dashboard
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('appointment')">
-<span class="dashboard-menu-label">APPOINTMENTS</span>
+<span class="dashboard-menu-label">STUDENT APPOINTMENT</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('payment')">
@@ -5131,14 +5151,14 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div id="appointmentPage" class="page">
 
-<h2 style="margin-top:0">Appointment</h2>
+<h2 style="margin-top:0">STUDENT APPOINTMENT</h2>
 
 <div class="page-back-wrap">
 <button type="button" class="page-back-btn" onclick="backToDashboard()">← Back to Dashboard</button>
 </div>
 
 <div class="panel">
-<div class="panel-title">APPOINTMENT / CLASS SCHEDULE</div>
+<div class="panel-title">STUDENT APPOINTMENT</div>
 <div class="panel-body">
 
 <div class="appointment-toolbar">
@@ -5164,16 +5184,19 @@ onclick="if(event.target===this) closeAddStudent()"
   </div>
 </div>
 
-<div class="appointment-nav">
-  <div class="appointment-nav-left">
-    <button type="button" onclick="moveAppointmentMonth(-1)">← Previous Month</button>
-    <button type="button" onclick="goAppointmentToday()">Today</button>
-    <button type="button" onclick="moveAppointmentMonth(1)">Next Month →</button>
+<div id="studentAppointmentDashboard" class="student-appointment-layout" style="margin-top:14px"></div>
+<details class="student-appointment-calendar-legacy" style="margin-top:14px">
+  <summary>Open Calendar View / Manage Appointment Dates</summary>
+  <div class="appointment-nav">
+    <div class="appointment-nav-left">
+      <button type="button" onclick="moveAppointmentMonth(-1)">← Previous Month</button>
+      <button type="button" onclick="goAppointmentToday()">Today</button>
+      <button type="button" onclick="moveAppointmentMonth(1)">Next Month →</button>
+    </div>
+    <div id="appointmentRange" class="appointment-range">—</div>
   </div>
-  <div id="appointmentRange" class="appointment-range">—</div>
-</div>
-
-<div id="appointmentCalendar" style="margin-top:12px"></div>
+  <div id="appointmentCalendar" style="margin-top:12px"></div>
+</details>
 
 </div>
 </div>
@@ -12153,11 +12176,74 @@ renderAppointments();
 
 function renderAppointments(){
 const container=document.getElementById('appointmentCalendar');
-if(!container)return;
 const items=filteredAppointments();
-container.innerHTML=renderAppointmentMonth(items)+`<div id="appointmentDayDetail"></div>`;
-renderAppointmentDayDetail(items);
+if(container){
+  container.innerHTML=renderAppointmentMonth(items)+`<div id="appointmentDayDetail"></div>`;
+  renderAppointmentDayDetail(items);
 }
+if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
+}
+
+window.currentStudentAppointmentBoardId=window.currentStudentAppointmentBoardId||'';
+function saEscape(v){return typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function saDateLabel(date,time){
+  const d=date?new Date(`${date}T${String(time||'00:00').slice(0,5)}:00`):null;
+  return d&&!isNaN(d)?d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',year:'numeric'}):saEscape(date||'—');
+}
+function saLessonLinkFor(student,item,sortedAppointments){
+  if(item.lessonUrl||item.lessonLink||item.lesson_url)return item.lessonUrl||item.lessonLink||item.lesson_url;
+  const links=getStudentLessonFlow(student);
+  const idx=sortedAppointments.findIndex(a=>String(a.id)===String(item.id));
+  return (idx>=0?links[idx]?.url:'')||'';
+}
+function renderStudentAppointmentDashboard(){
+ const root=document.getElementById('studentAppointmentDashboard'); if(!root)return;
+ const students=getStudents().slice().sort((a,b)=>String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||'')));
+ if(!students.length){root.innerHTML='<div class="sa-card sa-empty">No students found. Add a student to get started.</div>';return;}
+ if(!students.some(s=>String(s.id)===String(window.currentStudentAppointmentBoardId))) window.currentStudentAppointmentBoardId=String(students[0].id);
+ const query=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
+ const visibleStudents=students.filter(st=>!query||`${st.nickname||''} ${st.name||''} ${st.id||''}`.toLowerCase().includes(query));
+ const student=students.find(st=>String(st.id)===String(window.currentStudentAppointmentBoardId))||students[0];
+ const all=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
+ const now=Date.now();
+ const finished=all.filter(a=>{const dt=getAppointmentDateTime(a);const status=String(a.status||'Scheduled').toLowerCase();return status==='completed'||(dt&&dt.getTime()+durationToMinutes(a.duration||student.duration||'30 Minutes')*60000<=now);});
+ const upcoming=all.filter(a=>!finished.some(f=>String(f.id)===String(a.id))&&String(a.status||'Scheduled').toLowerCase()!=='cancelled');
+ const p=getStudentProgress(student);
+ const bonus=Math.max(0,Number(student.bonusFreeLessons??student.bonusLessons??student.freeLessons??student.bonusClasses??0)||0);
+ const additional=Math.max(0,Number(student.additionalLessons??student.addedLessons??student.extraLessons??0)||0);
+ const total=Math.max(0,Number(p.purchased||0)+bonus+additional); const remaining=Math.max(0,total-Number(p.completed||0));
+ const board=visibleStudents.map(st=>`<button type="button" class="sa-student ${String(st.id)===String(student.id)?'active':''}" onclick="selectStudentAppointmentBoard('${String(st.id).replace(/'/g,"\'")}')"><span class="sa-student-avatar">${saEscape(String(st.nickname||st.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</span><span><span class="sa-student-name">${saEscape(st.nickname||st.name||'Student')}</span><span class="sa-student-id">ID: ${saEscape(st.id||'—')}</span></span></button>`).join('')||'<div class="sa-empty">No matching students.</div>';
+ const lessonRows=(items,mode)=>items.map((a,i)=>{
+   const dt=getAppointmentDateTime(a);const date=a.date|| (dt?getLocalDateString(dt):'');const time=a.time||(dt?`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`:'');
+   const status=String(a.status||'Scheduled');const attendance=String(a.attendance||'').toLowerCase();const ended=finished.some(f=>String(f.id)===String(a.id));
+   const lessonTitle=a.lessonTopic||a.lessonTitle||a.lesson||a.topic||`Class ${i+1}`;
+   const link=saLessonLinkFor(student,a,all);
+   let actions='';
+   if(mode==='attendance'){
+     if(ended&&!attendance){actions=`<button class="sa-btn present" onclick="markAppointmentPresent('${String(a.id).replace(/'/g,"\'")}');renderStudentAppointmentDashboard()">Present</button><button class="sa-btn absent" onclick="markAppointmentAbsent('${String(a.id).replace(/'/g,"\'")}');renderStudentAppointmentDashboard()">Absent</button>`;}
+     else if(attendance==='present'){actions=`<span class="sa-status done">Present</span> <button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${String(a.id).replace(/'/g, "\\'")}')">Evaluate</button>`;}
+     else if(attendance==='absent'){actions='<span class="sa-status">Absent</span>';}
+     else if(!ended){actions='<span class="sa-status wait">Upcoming</span>';}
+     else actions='<span class="sa-status done">Completed · Mark attendance</span>';
+   } else {
+     if(attendance==='present'){
+       const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));
+       actions=evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")}',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${String(a.id).replace(/'/g,"\'")}')">Evaluate</button>`;
+     } else if(attendance==='absent') actions='<span class="sa-status">Absent</span>';
+     else actions='<span class="sa-status wait">Waiting attendance</span>';
+   }
+   const linkBtn=link?`<a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Lesson</a>`:'<span class="sa-muted">No lesson link</span>';
+   return `<tr><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${saEscape(lessonTitle)}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
+ }).join('');
+ const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
+ root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
+ <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head">☑ CLASS RECORD ATTENDANCE <span class="sa-status wait">${all.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Lesson</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="7" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">All appointments for the selected student appear here. After a class end time has passed, mark the student Present or Absent.</p></div></section>
+ <section class="sa-card sa-section"><div class="sa-card-head">✓ COMPLETED CLASSES & EVALUATIONS <span class="sa-status done">${finished.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Lesson</th><th>Status</th><th>Evaluation</th></tr></thead><tbody>${lessonRows(finished,'completed')||'<tr><td colspan="7" class="sa-empty">Completed classes will appear here automatically after their scheduled end time.</td></tr>'}</tbody></table></div></div></section>
+ <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Save each lesson link once. The matching lesson links will appear in the Class Record Attendance table.</div></div></section></div>
+ <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b> ${saEscape(schedule)}</li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div><div class="sa-stat"><b>${Math.max(0,remaining-upcoming.length)}</b><span>Not Booked Yet</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+}
+function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
+
 
 function autoCompleteFinishedAppointments(){
 const now=new Date();
@@ -12177,6 +12263,7 @@ return item;
 if(changed){
   saveAppointments(updated);
   if(document.getElementById('appointmentCalendar')) renderAppointments();
+  else if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
 }
 return changed;
 }
@@ -12924,14 +13011,6 @@ content.innerHTML=`
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
    ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
    </div>
-  </div>
-
-  <div class="student-profile-section">
-   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-    <h4 style="margin:0">STUDENT LESSON FLOW</h4>
-    <button type="button" class="primary-action" onclick="openStudentLessonFlow('${escapeAttr(student.id)}')">SHOW LESSONS LINK</button>
-   </div>
-   <div class="small" style="margin-top:8px">Add the lesson links once, then use the saved links instead of typing them one by one.</div>
   </div>
 
   <div class="student-profile-section">
