@@ -12254,18 +12254,33 @@ function renderStudentAppointmentDashboard(){
 function getNextPreferredRescheduleSlot(student, appointments, oldItem){
   const details=student?.scheduleDetails||{};
   const days=Array.isArray(SCHEDULE_DAYS)?SCHEDULE_DAYS:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  const active=appointments.filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['Cancelled','Rescheduled'].includes(String(a.status||''))&&a.date&&a.time);
-  const latest=active.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time).localeCompare(String(b.time))).pop();
-  let cursor=latest?new Date(`${latest.date}T00:00:00`):new Date(`${oldItem.date}T00:00:00`);
+  const toMinutes=value=>{
+    if(value===undefined||value===null||value==='')return -1;
+    const raw=String(value).trim();
+    const ampm=raw.match(/\b(AM|PM)\b/i);
+    const m=raw.match(/(\d{1,2}):(\d{2})/);
+    if(!m)return -1;
+    let h=Number(m[1]), min=Number(m[2]);
+    if(ampm){const suffix=ampm[1].toUpperCase();if(suffix==='AM'&&h===12)h=0;else if(suffix==='PM'&&h!==12)h+=12;}
+    return h*60+min;
+  };
+  // Find the latest active appointment by actual calendar date and clock time,
+  // rather than sorting time strings alphabetically (which misorders 1 PM/4 PM).
+  const active=appointments.filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['cancelled','rescheduled'].includes(String(a.status||'').toLowerCase())&&a.date&&a.time);
+  const latest=active.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||toMinutes(a.time)-toMinutes(b.time)).pop();
+  const anchorDate=latest?.date||oldItem.date;
+  const anchorMinutes=latest?toMinutes(latest.time):toMinutes(oldItem.time);
+  let cursor=new Date(`${anchorDate}T12:00:00`);
   if(isNaN(cursor.getTime()))cursor=new Date();
-  const latestDate=latest?.date||oldItem.date||'';const latestTime=latest?.time||oldItem.time||'';
   for(let offset=0;offset<730;offset++){
     const date=getLocalDateString(cursor);
     const day=days[cursor.getDay()===0?6:cursor.getDay()-1];
-    const times=normalizeScheduleTimes(details[day]??details[day?.toLowerCase()]);
+    const times=normalizeScheduleTimes(details[day]??details[day?.toLowerCase()]).slice().sort((a,b)=>a-b);
     for(const mins of times){
+      // Continue strictly after the latest active class: use a later slot on
+      // the same preferred day when possible, otherwise the next preferred day.
+      if(latest && (date<anchorDate || (date===anchorDate && mins<=anchorMinutes)))continue;
       const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
-      if(latest && (date<latestDate || (date===latestDate && time<=latestTime)))continue;
       if(hasExactStudentAppointment(student.id,date,time))continue;
       const duration=durationToMinutes(oldItem.duration||student.duration||'30 Minutes');
       if(!hasAppointmentConflict(date,time,duration,String(oldItem.id)))return {date,time,day};
