@@ -11753,10 +11753,14 @@ function generatePreferredAppointments(student,startDate,type){
   const existingForStudent=appointments.filter(a=>a.studentId===student.id&&a.status!=='Cancelled'&&a.date&&a.time)
     .sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time).localeCompare(String(b.time)));
   const latest=existingForStudent[existingForStudent.length-1];
+  /* For continuation bookings, always continue after the student's latest existing
+     non-cancelled appointment, even if the calendar picker is set to an earlier date.
+     If there is no existing appointment, use the selected start date as the first date. */
   let cursor=new Date(`${startDate}T00:00:00`);
-  if(latest&&latest.date>startDate)cursor=new Date(`${latest.date}T00:00:00`);
+  if(latest)cursor=new Date(`${latest.date}T00:00:00`);
   let created=0;
   let packageCreated=0;
+  const createdSlots=[];
   for(let i=0;i<730&&created<targetCount;i++){
     const date=getLocalDateString(cursor);
     const day=SCHEDULE_DAYS[cursor.getDay()===0?6:cursor.getDay()-1];
@@ -11775,13 +11779,14 @@ function generatePreferredAppointments(student,startDate,type){
           studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:type||'Regular Class',status:'Scheduled',scheduleMode:'preferred',packageId:isPackageClass?(current?.id||student.currentPackageId||''):'bonus_additional',createdAt:now,updatedAt:now
         });
         if(isPackageClass)packageCreated++;
+        createdSlots.push({date,time});
         created++;
       }
     }
     cursor.setDate(cursor.getDate()+1);
   }
   saveAppointments(appointments);
-  return {created,remaining:Math.max(0,packageRemaining-packageCreated),reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
+  return {created,remaining:Math.max(0,packageRemaining-packageCreated),first:createdSlots[0]||null,last:createdSlots[createdSlots.length-1]||null,reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
 function saveAppointment(){
@@ -11868,13 +11873,21 @@ return;
 }
 if(mode==='preferred'){
 if(type==='Regular Class'){
+const existing=getAppointments().filter(a=>a.studentId===student.id&&String(a.status||'Scheduled').toLowerCase()!=='cancelled'&&a.date&&a.time)
+  .sort((a,b)=>String(a.date).localeCompare(String(b.date))||String(a.time).localeCompare(String(b.time)));
+const latest=existing[existing.length-1];
+const plannedStart=latest?`${latest.date} after ${formatAppointmentTime(latest.time)}`:`${date} (first preferred slot on/after selected date)`;
+const proceed=confirm(`Please double-check before booking.\n\nStudent: ${student.nickname||student.name}\nClass type: ${type}\nBooking mode: Preferred schedule\nContinue from: ${plannedStart}\n\nThe system will book all unbooked classes using the saved preferred days/times and avoid schedule conflicts. Continue?`);
+if(!proceed)return;
 const result=generatePreferredAppointments(student,date,type);
 if(!result.created){
 return fail(result.reason||'No appointments were generated.');
 }
+const firstText=result.first?`${result.first.date} at ${formatAppointmentTime(result.first.time)}`:'';
+const lastText=result.last?`${result.last.date} at ${formatAppointmentTime(result.last.time)}`:'';
 closeAppointmentModal();
-selectedAppointmentDate=date;
-apptShowMessage(`${result.created} future class${result.created===1?'':'es'} booked automatically for ${student.name}. ${result.remaining?`${result.remaining} package class${result.remaining===1?'':'es'} remaining.`:'No package classes remaining.'}`);
+selectedAppointmentDate=result.first?.date||date;
+apptShowMessage(`Successfully booked ${result.created} class${result.created===1?'':'es'} for ${student.nickname||student.name}. Start: ${firstText}. End: ${lastText}. Please double-check the dates and times in the appointment calendar.`);
 renderAppointments();renderDashboard();
 return;
 }
