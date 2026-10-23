@@ -4308,6 +4308,18 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #studentContractPreviewPages .contract-inline-image{visibility:visible!important;opacity:1!important;}
 </style>
 </style>
+
+<style id="student-appointment-requested-adjustments-v1">
+.sa-card-head.sa-centered-heading{justify-content:center;text-align:center;position:relative;padding-left:44px;padding-right:44px}
+.sa-card-head.sa-centered-heading .sa-status{position:absolute;right:12px}
+.sa-table th{text-align:center!important;vertical-align:middle}
+.sa-btn.present{background:#d8f8e7!important;color:#087a48!important;border:1px solid #a8e9c6!important}
+.sa-btn.absent{background:#ffe1e1!important;color:#b42318!important;border:1px solid #ffc4c4!important}
+.sa-btn.evaluate{background:#00bdc8!important;color:#fff!important}
+.appointment-more-wrap,.appointment-more-btn,.appointment-more-menu{display:none!important}
+#appointmentStatusFilter{display:none!important}
+@media(max-width:700px){.sa-card-head.sa-centered-heading{padding:12px;text-align:center}.sa-card-head.sa-centered-heading .sa-status{position:static;margin-left:8px}}
+</style>
 </head>
 
 <body>
@@ -5167,36 +5179,12 @@ onclick="if(event.target===this) closeAddStudent()"
       <label for="appointmentSearch">Search Student</label>
       <input id="appointmentSearch" class="appointment-search" type="search" placeholder="Search student name or ID..." oninput="renderAppointments()">
     </div>
-    <div>
-      <label for="appointmentStatusFilter">Status</label>
-      <select id="appointmentStatusFilter" onchange="renderAppointments()">
-        <option value="all">All Status</option>
-        <option value="Scheduled">Scheduled</option>
-        <option value="Completed">Completed</option>
-        <option value="Cancelled">Cancelled</option>
-        <option value="No Show">No Show</option>
-      </select>
-    </div>
   </div>
-  <div class="appointment-toolbar-right">
-    <button type="button" class="primary" onclick="openAppointmentModal()">+ ADD APPOINTMENT</button>
-    <button type="button" class="appointment-tools-btn" onclick="openAppointmentToolsModal()" aria-label="Appointment tools" title="Appointment tools">⋮</button>
-  </div>
+  <div class="appointment-toolbar-right" aria-hidden="true"></div>
 </div>
 
 <div id="studentAppointmentDashboard" class="student-appointment-layout" style="margin-top:14px"></div>
-<details class="student-appointment-calendar-legacy" style="margin-top:14px">
-  <summary>Open Calendar View / Manage Appointment Dates</summary>
-  <div class="appointment-nav">
-    <div class="appointment-nav-left">
-      <button type="button" onclick="moveAppointmentMonth(-1)">← Previous Month</button>
-      <button type="button" onclick="goAppointmentToday()">Today</button>
-      <button type="button" onclick="moveAppointmentMonth(1)">Next Month →</button>
-    </div>
-    <div id="appointmentRange" class="appointment-range">—</div>
-  </div>
-  <div id="appointmentCalendar" style="margin-top:12px"></div>
-</details>
+
 
 </div>
 </div>
@@ -11348,7 +11336,7 @@ const remaining=Math.max(0,totalAvailable-completed);
 const notBooked=Math.max(0,remaining-bookedUpcoming);
 const scheduleHtml=preferredDays.length?preferredDays.map(day=>`<li>${escapeHtml(day)} — ${normalizeScheduleTimes(student.scheduleDetails?.[day]).map(mins=>escapeHtml(minutesToTimeLabel(mins))).join(' / ')}</li>`).join(''):'<li>No preferred schedule saved.</li>';
 const mode=getAppointmentScheduleMode();
-box.innerHTML=`<ul style="margin:0;padding-left:20px;display:grid;gap:4px"><li><strong>${escapeHtml(student.nickname||student.name)}</strong></li><li>Classes purchased: <strong>${packageCount}</strong></li><li>Bonus / free lessons: <strong>${bonus}</strong></li><li>Additional lessons: <strong>${additional}</strong></li><li>Total available classes: <strong>${totalAvailable}</strong></li><li>Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong></li><li>Preferred schedule:<ul style="margin:3px 0 0;padding-left:18px">${scheduleHtml}</ul></li><li>Classes completed: <strong>${completed}</strong></li><li>Remaining classes: <strong>${remaining}</strong></li><li>Classes not booked yet: <strong>${notBooked}</strong></li><li>Booking mode: <strong>${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</strong></li></ul>`;
+box.innerHTML=`<ul style="margin:0;padding-left:20px;display:grid;gap:4px"><li><strong>${escapeHtml(student.nickname||student.name)}</strong></li><li>Classes purchased: <strong>${packageCount}</strong></li><li>Bonus / free lessons: <strong>${bonus}</strong></li><li>Additional lessons: <strong>${additional}</strong></li><li>Total available classes: <strong>${totalAvailable}</strong></li><li>Duration: <strong>${escapeHtml(student.duration||'30 Minutes')}</strong></li><li>Preferred schedule:<ul style="margin:3px 0 0;padding-left:18px">${scheduleHtml}</ul></li><li>Classes completed: <strong>${completed}</strong></li><li>Remaining classes: <strong>${remaining}</strong></li><li>Booking mode: <strong>${mode==='manual'?'Manual / one-time date & time':'Preferred schedule'}</strong></li></ul>`;
 }
 
 function updateAppointmentSummary(){
@@ -12194,7 +12182,7 @@ function saLessonLinkFor(student,item,sortedAppointments){
   if(item.lessonUrl||item.lessonLink||item.lesson_url)return item.lessonUrl||item.lessonLink||item.lesson_url;
   const links=getStudentLessonFlow(student);
   const idx=sortedAppointments.findIndex(a=>String(a.id)===String(item.id));
-  return (idx>=0?links[idx]?.url:'')||'';
+  return (idx>=0?(links.find(row=>Number(row.lessonNumber)===idx+1)?.url||''):'')||'';
 }
 function renderStudentAppointmentDashboard(){
  const root=document.getElementById('studentAppointmentDashboard'); if(!root)return;
@@ -12233,14 +12221,13 @@ function renderStudentAppointmentDashboard(){
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
    const linkBtn=link?`<a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Lesson</a>`:'<span class="sa-muted">No lesson link</span>';
-   return `<tr><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${saEscape(lessonTitle)}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
+   return `<tr><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
- <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head">☑ CLASS RECORD ATTENDANCE <span class="sa-status wait">${all.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Lesson</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="7" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">All appointments for the selected student appear here. After a class end time has passed, mark the student Present or Absent.</p></div></section>
- <section class="sa-card sa-section"><div class="sa-card-head">✓ COMPLETED CLASSES & EVALUATIONS <span class="sa-status done">${finished.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Lesson</th><th>Status</th><th>Evaluation</th></tr></thead><tbody>${lessonRows(finished,'completed')||'<tr><td colspan="7" class="sa-empty">Completed classes will appear here automatically after their scheduled end time.</td></tr>'}</tbody></table></div></div></section>
- <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Save each lesson link once. The matching lesson links will appear in the Class Record Attendance table.</div></div></section></div>
- <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b> ${saEscape(schedule)}</li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div><div class="sa-stat"><b>${Math.max(0,remaining-upcoming.length)}</b><span>Not Booked Yet</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+ <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} classes</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">Upcoming and completed appointments appear here. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
+ <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
+ <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b> ${saEscape(schedule)}</li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
 function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();}
 
@@ -13033,7 +13020,7 @@ content.innerHTML=`
       <div class="student-detail-stat"><b>${totalRemaining}</b><span>Classes Remaining</span></div>
       <div class="student-detail-stat"><b>${bonus}</b><span>Bonus / Free Lesson</span></div>
       <div class="student-detail-stat"><b>${additional}</b><span>Additional Lessons</span></div>
-      <div class="student-detail-stat"><b>${Math.max(0,totalRemaining-booked)}</b><span>Classes Not Booked Yet</span></div>`;
+      `;
     })()}
    </div>
    <div class="student-progress" style="margin-top:12px">
@@ -13221,6 +13208,7 @@ function saveStudentLessonFlowData(){
   students[index].lessonFlowLinks=links;
   saveStudents(students);
   try{syncStudentToSupabase(students[index]);}catch(e){}
+  if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
 }
 
 function autoSaveStudentLessonFlowLink(lessonNumber,value){
