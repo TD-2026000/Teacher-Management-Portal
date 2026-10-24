@@ -12307,22 +12307,6 @@ async function downloadStudentLessonLink(url, lessonTitle='Lesson'){
 /* =========================================================
    ADD LESSON / FREE-BONUS LESSON FLOW
 ========================================================= */
-function openLessonsNotBookedYetModal(){
-  document.getElementById('lessonsNotBookedYetModal')?.remove();
-  const students=getStudents();
-  const selected=students.find(st=>String(st.id)===String(window.currentStudentAppointmentBoardId))||students[0];
-  if(!selected){alert('Please add a student first.');return;}
-  const getUnbooked=st=>Math.max(0,Math.floor(Number(st.unbookedLessons||0)||0));
-  const currentCount=getUnbooked(selected);
-  const entries=students.filter(st=>getUnbooked(st)>0).sort((a,b)=>String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||'')));
-  const rows=entries.map(st=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5f2f2;text-align:left"><div><strong>${saEscape(st.nickname||st.name||'Student')}</strong><div style="font-size:11px;color:#718187">ID: ${saEscape(st.id||'—')}</div></div><strong style="color:#007f83;white-space:nowrap">${getUnbooked(st)} lesson${getUnbooked(st)===1?'':'s'}</strong></div>`).join('');
-  const overlay=document.createElement('div');overlay.id='lessonsNotBookedYetModal';
-  overlay.style.cssText='position:fixed;inset:0;z-index:100550;background:rgba(10,25,35,.42);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,460px);min-width:300px;max-width:94vw;max-height:82vh;overflow:auto;background:#fff;border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.24);border:1px solid #b8f2f2"><div style="width:52px;height:52px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900">≡</div><h3 style="margin:0 0 6px;color:#007f83">Lessons Not Booked Yet</h3><p style="font-size:13px;color:#52636b;margin:0 0 16px">${saEscape(selected.nickname||selected.name||'Student')}'s lessons that have been added but not scheduled.</p><div style="padding:16px;border-radius:12px;background:#effdfd;border:1px solid #b8f2f2;margin-bottom:14px"><div style="font-size:34px;font-weight:900;color:#007f83">${currentCount}</div><div style="font-size:12px;color:#52636b">Lessons not booked for this student</div></div><div style="max-height:220px;overflow:auto">${rows||'<p style="color:#718187;font-size:13px">No students currently have lessons waiting to be booked.</p>'}</div><button type="button" id="closeLessonsNotBookedYet" style="margin-top:18px;border:0;border-radius:9px;background:#00cfd2;color:#00383a;padding:10px 22px;font-weight:800;cursor:pointer">Close</button></div>`;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#closeLessonsNotBookedYet').onclick=()=>overlay.remove();
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
-}
 function closeAddLessonFlow(){document.getElementById('addLessonFlowModal')?.remove();}
 function openAddLessonFlow(){
   const students=getStudents();
@@ -12330,58 +12314,68 @@ function openAddLessonFlow(){
   if(!selected){alert('Please add a student first.');return;}
   closeAddLessonFlow();
   const overlay=document.createElement('div');overlay.id='addLessonFlowModal';
-  overlay.style.cssText='position:fixed;inset:0;z-index:100400;background:rgba(10,25,35,.42);display:flex;align-items:center;justify-content:center;padding:16px;';
-  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,440px);min-width:300px;max-width:94vw;max-height:82vh;overflow:auto;background:#fff;border-radius:18px;padding:26px 22px;box-shadow:0 18px 60px rgba(0,0,0,.25);border:1px solid #b8f2f2"><h3 style="margin:0 0 6px;color:#007f83">Add Lessons</h3><p style="margin:0 0 12px;color:#52636b;font-size:13px">Student: <strong>${saEscape(selected.nickname||selected.name||selected.id)}</strong></p><div style="padding:9px 12px;border-radius:9px;background:#effdfd;border:1px solid #b8f2f2;margin-bottom:14px;font-size:12px;color:#007f83"><strong>${Math.max(0,Math.floor(Number(selected.unbookedLessons||0)||0))}</strong> lesson(s) not booked yet</div><label for="addLessonKind" style="display:block;font-weight:700;margin-bottom:6px">Lesson Type</label><select id="addLessonKind" style="width:100%;padding:11px;border:1px solid #cbd5d9;border-radius:9px;margin-bottom:14px"><option value="additional">Add Lesson</option><option value="bonus">Add Free/Bonus Lesson</option></select><label for="addLessonQuantity" style="display:block;font-weight:700;margin-bottom:6px">How many lessons?</label><input id="addLessonQuantity" type="number" min="1" step="1" value="1" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5d9;border-radius:9px"><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px"><button type="button" id="addLessonCancel" style="padding:10px 15px;border:1px solid #cbd5d9;border-radius:9px;background:#fff;cursor:pointer">Cancel</button><button type="button" id="addLessonContinue" style="padding:10px 15px;border:0;border-radius:9px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer">Save Changes</button></div></div>`;
+  overlay.style.cssText='position:fixed;inset:0;z-index:100400;background:rgba(10,25,35,.48);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;';
+  overlay.innerHTML=`<div role="dialog" aria-modal="true" aria-label="Add lessons" style="width:min(30vw,460px);min-width:300px;max-width:94vw;max-height:85vh;overflow:auto;box-sizing:border-box;background:#fff;border-radius:18px;padding:26px 24px;box-shadow:0 18px 60px rgba(0,0,0,.25);border:1px solid #b8f2f2;text-align:left">
+    <div style="width:50px;height:50px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900">＋</div>
+    <h3 style="margin:0 0 8px;text-align:center;color:#007f83">Add Lesson</h3>
+    <p style="margin:0 0 16px;text-align:center;color:#52636b;font-size:13px">Student: <strong>${saEscape(selected.nickname||selected.name||selected.id)}</strong></p>
+    <label for="addLessonKind" style="display:block;font-weight:700;margin-bottom:6px">Lesson Type</label>
+    <select id="addLessonKind" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5d9;border-radius:9px;margin-bottom:14px"><option value="additional">Add Lesson</option><option value="bonus">Add Free/Bonus Lesson</option></select>
+    <label for="addLessonQuantity" style="display:block;font-weight:700;margin-bottom:6px">How many lessons?</label>
+    <input id="addLessonQuantity" type="number" min="1" max="500" step="1" value="1" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #cbd5d9;border-radius:9px">
+    <p style="font-size:12px;line-height:1.5;color:#52636b;margin:12px 0 4px">All added lessons will automatically be scheduled using the student's preferred class dates and times.</p>
+    <p style="font-size:12px;line-height:1.5;color:#8a5a00;margin:0 0 12px">Please double-check the Student Record after saving. If fewer classes appear than the number added, check for schedule conflicts or unavailable preferred time slots.</p>
+    <div style="display:flex;gap:9px;margin-top:16px"><button type="button" id="addLessonCancel" style="flex:1;padding:11px;border:1px solid #b8dfe0;border-radius:9px;background:#f5ffff;color:#006f73;font-weight:800;cursor:pointer">Cancel</button><button type="button" id="addLessonSave" style="flex:1;padding:11px;border:0;border-radius:9px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer">Save Changes</button></div>
+  </div>`;
   document.body.appendChild(overlay);
   overlay.querySelector('#addLessonCancel').onclick=closeAddLessonFlow;
   overlay.addEventListener('click',e=>{if(e.target===overlay)closeAddLessonFlow();});
-  overlay.querySelector('#addLessonContinue').onclick=()=>{
+  overlay.querySelector('#addLessonSave').onclick=()=>{
     const qty=Math.floor(Number(overlay.querySelector('#addLessonQuantity').value));
     if(!Number.isFinite(qty)||qty<1||qty>500){alert('Enter a lesson quantity from 1 to 500.');return;}
     const kind=overlay.querySelector('#addLessonKind').value;
     closeAddLessonFlow();
-    showAddLessonBookingChoice(String(selected.id),qty,kind);
+    commitAddedLessons(String(selected.id),qty,kind,true);
   };
 }
-function showAddLessonBookingChoice(studentId,qty,kind){
-  document.getElementById('addLessonBookingChoice')?.remove();
-  const overlay=document.createElement('div');overlay.id='addLessonBookingChoice';
-  overlay.style.cssText='position:fixed;inset:0;z-index:100500;background:rgba(10,25,35,.42);display:flex;align-items:center;justify-content:center;padding:16px;';
-  const label=kind==='bonus'?'free/bonus lesson':'additional lesson';
-  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,440px);min-width:300px;max-width:94vw;background:#fff;border-radius:18px;padding:26px 22px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.24);border:1px solid #b8f2f2"><div style="width:52px;height:52px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900">＋</div><h3 style="margin:0 0 8px;color:#007f83">${qty} ${label}${qty===1?'':'s'} added</h3><p style="font-size:13px;line-height:1.5;color:#52636b;margin:0 0 18px">Do you want the new lessons to be automatically listed in <strong>PREFERRED CLASS SCHEDULE AND CLASS RECORD</strong> using the student's preferred class dates and times?</p><div style="display:flex;flex-direction:column;gap:9px"><button type="button" id="addLessonAutoBook" style="padding:12px;border:0;border-radius:9px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer">Yes — Automatically List in Student Record</button><button type="button" id="addLessonKeepUnbooked" style="padding:12px;border:1px solid #b8dfe0;border-radius:9px;background:#f5ffff;color:#006f73;font-weight:800;cursor:pointer">No — Keep in Lessons Not Booked Yet</button><button type="button" id="addLessonChoiceCancel" style="padding:8px;border:0;background:transparent;color:#68777c;cursor:pointer">Cancel</button></div></div>`;
-  document.body.appendChild(overlay);
-  overlay.querySelector('#addLessonChoiceCancel').onclick=()=>overlay.remove();
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
-  overlay.querySelector('#addLessonAutoBook').onclick=()=>{overlay.remove();commitAddedLessons(studentId,qty,kind,true);};
-  overlay.querySelector('#addLessonKeepUnbooked').onclick=()=>{overlay.remove();commitAddedLessons(studentId,qty,kind,false);};
-}
-async function commitAddedLessons(studentId,qty,kind,autoBook){
+async function commitAddedLessons(studentId,qty,kind,autoBook=true){
   const students=getStudents();const idx=students.findIndex(st=>String(st.id)===String(studentId));
   if(idx<0){alert('Student record not found. No lessons were added.');return;}
   const student={...students[idx]};
   if(kind==='bonus')student.bonusFreeLessons=Math.max(0,Math.floor(Number(student.bonusFreeLessons??student.bonusLessons??student.freeLessons??student.bonusClasses??0)||0))+qty;
   else student.additionalLessons=Math.max(0,Math.floor(Number(student.additionalLessons??student.addedLessons??student.extraLessons??0)||0))+qty;
-  student.unbookedLessons=Math.max(0,Math.floor(Number(student.unbookedLessons||0)||0))+qty;
+  /* Legacy field retained for data compatibility only; this workflow always auto-books. */
+  student.unbookedLessons=0;
   student.updatedAt=new Date().toISOString();students[idx]=student;
   saveStudents(students);
-  let bookingCount=0;let bookingWarning='';
-  try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(student);}catch(e){console.error('Student lesson sync failed:',e);}
-  if(autoBook){
-    try{
-      const start=student.startDate||getLocalDateString(new Date());
-      const result=generatePreferredAppointments(student,start,'Regular Class',qty);
-      bookingCount=Math.max(0,Number(result?.created)||0);
-      if(bookingCount>0&&typeof syncAppointmentsToSupabase==='function')await syncAppointmentsToSupabase(getAppointments());
-      if(bookingCount<qty)bookingWarning=` Only ${bookingCount} appointment(s) could be booked now; check schedule conflicts or available preferred time slots. The remaining credit(s) are still saved.`;
-      /* Auto-booking has attempted to schedule every available credit, including any earlier unbooked credits. */
-      const refreshed=getStudents();const ridx=refreshed.findIndex(st=>String(st.id)===String(studentId));
-      if(ridx>=0){refreshed[ridx]={...refreshed[ridx],unbookedLessons:Math.max(0,Math.floor(Number(refreshed[ridx].unbookedLessons||0)||0)-Math.max(0,bookingCount))};saveStudents(refreshed);try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(refreshed[ridx]);}catch(e){console.error(e);}}
-    }catch(e){console.error('Automatic lesson booking failed:',e);bookingWarning=' The lessons were saved, but automatic booking failed. Please check the preferred schedule and try again.';}
+  let bookingCount=0;let bookingWarning='Please double-check the Student Record to confirm that the new class rows are present.';
+  let studentSyncOk=true, appointmentsSyncOk=true;
+  try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(student);}catch(e){studentSyncOk=false;console.error('Student lesson sync failed:',e);}
+  try{
+    const start=student.startDate||getLocalDateString(new Date());
+    const result=generatePreferredAppointments(student,start,'Regular Class',qty);
+    bookingCount=Math.max(0,Number(result?.created)||0);
+    if(bookingCount>0&&typeof syncAppointmentsToSupabase==='function'){
+      try{await syncAppointmentsToSupabase(getAppointments());}catch(e){appointmentsSyncOk=false;console.error('Appointment sync failed:',e);}
+    }
+    if(bookingCount<qty){
+      bookingWarning=`Only ${bookingCount} of ${qty} requested class rows could be booked. Please check for preferred-schedule conflicts or unavailable time slots. The added lesson credits remain saved.`;
+    }else{
+      bookingWarning='Double-check the Student Record to confirm all newly added classes appear. The booking count above shows how many appointment rows were created.';
+    }
+  }catch(e){
+    console.error('Automatic lesson booking failed:',e);
+    bookingWarning='The lesson credits were saved, but automatic booking encountered an error. Please double-check the Student Record and preferred schedule.';
   }
+  if(!studentSyncOk)bookingWarning+=' The student data sync to the database reported an error; please verify after reloading.';
+  if(!appointmentsSyncOk)bookingWarning+=' The appointment sync to the database reported an error; please verify after reloading.';
   renderDashboard();populateStudentSelect(studentId);renderRecords();renderStudents();renderAppointments();renderStudentAppointmentDashboard();
   const overlay=document.createElement('div');overlay.id='lessonAddedSuccessModal';overlay.style.cssText='position:fixed;inset:0;z-index:100600;background:rgba(10,25,35,.42);display:flex;align-items:center;justify-content:center;padding:16px;';
-  const status=autoBook?`Automatically listed ${bookingCount} appointment(s) in the Student Record.`:'Saved successfully. No appointment rows were created; the lessons are listed under Lessons Not Booked Yet in Class Summary.';
-  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,440px);min-width:300px;max-width:94vw;background:#fff;border-radius:18px;padding:28px 24px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.24);border:1px solid #b8f2f2"><div style="width:54px;height:54px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900">✓</div><h3 style="margin:0 0 8px;color:#007f83;font-size:20px">Successfully Added!</h3><div style="font-size:34px;line-height:1.2;font-weight:900;color:#102a35;margin:8px 0">${qty} ${kind==='bonus'?'Free/Bonus Lesson':'Additional Lesson'}${qty===1?'':'s'}</div><p style="font-size:13px;line-height:1.5;color:#52636b;margin:0 0 10px">${status}</p><p style="font-size:12px;line-height:1.45;color:#8a5a00;margin:0 0 18px">${saEscape(bookingWarning)}</p><button type="button" style="border:0;border-radius:9px;background:#00cfd2;color:#00383a;padding:10px 22px;font-weight:800;cursor:pointer">Okay</button></div>`;
+  const label=kind==='bonus'?'Free/Bonus Lesson':'Additional Lesson';
+  const status=bookingCount===qty
+    ?`Successfully added ${qty} ${label.toLowerCase()}${qty===1?'':'s'} and created ${bookingCount} appointment row(s) in PREFERRED CLASS SCHEDULE AND CLASS RECORD.`
+    :`Successfully added ${qty} ${label.toLowerCase()}${qty===1?'':'s'}. ${bookingCount} of ${qty} appointment row(s) were created.`;
+  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,440px);min-width:300px;max-width:94vw;background:#fff;border-radius:18px;padding:28px 24px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.24);border:1px solid #b8f2f2"><div style="width:54px;height:54px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900">✓</div><h3 style="margin:0 0 8px;color:#007f83;font-size:20px">Successfully Added!</h3><div style="font-size:32px;line-height:1.2;font-weight:900;color:#102a35;margin:8px 0">${qty} ${label}${qty===1?'':'s'}</div><p style="font-size:13px;line-height:1.5;color:#52636b;margin:0 0 10px">${status}</p><p style="font-size:12px;line-height:1.45;color:#8a5a00;margin:0 0 18px">${saEscape(bookingWarning)}</p><button type="button" style="border:0;border-radius:9px;background:#00cfd2;color:#00383a;padding:10px 22px;font-weight:800;cursor:pointer">Okay</button></div>`;
   document.body.appendChild(overlay);overlay.querySelector('button').onclick=()=>overlay.remove();overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
 }
 
@@ -12431,7 +12425,7 @@ function renderStudentAppointmentDashboard(){
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
  <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><p class="sa-muted">Upcoming and completed appointments appear here. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
  <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
- <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div><div class="sa-stat"><b>${Math.max(0,Math.floor(Number(student.unbookedLessons||0)||0))}</b><span>Lessons Not Booked Yet</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+ <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Bonus / Free</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
 function getNextPreferredRescheduleSlot(student, appointments, oldItem){
   const details=student?.scheduleDetails||{};
@@ -13423,7 +13417,6 @@ content.innerHTML=`
     <div class="student-profile-info-box"><label>Class Duration</label><div>${escapeHtml(student.duration||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Classes (Purchased Package)</label><div>${escapeHtml(student.packageName||'Not set')}</div></div>
     <div class="student-profile-info-box"><label>Bonus / Free Lesson</label><div>${Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0))}</div></div>
-    <div class="student-profile-info-box"><label>Additional Lessons</label><div>${Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0))}</div></div>
     <div class="student-profile-info-box"><label>Start Date</label><div>${escapeHtml(currentStart)}</div></div>
     <div class="student-profile-info-box" style="grid-column:span 3"><label>Preferred Class Schedule</label><div>${renderStudentProfileScheduleList(student.scheduleDetails,student.preferredSchedule,student.duration)}</div></div>
    ${Object.entries(normalizeCustomStudentFields(student.customFields||{})).map(([key,value])=>`<div class="student-profile-custom-field-box"><label>${escapeHtml(key)}</label><div>${escapeHtml(value||'Not set')}</div></div>`).join('')}
@@ -13449,8 +13442,7 @@ content.innerHTML=`
       <div class="student-detail-stat"><b>${p.completed}</b><span>Classes Completed</span></div>
       <div class="student-detail-stat"><b>${totalRemaining}</b><span>Classes Remaining</span></div>
       <div class="student-detail-stat"><b>${bonus}</b><span>Bonus / Free Lesson</span></div>
-      <div class="student-detail-stat"><b>${additional}</b><span>Additional Lessons</span></div>
-      <div class="student-detail-stat"><b>${Math.max(0,Math.floor(Number(student.unbookedLessons||0)||0))}</b><span>Lessons Not Booked Yet</span></div>
+
       `;
     })()}
    </div>
