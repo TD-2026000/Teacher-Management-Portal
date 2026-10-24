@@ -9659,6 +9659,27 @@ s.className=
 }
 
 
+function showLessonAddedSuccessModal(count,kind='lesson'){
+  const n=Math.max(0,Number(count)||0);
+  if(!n)return;
+  document.getElementById('lessonAddedSuccessModal')?.remove();
+  const overlay=document.createElement('div');
+  overlay.id='lessonAddedSuccessModal';
+  overlay.style.cssText='position:fixed;inset:0;z-index:100500;background:rgba(10,25,35,.38);display:flex;align-items:center;justify-content:center;padding:16px;';
+  const noun=n===1?(kind==='bonus'?'bonus lesson':'lesson'):(kind==='bonus'?'bonus lessons':'lessons');
+  overlay.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(30vw,420px);min-width:280px;max-width:94vw;background:#fff;border-radius:18px;padding:28px 24px;text-align:center;box-shadow:0 18px 60px rgba(0,0,0,.24);border:1px solid #b8f2f2;">
+    <div style="width:54px;height:54px;margin:0 auto 12px;border-radius:50%;background:#d9fbf8;color:#009b9e;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;">✓</div>
+    <h3 style="margin:0 0 8px;color:#007f83;font-size:20px;">Successfully Added!</h3>
+    <div style="font-size:34px;line-height:1.2;font-weight:900;color:#102a35;margin:8px 0;">${n} ${noun}</div>
+    <p style="font-size:13px;line-height:1.5;color:#52636b;margin:0 0 18px;">The new classes have been added to the student's available lessons. The portal is saving the new appointments to the Student Record.</p>
+    <button type="button" style="border:0;border-radius:9px;background:#00cfd2;color:#00383a;padding:10px 22px;font-weight:800;cursor:pointer;">Okay</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('button').onclick=()=>overlay.remove();
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+}
+
+
 /* =========================================================
    CUSTOM STUDENT INFORMATION FIELDS
 ========================================================= */
@@ -10786,7 +10807,7 @@ if(currentPackageForEdit){
 
 students[index]=editedStudent;
 saveStudents(students);
-syncStudentToSupabase(students[index]);
+await syncStudentToSupabase(students[index]);
 try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
 
 /* If the preferred schedule changed, immediately synchronize all future
@@ -10823,6 +10844,12 @@ let addedLessonAppointments=0;
 if(newLessonCapacity>oldLessonCapacity && typeof generatePreferredAppointments==='function'){
   const generated=generatePreferredAppointments(editedStudent,editedStartDate,'Regular Class');
   addedLessonAppointments=Math.max(0,Number(generated?.created)||0);
+  /* The generator writes locally immediately. Await a remote sync here before
+     leaving the edit flow so the new class rows are not only temporary UI rows. */
+  if(addedLessonAppointments>0){
+    await syncAppointmentsToSupabase(getAppointments());
+    try{localStorage.setItem('teacherDanyealLastStudentUpdateNotice',String(Date.now()));}catch(e){}
+  }
 }
 
 closeEditStudent();
@@ -10836,6 +10863,7 @@ if(scheduleChanged){
   showStudentStatus(`Schedule updated successfully. All future appointments and calendar entries have been automatically moved to the new preferred schedule. No rebooking is required.${addedLessonAppointments?` ${addedLessonAppointments} additional class appointment(s) were added to the student record.`:''}`,true);
 }else if(addedLessonAppointments){
   showStudentStatus(`Student record updated successfully. ${addedLessonAppointments} additional class appointment(s) were added to PREFERRED CLASS SCHEDULE AND CLASS RECORD.`,true);
+  showLessonAddedSuccessModal(addedLessonAppointments,'lesson');
 }else{
   showStudentStatus('Student record updated successfully.',true);
 }
@@ -11022,13 +11050,10 @@ return Array.isArray(data)?data:[];
 }catch(error){return [];}
 }
 
-function saveAppointments(data){
-  localStorage.setItem(
-    appointmentStorageKey(),
-    JSON.stringify(data)
-  );
-
-  syncAppointmentsToSupabase(data);
+async function saveAppointments(data){
+  localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));
+  // Persist remotely before returning so callers can await completion when needed.
+  await syncAppointmentsToSupabase(data);
 }
 
 async function syncAppointmentsToSupabase(appointments){
@@ -11078,8 +11103,10 @@ async function syncAppointmentsToSupabase(appointments){
         if(error) throw error;
       }
     }
+    return true;
   }catch(error){
     console.error('Appointment Supabase sync failed:',error);
+    return false;
   }
 }
 
@@ -11116,23 +11143,19 @@ async function loadAppointmentsFromSupabase(){
     if(!Array.isArray(data)) return;
 
     const students=getStudents();
+    const localAppointments=getAppointments();
 
     const appointments=data.map(row=>{
       const student=students.find(
         s=>String(s.id)===String(row.student_id)
       );
-
       return {
         id:String(row.id),
         studentId:String(row.student_id||''),
         studentName:student?.name||'',
         date:row.class_date||'',
-        time:row.class_time
-          ?String(row.class_time).slice(0,5)
-          :'',
-        duration:row.duration
-          ?`${row.duration} Minutes`
-          :'30 Minutes',
+        time:row.class_time ? String(row.class_time).slice(0,5) : '',
+        duration:row.duration ? `${row.duration} Minutes` : '30 Minutes',
         type:row.class_type||'Regular Class',
         status:row.status||'Scheduled',
         attendance:row.attendance||'',
@@ -11140,18 +11163,33 @@ async function loadAppointmentsFromSupabase(){
         notes:row.notes||'',
         scheduleMode:'manual',
         createdAt:row.created_at||new Date().toISOString(),
-        updatedAt:row.created_at||new Date().toISOString()
+        updatedAt:row.created_at||row.updated_at||new Date().toISOString()
       };
     });
 
-    localStorage.setItem(
-      appointmentStorageKey(),
-      JSON.stringify(appointments)
-    );
+    // Never discard a newly created local appointment just because the remote
+    // save has not completed or Supabase has not returned it yet. Match on the
+    // student/date/time key used by the sync function, then retry syncing only
+    // local records that are missing remotely.
+    const appointmentKey=a=>`${String(a.studentId||a.student_id||'')}|${String(a.date||'')}|${String(a.time||'').slice(0,5)}`;
+    const remoteKeys=new Set(appointments.map(appointmentKey));
+    const localOnly=localAppointments.filter(a=>{
+      const status=String(a.status||'').trim().toLowerCase();
+      if(['deleted','removed','rescheduled'].includes(status))return false;
+      const key=appointmentKey(a);
+      if(!a.studentId||!a.date||!a.time||remoteKeys.has(key))return false;
+      remoteKeys.add(key);
+      return true;
+    });
+    const mergedAppointments=appointments.concat(localOnly);
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(mergedAppointments));
 
-    console.log(
-      `Loaded ${appointments.length} appointments from Supabase.`
-    );
+    if(localOnly.length){
+      console.warn(`Kept ${localOnly.length} local appointment(s) missing from Supabase; retrying sync.`);
+      await syncAppointmentsToSupabase(localOnly);
+    }
+
+    console.log(`Loaded ${appointments.length} appointments from Supabase; preserved ${localOnly.length} local-only appointments.`);
 
   }catch(error){
     console.error(
