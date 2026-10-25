@@ -4456,6 +4456,83 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 })();
 </script>
 
+
+<style id="subscription-exact-reference-layout-v2">
+/* Match the supplied reference: bright teal header, full QR artwork on the left, payment form on the right. */
+#subscriptionPage .subscription-status-card{display:none!important}
+#subscriptionPage .subscription-header-card{min-height:112px;box-sizing:border-box;padding:20px 24px;margin-bottom:18px;border:1px solid #7ce9ec;border-radius:16px;background:linear-gradient(110deg,#e7ffff,#f8ffff);box-shadow:none}
+#subscriptionPage .subscription-title{font-size:clamp(25px,3vw,36px);font-weight:900;letter-spacing:.01em;color:#07536a}
+#subscriptionPage .subscription-subtitle{margin-top:6px;color:#087b91;font-size:13px}
+#subscriptionPage .subscription-price-badge{display:flex;flex-direction:column;align-items:flex-start;gap:0;padding:8px 24px;border-radius:14px;background:#c8fbfc;color:#07536a;font-size:38px;line-height:1.05;font-weight:900}
+#subscriptionPage .subscription-price-badge span{font-size:15px;color:#087b91;font-weight:700}
+#subscriptionPage .subscription-panel{padding:0;border:0;background:transparent;box-shadow:none;margin-bottom:18px}
+#subscriptionPage .subscription-panel>.subscription-panel-title,#subscriptionPage .subscription-plan-box-69{display:none!important}
+#subscriptionPage .subscription-payment-two-column{display:grid;grid-template-columns:minmax(0,.83fr) minmax(0,1.17fr);gap:16px;align-items:stretch;margin-top:0}
+#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{min-width:0;box-sizing:border-box;padding:18px;border:1px solid #7ce9ec;border-radius:16px;background:linear-gradient(145deg,#f0ffff,#fff)}
+#subscriptionPage .subscription-payment-left .subscription-section-title{display:none!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-card{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+#subscriptionPage .subscription-gcash-brand-row{display:flex;align-items:center;gap:12px;margin:0 0 2px}
+#subscriptionPage .subscription-gcash-brand-mark{display:flex;align-items:center;justify-content:center;flex:0 0 48px;width:48px;height:48px;border-radius:50%;background:#0875e1;color:white;font-size:27px;font-weight:900;box-shadow:inset 0 0 0 4px #5bd7ff}
+#subscriptionPage .subscription-gcash-brand-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+#subscriptionPage .subscription-gcash-brand-copy strong{font-size:25px;line-height:1;color:#0875e1;font-weight:900}
+#subscriptionPage .subscription-gcash-brand-copy span{font-size:11px;color:#07879a}
+#subscriptionPage .subscription-gcash-qr-frame{display:flex;align-items:center;justify-content:center;width:100%;min-height:0;box-sizing:border-box;padding:0;margin:0;border:0;border-radius:12px;background:transparent;box-shadow:none}
+#subscriptionPage .subscription-gcash-qr-frame img{display:block;width:auto;height:auto;max-width:100%;max-height:62vh;object-fit:contain;border-radius:12px}
+#subscriptionPage .subscription-gcash-payment-copy{display:flex;flex-direction:column;gap:5px;text-align:left;align-items:flex-start;line-height:1.4}
+#subscriptionPage .subscription-gcash-payment-copy strong{font-size:23px;color:#078e99;font-weight:900}
+#subscriptionPage .subscription-gcash-payment-copy span{font-size:12px;color:#087b91}
+#subscriptionPage .subscription-gcash-payment-copy small{font-size:11px;color:#27829a}
+#subscriptionPage .subscription-payment-right .subscription-section-title{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:18px;letter-spacing:.01em;color:#153f50}
+#subscriptionPage .subscription-payment-right .subscription-section-title:before{content:'▤';display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:#d7fbfc;color:#00aeb3;font-size:22px}
+#subscriptionPage .subscription-payment-instructions{min-height:0;box-sizing:border-box;margin:0 0 20px;padding:16px 18px;border:0;border-radius:12px;background:#e1fbfc;color:#087b91;font-size:12px;line-height:1.55}
+#subscriptionPage .subscription-payment-right .subscription-form-grid{display:grid;grid-template-columns:1fr;gap:18px;margin:0 0 18px}
+#subscriptionPage .subscription-payment-right label{display:block;margin-bottom:7px;color:#078e99;font-size:15px;font-weight:900}
+#subscriptionPage .subscription-payment-right input[type="text"]{min-height:42px;border:1px solid #d2e0e9;border-radius:10px;padding:11px 14px;background:#fff;font-size:13px}
+#subscriptionPage .subscription-payment-right input[type="file"]{min-height:56px;border:1px dashed #b8dce7;border-radius:10px;padding:12px;background:#f5fcff;font-size:13px}
+#subscriptionPage .subscription-field-note{color:#7299b5;font-size:11px}
+#subscriptionPage .subscription-payment-note{margin:0 0 12px;padding:16px 18px;border:0;border-radius:12px;background:#e1fbfc;color:#087b91;text-align:left;font-size:12px;line-height:1.55}
+#subscriptionPage .subscription-payment-note label{display:none}
+#subscriptionPage .subscription-payment-note textarea{min-height:70px;margin-top:8px;border-color:#d2e0e9}
+#subscriptionPage .subscription-submit-btn{min-height:56px;margin-top:10px;border-radius:11px;background:linear-gradient(90deg,#08cbd0,#00bfc8);color:#fff;font-size:15px;font-weight:900;box-shadow:none}
+#subscriptionPage .subscription-submit-btn:hover{background:#00b7c0}
+#subscriptionPage .subscription-history-panel{padding:22px;border-color:#7ce9ec;border-radius:16px;box-shadow:none}
+@media(max-width:760px){#subscriptionPage .subscription-payment-two-column{grid-template-columns:1fr}#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:14px}#subscriptionPage .subscription-gcash-qr-frame img{max-width:min(100%,420px);max-height:none}#subscriptionPage .subscription-price-badge{font-size:30px;padding:10px 16px}#subscriptionPage .subscription-header-card{flex-direction:row;align-items:center;gap:10px;padding:16px}}
+@media(max-width:480px){#subscriptionPage .subscription-header-card{align-items:flex-start;flex-direction:column}#subscriptionPage .subscription-price-badge{align-self:flex-start}}
+</style>
+<script id="subscription-reference-wording-v2">
+(function(){
+ function applyReferenceWording(){
+  const page=document.getElementById('subscriptionPage'); if(!page)return;
+  const copy=page.querySelector('.subscription-gcash-payment-copy');
+  if(copy) copy.innerHTML='<strong>SCAN TO PAY</strong><span>Use GCash app to scan the QR code below.</span>';
+  const qrCard=page.querySelector('.subscription-gcash-payment-card');
+  if(qrCard && !qrCard.querySelector('.subscription-gcash-brand-row')){
+   const brand=document.createElement('div');brand.className='subscription-gcash-brand-row';
+   brand.innerHTML='<div class="subscription-gcash-brand-mark" aria-hidden="true">G</div><div class="subscription-gcash-brand-copy"><strong>GCash</strong><span>Use GCash app to scan the QR code below.</span></div>';
+   qrCard.insertBefore(brand,qrCard.firstChild);
+  }
+  const title=Array.from(page.querySelectorAll('.subscription-section-title')).find(el=>/PAYMENT DETAILS/i.test(el.textContent));
+  if(title)title.textContent='PAYMENT DETAILS';
+  const ref=page.querySelector('label[for="subscriptionReference"]'); if(ref)ref.innerHTML='Reference Number (RN) <span style="color:#e5484d">*</span>';
+  const proof=page.querySelector('label[for="subscriptionProof"]'); if(proof)proof.innerHTML='Payment Proof <span style="color:#e5484d">*</span>';
+  const refInput=page.querySelector('#subscriptionReference'); if(refInput)refInput.placeholder='Enter your GCash reference number (RN)';
+  const proofNote=page.querySelector('.subscription-field-note'); if(proofNote)proofNote.textContent='Upload a screenshot of your payment (optional but recommended).';
+  const right=page.querySelector('.subscription-payment-right');
+  if(right){
+   const oldInfo=right.querySelector('.subscription-reference-info-note');
+   if(!oldInfo){const info=document.createElement('div');info.className='subscription-reference-info-note';info.innerHTML='<strong>ⓘ　Note</strong><ul><li>Make sure the amount is <b>₱69</b>.</li><li>Use only GCash QR for payment.</li><li>Wait for the verification process. You will be notified once your subscription is activated.</li></ul>';const form=right.querySelector('.subscription-form-grid');if(form)form.insertAdjacentElement('afterend',info);}
+  }
+  const note=page.querySelector('.subscription-payment-note'); if(note)note.style.display='none';
+  const submit=page.querySelector('.subscription-submit-btn'); if(submit)submit.textContent='➤　SUBMIT ₱69 PAYMENT';
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applyReferenceWording,{once:true});else applyReferenceWording();
+})();
+</script>
+
+
+<style id="subscription-reference-info-note-style">
+#subscriptionPage .subscription-reference-info-note{margin:0 0 12px;padding:16px 18px;border-radius:12px;background:#e1fbfc;color:#07879a;font-size:12px;line-height:1.55}#subscriptionPage .subscription-reference-info-note strong{display:block;margin-bottom:5px;font-size:14px;color:#00aeb3}#subscriptionPage .subscription-reference-info-note ul{margin:4px 0 0;padding-left:21px}#subscriptionPage .subscription-reference-info-note li{margin:2px 0}
+</style>
 </head>
 
 <body>
@@ -5995,10 +6072,10 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 
     <div class="subscription-header-card">
       <div>
-        <h2 class="subscription-title">SUBSCRIPTION</h2>
-        <p class="subscription-subtitle">Keep your Teacher Management Portal access active.</p>
+        <h2 class="subscription-title">MONTHLY SUBSCRIPTION</h2>
+        <p class="subscription-subtitle">Keep your account active and continue managing your classes.</p>
       </div>
-      <div class="subscription-price-badge">₱99 <span>/ month</span></div>
+      <div class="subscription-price-badge">₱69 <span>per month</span></div>
     </div>
 
     <div class="subscription-status-card">
