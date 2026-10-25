@@ -11032,6 +11032,54 @@ return Array.isArray(data)?data:[];
 }catch(error){return [];}
 }
 
+function isExtraLessonAppointment(a){
+  const pid=String(a?.packageId||'').toLowerCase();
+  return pid==='bonus_additional'||pid==='bonus'||pid==='additional'||pid.includes('bonus')||pid.includes('additional');
+}
+async function deleteAppointmentsFromSupabase(items){
+  if(!currentUser||!supabaseClient||!Array.isArray(items)||!items.length)return true;
+  for(const item of items){
+    let q=supabaseClient.from('appointments').delete().eq('user_id',currentUser.id).eq('student_id',String(item.studentId||item.student_id||''));
+    if(item.date)q=q.eq('class_date',item.date);else q=q.is('class_date',null);
+    if(item.time)q=q.eq('class_time',String(item.time).length===5?`${item.time}:00`:item.time);else q=q.is('class_time',null);
+    const result=await q;
+    if(result.error)throw result.error;
+  }
+  return true;
+}
+/* Deleting a purchased-package class also reduces the active package quantity.
+   Extra/manual classes tagged bonus_additional do not reduce purchased credits. */
+async function deductPurchasedClassesForDeletedAppointments(items){
+  const byStudent={};
+  (items||[]).forEach(a=>{
+    if(!isExtraLessonAppointment(a)){
+      const sid=String(a.studentId||a.student_id||'');
+      if(sid)(byStudent[sid]||=0,byStudent[sid]++);
+    }
+  });
+  if(!Object.keys(byStudent).length)return;
+  const students=getStudents();let changed=false;
+  for(const [sid,qty] of Object.entries(byStudent)){
+    const student=students.find(st=>String(st.id)===sid);if(!student)continue;
+    const history=ensureStudentPackageState(student);
+    const current=history.find(pkg=>String(pkg.id)===String(student.currentPackageId))||history[history.length-1];
+    if(current){
+      const count=Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName));
+      current.classCount=Math.max(0,count-qty);
+      const digits=String(current.packageName||student.packageName||'').match(/\d+/g);
+      if(digits?.length){const old=digits[digits.length-1];current.packageName=String(current.packageName||student.packageName).replace(new RegExp(old+'(?!.*\\d)'),String(current.classCount));}
+      student.packageHistory=history;
+    }
+    const studentCount=getPackageClassCount(student.packageName);
+    if(student.packageName&&studentCount>0){
+      const old=String(student.packageName).match(/\d+/g)||[];
+      if(old.length)student.packageName=String(student.packageName).replace(new RegExp(old[old.length-1]+'(?!.*\\d)'),String(Math.max(0,studentCount-qty)));
+    }
+    student.updatedAt=new Date().toISOString();changed=true;
+    try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(student);}catch(err){console.error('Package count sync after deletion failed:',err);}
+  }
+  if(changed)saveStudents(students);
+}
 async function saveAppointments(data){
   localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));
   // Persist remotely before returning so callers can await completion when needed.
@@ -11641,10 +11689,21 @@ const matches=appointments.filter(a=>selectedSet.has(a.id)&&a.studentId===studen
 if(!matches.length){alert('The selected appointments could not be found.');updateAppointmentDeleteInfo();return;}
 const ok=window.confirm(`Delete ${matches.length} appointment(s) for ${student?.name||'this student'}?\n\nReason: ${reason}`);
 if(!ok)return;
-const remaining=appointments.filter(a=>!(selectedSet.has(a.id)&&a.studentId===studentId));
+const remaining=appointments.filter(a=>!(selectedSet.has(a.id)&&String(a.studentId)===String(studentId)));
 const deletedCount=matches.length;
-saveAppointments(remaining);
-setAppointmentDeleteStatus(`Deleted ${deletedCount} appointment(s) for ${student?.name||'this student'}.`);
+(async()=>{
+  try{
+    await deleteAppointmentsFromSupabase(matches);
+    await deductPurchasedClassesForDeletedAppointments(matches);
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(remaining));
+    setAppointmentDeleteStatus(`Deleted ${deletedCount} appointment(s) for ${student?.name||'this student'}.`);
+    renderStudentAppointmentDashboard();renderStudents();renderRecords();
+  }catch(err){
+    console.error('Bulk appointment delete failed:',err);
+    setAppointmentDeleteStatus('Could not fully sync deletion to the database. Please verify before reloading.');
+  }
+  renderAppointments();renderDashboard();updateAppointmentDeleteInfo();
+})();
 const reasonEl=document.getElementById('appointmentDeleteReason');
 if(reasonEl)reasonEl.value='';
 renderAppointments();
@@ -12445,6 +12504,7 @@ function openManualIndividualClass(studentId){
     const students=getStudents();const idx=students.findIndex(st=>String(st.id)===String(student.id));
     if(idx>=0){students[idx].additionalLessons=Math.max(0,Math.floor(Number(students[idx].additionalLessons??students[idx].addedLessons??students[idx].extraLessons??0)||0))+1;students[idx].updatedAt=now;saveStudents(students);try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(students[idx]);}catch(err){console.error('Student sync failed:',err);}}
     try{await saveAppointments(appointments);}catch(err){console.error('Manual appointment sync failed:',err);}
+    // Refresh the student appointment table immediately from the saved local data.
     closeManualIndividualClass();renderDashboard();populateStudentSelect(student.id);renderRecords();renderStudents();renderAppointments();renderStudentAppointmentDashboard();
     const notice=document.createElement('div');notice.style.cssText='position:fixed;inset:0;z-index:100600;background:rgba(10,25,35,.38);display:flex;align-items:center;justify-content:center;padding:16px';notice.innerHTML=`<div role="dialog" aria-modal="true" style="max-width:420px;background:#fff;border-radius:16px;padding:24px;text-align:center;border:1px solid #b8f2f2;box-shadow:0 18px 60px rgba(0,0,0,.24)"><h3 style="color:#007f83;margin-top:0">Class Added</h3><p>One individual class was added to PREFERRED CLASS SCHEDULE AND CLASS RECORD.</p><p style="font-size:12px;color:#8a5a00">Please double-check the Student Record, especially after reloading, to confirm the appointment is saved.</p><button type="button" class="sa-btn lesson">Okay</button></div>`;document.body.appendChild(notice);notice.querySelector('button').onclick=()=>notice.remove();notice.addEventListener('click',e=>{if(e.target===notice)notice.remove();});
   };
@@ -12580,9 +12640,10 @@ async function deleteStudentAppointmentRecord(id){
       return;
     }
   }
+  try{await deductPurchasedClassesForDeletedAppointments([item]);}catch(err){console.error('Package count deduction failed:',err);}
   const remaining=appointments.filter(a=>String(a.id)!==String(id));
   localStorage.setItem(appointmentStorageKey(),JSON.stringify(remaining));
-  renderStudentAppointmentDashboard();
+  renderStudents();renderRecords();renderStudentAppointmentDashboard();
   if(typeof renderAppointments==='function')renderAppointments();
   if(typeof renderDashboard==='function')renderDashboard();
   if(typeof renderStudentCalendarModal==='function'&&document.getElementById('studentAppointmentCalendarModal'))renderStudentCalendarModal();
@@ -12803,13 +12864,17 @@ saveAppointments(appointments);
 refreshLiveUI({students:false,records:false,contracts:false});
 }
 
-function deleteAppointment(id){
-const item=getAppointments().find(a=>a.id===id);
+async function deleteAppointment(id){
+const appointments=getAppointments();
+const item=appointments.find(a=>String(a.id)===String(id));
 if(!item)return;
 if(!confirm(`Delete the appointment for ${item.studentName||'this student'}?`))return;
-saveAppointments(getAppointments().filter(a=>a.id!==id));
-renderAppointments();
-renderDashboard();
+try{
+  await deleteAppointmentsFromSupabase([item]);
+  await deductPurchasedClassesForDeletedAppointments([item]);
+  localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments.filter(a=>String(a.id)!==String(id))));
+  renderAppointments();renderDashboard();renderStudentAppointmentDashboard();renderStudents();renderRecords();
+}catch(err){console.error('Appointment delete failed:',err);alert('Could not confirm the class deletion in the database. Please try again.');}
 }
 
 function aptShowMessage(message){
