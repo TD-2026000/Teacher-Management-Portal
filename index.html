@@ -4495,26 +4495,56 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 </style>
 
 
-<style id="subscription-white-cyan-restore-status-v3">
-/* Match the provided reference: clean white cards, thin light-cyan outlines, no cyan-filled panels. */
-#subscriptionPage .subscription-header-card{background:#fff!important;border:1px solid #8cebed!important;box-shadow:none!important;border-radius:16px!important;}
-#subscriptionPage .subscription-title{color:#07566a!important;}
-#subscriptionPage .subscription-price-badge{color:#07566a!important;}
-#subscriptionPage .subscription-price-badge span{color:#087e8b!important;}
-#subscriptionPage .subscription-status-card{display:grid!important;grid-template-columns:1.5fr .75fr .75fr!important;gap:12px!important;margin:0 0 18px!important;visibility:visible!important;opacity:1!important;}
-#subscriptionPage .subscription-status-card>div{background:#fff!important;border:1px solid #8cebed!important;border-radius:12px!important;box-shadow:none!important;}
-#subscriptionPage .subscription-panel{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;}
-#subscriptionPage .subscription-panel-title{color:#07566a!important;}
-#subscriptionPage .subscription-plan-box-69{background:#fff!important;border:1px solid #8cebed!important;box-shadow:none!important;}
-#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{background:#fff!important;border:1px solid #8cebed!important;box-shadow:none!important;border-radius:14px!important;}
-#subscriptionPage .subscription-gcash-payment-card{background:#fff!important;border:0!important;box-shadow:none!important;}
-#subscriptionPage .subscription-gcash-qr-frame{background:#fff!important;border:1px solid #8cebed!important;box-shadow:none!important;}
-#subscriptionPage .subscription-payment-note{background:#fff!important;border:1px solid #8cebed!important;color:#087e8b!important;}
-#subscriptionPage .subscription-panel input,#subscriptionPage .subscription-panel textarea{background:#fff!important;border-color:#cfe9eb!important;}
-#subscriptionPage .subscription-submit-btn{background:#00cdd0!important;color:#fff!important;}
-#subscriptionPage .subscription-submit-btn:hover{background:#00bfc4!important;}
-#subscriptionPage .subscription-history-panel{background:#fff!important;border:1px solid #8cebed!important;box-shadow:none!important;}
-@media(max-width:760px){#subscriptionPage .subscription-status-card{grid-template-columns:1fr!important;}}
+<style id="subscription-white-box-light-cyan-outline-final-fix">
+/* Keep the reference layout clean: white cards, subtle cyan outlines, and visible expiry status. */
+#subscriptionPage .subscription-header-card,
+#subscriptionPage .subscription-panel,
+#subscriptionPage .subscription-payment-left,
+#subscriptionPage .subscription-payment-right,
+#subscriptionPage .subscription-status-card > div {
+  background:#ffffff !important;
+  border:1px solid #8cebed !important;
+  box-shadow:none !important;
+}
+#subscriptionPage .subscription-status-card {
+  display:grid !important;
+  grid-template-columns:1.5fr .75fr .75fr !important;
+  gap:16px !important;
+  margin:0 0 18px !important;
+  visibility:visible !important;
+}
+#subscriptionPage .subscription-status-card > div {
+  min-height:86px !important;
+  padding:20px !important;
+  border-radius:14px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+}
+#subscriptionPage .subscription-header-card {
+  background:#fff !important;
+  border-radius:16px !important;
+  padding:26px 30px !important;
+}
+#subscriptionPage .subscription-plan-box-69 {
+  background:#fff !important;
+  border:1px solid #8cebed !important;
+}
+#subscriptionPage .subscription-payment-left,
+#subscriptionPage .subscription-payment-right {
+  background:#fff !important;
+  border-radius:16px !important;
+}
+#subscriptionPage .subscription-payment-note {
+  background:#f4ffff !important;
+  border:1px solid #d4f7f7 !important;
+}
+#subscriptionPage .subscription-account-email,
+#subscriptionPage .subscription-expiry { color:#1f2937 !important; }
+#subscriptionPage .subscription-status-pill { background:#effdfd !important; border:1px solid #b8f0f1 !important; color:#007f86 !important; width:fit-content; }
+@media(max-width:760px) {
+  #subscriptionPage .subscription-status-card { grid-template-columns:1fr !important; }
+}
 </style>
 
 </head>
@@ -6057,7 +6087,7 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
     <div class="subscription-header-card">
       <div>
         <h2 class="subscription-title">MONTHLY SUBSCRIPTION</h2>
-        <p class="subscription-subtitle">Keep your account active and continue managing your classes.</p>
+        <p class="subscription-subtitle">Keep your Teacher Management Portal access active.</p>
       </div>
       <div class="subscription-price-badge">₱69 <span>/ month</span></div>
     </div>
