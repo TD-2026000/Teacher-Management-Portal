@@ -12353,7 +12353,7 @@ async function commitAddedLessons(studentId,qty,kind,autoBook=true){
   try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(student);}catch(e){studentSyncOk=false;console.error('Student lesson sync failed:',e);}
   try{
     const start=student.startDate||getLocalDateString(new Date());
-    const result=generatePreferredAppointments(student,start,'Regular Class',qty);
+    const result=generatePreferredAppointments(student,start,'Regular Class');
     bookingCount=Math.max(0,Number(result?.created)||0);
     if(bookingCount>0&&typeof syncAppointmentsToSupabase==='function'){
       try{await syncAppointmentsToSupabase(getAppointments());}catch(e){appointmentsSyncOk=false;console.error('Appointment sync failed:',e);}
@@ -12361,7 +12361,7 @@ async function commitAddedLessons(studentId,qty,kind,autoBook=true){
     if(bookingCount<qty){
       bookingWarning=`Only ${bookingCount} of ${qty} requested class rows could be booked. Please check for preferred-schedule conflicts or unavailable time slots. The added lesson credits remain saved.`;
     }else{
-      bookingWarning='Double-check the Student Record to confirm all newly added classes appear. The booking count above shows how many appointment rows were created.';
+      bookingWarning='Double-check the Student Record to confirm all newly added classes appear. The booking count above shows how many missing appointment rows were created to match the available lessons.';
     }
   }catch(e){
     console.error('Automatic lesson booking failed:',e);
