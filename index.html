@@ -19953,13 +19953,44 @@ async function renderSubscriptionPage(){
   });
 }
 
-function renderSubscriptionHistory(){
+async function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
-  const rows=getLocalSubscriptionRequests().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
+  let rows=getLocalSubscriptionRequests();
+  // Read only lightweight columns and scope to the signed-in teacher. This avoids
+  // downloading encoded proof images stored in notes and keeps status current.
+  if(currentUser && typeof supabaseClient!=='undefined' && supabaseClient){
+    try{
+      const {data,error}=await supabaseClient.from('payments')
+        .select('id,user_id,amount,payment_method,reference_number,payment_date,created_at,status')
+        .eq('user_id',currentUser.id)
+        .order('created_at',{ascending:false})
+        .limit(50);
+      if(error) throw error;
+      const remote=(data||[]).map(r=>({...r,created_at:r.created_at||r.payment_date||null}));
+      // Merge server status into locally saved requests using the payment reference.
+      rows=rows.map(local=>{
+        const match=remote.find(r=>String(r.reference_number||'')===String(local.reference_number||''));
+        return match?{...local,...match,submission_number:local.submission_number||local.submissionNumber}:local;
+      });
+      // Include remote records even if local browser storage was cleared.
+      for(const r of remote){if(!rows.some(x=>String(x.reference_number||'')===String(r.reference_number||''))) rows.push(r);}
+      saveLocalSubscriptionRequests(rows);
+    }catch(err){console.warn('Could not refresh payment request statuses:',err);}
+  }
+  rows.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
   if(!rows.length){box.textContent='No payment requests yet.';return;}
-  box.innerHTML=rows.map(r=>`<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status">${subscriptionEscape(r.status||'PENDING')}</div></div>`).join('');
+  box.innerHTML=rows.map(r=>{const status=String(r.status||'PENDING').toUpperCase();const color=status==='VERIFIED'?'#16803c':status==='REJECTED'?'#c62828':'#b7791f';return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="color:${color};font-weight:700">${subscriptionEscape(status)}</div></div>`;}).join('');
 }
+
+// Poll the server while the portal is open so approval/rejection appears without reload.
+let subscriptionStatusPollStarted=false;
+function startSubscriptionStatusPolling(){
+  if(subscriptionStatusPollStarted)return;
+  subscriptionStatusPollStarted=true;
+  setInterval(()=>{if(currentUser)renderSubscriptionHistory();},5000);
+}
+startSubscriptionStatusPolling();
 
 function subscriptionFileToDataURL(file){
   return new Promise((resolve,reject)=>{
@@ -19988,7 +20019,9 @@ async function submitSubscriptionPayment(){
       if(proofFile.size>2*1024*1024)throw new Error('Payment proof must be 2 MB or smaller.');
       proofData=await subscriptionFileToDataURL(proofFile);
     }
+    const submissionNumber = String(Math.floor(10000000 + Math.random() * 90000000));
     const request={
+      submission_number:submissionNumber,
       user_id:currentUser.id,
       email:currentUser.email||'',
       payment_type:'MONTHLY',
@@ -20009,19 +20042,27 @@ async function submitSubscriptionPayment(){
     saveLocalSubscriptionRequests(local);
 
     let remoteSaved=false;
+    let remoteSaveError='';
     if(typeof supabaseClient!=='undefined'&&supabaseClient){
-      const {error}=await supabaseClient.from('payments').insert([{
-        user_id:currentUser.id,
-        payment_type:'MONTHLY',
-        amount:TEACHER_SUBSCRIPTION_PRICE,
-        payment_method:method,
-        reference_number:reference,
-        payment_date:new Date().toISOString(),
-        status:'PENDING',
-        notes:JSON.stringify({email:currentUser.email||'',note,proof_name:proofFile?.name||'',proof_data:proofData})
-      }]);
-      if(error)throw error;
-      remoteSaved=true;
+      try{
+        const {error}=await supabaseClient.from('payments').insert([{
+          user_id:currentUser.id,
+          payment_type:'MONTHLY',
+          amount:TEACHER_SUBSCRIPTION_PRICE,
+          payment_method:method,
+          reference_number:reference,
+          payment_date:new Date().toISOString(),
+          status:'PENDING',
+          notes:JSON.stringify({submission_number:submissionNumber,email:currentUser.email||'',teacher_email:currentUser.email||'',teacher_name:currentUser.user_metadata?.full_name||currentUser.user_metadata?.name||currentUser.email||'Teacher',note,proof_name:proofFile?.name||'',proof_data:proofData})
+        }]);
+        if(error)throw error;
+        remoteSaved=true;
+      }catch(dbError){
+        remoteSaveError=dbError?.message||'Database insert failed';
+        console.error('Payment is saved locally but not in the admin database:',dbError);
+      }
+    }else{
+      remoteSaveError='Supabase connection is not initialized.';
     }
 
     // A submitted request grants temporary in-memory access only; the normal
@@ -20030,8 +20071,8 @@ async function submitSubscriptionPayment(){
     portalSubscriptionGateMessage='Your ₱69 payment request is pending verification. Temporary portal access is available for this session only.';
     if(message){
       message.textContent=remoteSaved
-        ? 'Payment submitted. Temporary portal access is enabled for this session while Teacher Danyeal verifies your payment.'
-        : 'Payment was saved on this device, but online verification is not connected. Temporary access is enabled for this session only; contact Teacher Danyeal to ensure the request is received.';
+        ? `Payment submitted successfully. Submission No. ${submissionNumber}. Temporary portal access is enabled for this session while Teacher Danyeal verifies your payment.`
+        : `Submission No. ${submissionNumber} was saved on this device only; it was NOT sent to the Admin Portal. Database error: ${remoteSaveError}. Temporary access is enabled for this session only, but please fix the connection before relying on this submission.`;
       message.style.display='block';
       message.style.color='#087e8b';
     }
@@ -20039,6 +20080,14 @@ async function submitSubscriptionPayment(){
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
     const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
     renderSubscriptionHistory();
+    const submissionNumberLabel=document.getElementById('subscriptionSubmittedNumber');
+    if(submissionNumberLabel)submissionNumberLabel.textContent=submissionNumber;
+    const modalText=document.querySelector('#subscriptionSubmittedModal p');
+    if(modalText){
+      modalText.innerHTML=remoteSaved
+        ? 'Your ₱69 monthly subscription payment was submitted successfully. Your portal access is <strong>temporarily unlocked</strong> while you wait for Teacher Danyeal to verify your payment.'
+        : 'Your submission number was generated and saved on this device, but the payment could not be sent to the Admin Portal. Please contact Teacher Danyeal and share the number below. Your access is temporarily unlocked for this session only.';
+    }
     showSubscriptionSubmittedModal();
   }catch(err){
     console.error('Subscription payment submission failed:',err);
@@ -20113,6 +20162,7 @@ function closeAppointmentSuccess(){const overlay=document.getElementById('appoin
     <div style="width:58px;height:58px;border-radius:50%;background:#e3fbfc;color:#08bfc5;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;margin:0 auto 14px;">✓</div>
     <h2 id="subscriptionSubmittedTitle" style="margin:0 0 12px;font-size:24px;font-weight:900;">Monthly Payment Submitted!</h2>
     <p style="margin:0 0 12px;line-height:1.55;">You have submitted your ₱69 monthly subscription payment. Your portal access is <strong>temporarily unlocked</strong> while you wait for Teacher Danyeal to verify your payment.</p>
+    <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:12px;padding:12px;margin:0 0 14px;"><div style="font-size:12px;color:#0f766e;font-weight:800;letter-spacing:.06em;">SUBMISSION NUMBER</div><div id="subscriptionSubmittedNumber" style="font-size:28px;font-weight:900;letter-spacing:.12em;color:#115e59;margin-top:4px;">—</div><div style="font-size:12px;color:#0f766e;margin-top:3px;">Please keep this number for your records.</div></div>
     <div style="text-align:left;background:#e8fbfc;border-radius:12px;padding:14px 16px;margin:0 0 18px;line-height:1.5;font-size:14px;">
       <strong>Important:</strong><br>• Please make sure your GCash reference number and payment details are correct.<br>• Incorrect or unverifiable details may cause your payment to be rejected.<br>• Your full one-month subscription will begin only after Teacher Danyeal approves the payment.<br>• Temporary access ends if you reload or leave this session before approval.
     </div>
