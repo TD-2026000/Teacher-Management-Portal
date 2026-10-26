@@ -4535,6 +4535,43 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 @media(max-width:760px){#subscriptionPage .subscription-page-wrap{width:calc(100% - 24px)!important}#subscriptionPage .subscription-header-card{align-items:flex-start!important;flex-direction:column!important;padding:20px!important}#subscriptionPage .subscription-status-card{grid-template-columns:1fr!important}#subscriptionPage .subscription-price-badge{width:100%!important;min-width:0!important}#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:16px!important}}
 </style>
 
+<style id="subscription-compact-reference-tuning">
+/* Compact, white subscription layout: light-cyan outlines, tighter spacing and reference-sized typography */
+#subscriptionPage .subscription-page-wrap{width:min(calc(100% - 40px),1600px)!important;margin:12px auto!important;padding-bottom:22px!important}
+#subscriptionPage .subscription-header-card{min-height:88px!important;padding:18px 22px!important;margin-bottom:12px!important;border:1px solid #8cebed!important;border-radius:12px!important;background:#fff!important;gap:16px!important}
+#subscriptionPage .subscription-title{font-size:clamp(22px,2vw,29px)!important;line-height:1.15!important}
+#subscriptionPage .subscription-subtitle{font-size:12px!important;margin-top:5px!important;line-height:1.35!important}
+#subscriptionPage .subscription-price-badge{min-width:150px!important;padding:10px 14px!important;border-radius:10px!important;font-size:29px!important;line-height:1.05!important}
+#subscriptionPage .subscription-price-badge span{font-size:12px!important;margin-top:3px!important}
+#subscriptionPage .subscription-status-card{gap:10px!important;margin-bottom:12px!important}
+#subscriptionPage .subscription-status-card>div{min-height:64px!important;padding:11px 15px!important;border:1px solid #8cebed!important;border-radius:10px!important;background:#fff!important}
+#subscriptionPage .subscription-small-label{font-size:10px!important;margin-bottom:4px!important}
+#subscriptionPage .subscription-account-email,#subscriptionPage .subscription-status-pill,#subscriptionPage .subscription-expiry{font-size:12px!important}
+#subscriptionPage .subscription-payment-two-column{grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr)!important;gap:12px!important}
+#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:14px!important;border:1px solid #8cebed!important;border-radius:12px!important;background:#fff!important}
+#subscriptionPage .subscription-payment-left .subscription-section-title,#subscriptionPage .subscription-payment-right .subscription-section-title{font-size:16px!important;gap:9px!important;margin:0 0 10px!important;line-height:1.2!important}
+#subscriptionPage .subscription-payment-left .subscription-section-title:before{width:30px!important;height:30px!important;flex-basis:30px!important;font-size:17px!important}
+#subscriptionPage .subscription-payment-right .subscription-section-title:before{width:28px!important;height:28px!important;flex-basis:28px!important;font-size:17px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-card{gap:8px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy{gap:3px!important;padding:0 2px 2px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy strong{font-size:18px!important;line-height:1.2!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy span{font-size:12px!important;line-height:1.3!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy small{font-size:11px!important;line-height:1.4!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,390px)!important;max-height:440px!important;object-fit:contain!important}
+#subscriptionPage .subscription-payment-right .subscription-payment-note{padding:10px 12px!important;margin-bottom:10px!important;font-size:11px!important;line-height:1.4!important;border-radius:9px!important;background:#fff!important;border:1px solid #e2f7f7!important}
+#subscriptionPage .subscription-payment-right .subscription-form-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px!important;margin:0 0 10px!important}
+#subscriptionPage .subscription-payment-right label{font-size:12px!important;margin-bottom:5px!important}
+#subscriptionPage .subscription-payment-right #subscriptionReference,#subscriptionPage .subscription-payment-right #subscriptionProof,#subscriptionPage .subscription-payment-right #subscriptionNote{min-height:38px!important;padding:8px 10px!important;font-size:12px!important;border-radius:7px!important}
+#subscriptionPage .subscription-payment-right #subscriptionProof{min-height:46px!important}
+#subscriptionPage .subscription-payment-right .subscription-field-note{font-size:10px!important;margin-top:4px!important}
+#subscriptionPage .subscription-payment-right .subscription-submit-btn{min-height:44px!important;padding:11px 14px!important;margin-top:5px!important;font-size:13px!important;border-radius:8px!important}
+#subscriptionPage .subscription-history-panel{padding:14px!important;margin-bottom:12px!important;border:1px solid #8cebed!important;border-radius:12px!important;background:#fff!important}
+#subscriptionPage .subscription-history-panel .subscription-panel-title{font-size:17px!important;margin-bottom:10px!important}
+#subscriptionPage .subscription-history-item{padding:10px!important;border-radius:8px!important;font-size:12px!important}
+@media(max-width:900px){#subscriptionPage .subscription-payment-two-column{grid-template-columns:1fr!important}#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,340px)!important;max-height:400px!important}}
+@media(max-width:760px){#subscriptionPage .subscription-page-wrap{width:calc(100% - 20px)!important;margin:10px auto!important}#subscriptionPage .subscription-header-card{padding:15px!important;gap:10px!important}#subscriptionPage .subscription-status-card{grid-template-columns:1fr!important}#subscriptionPage .subscription-price-badge{width:auto!important;min-width:130px!important}#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:12px!important}}
+</style>
+
 </head>
 
 <body>
