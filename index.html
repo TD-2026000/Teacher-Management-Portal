@@ -4438,6 +4438,7 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
     const submit=panel.querySelector('.subscription-submit-btn');
     const message=panel.querySelector('#subscriptionSubmitMessage');
     const hiddenMethod=panel.querySelector('#subscriptionPaymentMethod');
+    const instructionNote=panel.querySelector('.subscription-payment-note');
     if(!qrTitle || !qrCard || !detailsTitle || !formGrid || !submit) return;
     const noteLabel=Array.from(panel.querySelectorAll('label')).find(el=>/^Note$/i.test(el.textContent.trim()));
     const noteWrap=noteLabel ? noteLabel.parentElement : null;
@@ -4449,8 +4450,10 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
     layout.append(left,right);
     left.append(qrTitle,qrCard);
     if(hiddenMethod) right.append(hiddenMethod);
-    right.append(detailsTitle,formGrid);
-    if(noteWrap) { noteWrap.classList.add('subscription-payment-note'); right.append(noteWrap); }
+    right.append(detailsTitle);
+    if(instructionNote) right.append(instructionNote);
+    right.append(formGrid);
+    if(noteWrap) { noteWrap.classList.add('subscription-extra-note-field'); right.append(noteWrap); }
     right.append(submit);
     if(message) right.append(message);
   }
@@ -4614,6 +4617,62 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 #subscriptionPage .subscription-history-item{padding:10px!important;border-radius:8px!important;background:#fff!important;border-color:#e1e9ed!important}
 @media(max-width:900px){#subscriptionPage .subscription-payment-two-column{grid-template-columns:minmax(0,1fr)!important}#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,360px)!important;max-height:400px!important}}
 @media(max-width:760px){#subscriptionPage .subscription-page-wrap{width:calc(100% - 20px)!important;margin:10px auto 16px!important}#subscriptionPage .subscription-header-card{align-items:flex-start!important;flex-direction:column!important;padding:15px!important}#subscriptionPage .subscription-price-badge{width:100%!important;min-width:0!important}#subscriptionPage .subscription-status-card{grid-template-columns:minmax(0,1fr)!important}#subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:12px!important}}
+</style>
+
+
+<style id="subscription-layout-final-correction">
+/* Compact two-card layout: no stretched empty area below the submit button. */
+#subscriptionPage .subscription-payment-two-column{
+  display:grid!important;
+  grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr)!important;
+  align-items:start!important;
+  gap:14px!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0!important;
+}
+#subscriptionPage .subscription-payment-left,
+#subscriptionPage .subscription-payment-right{
+  align-self:start!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:16px!important;
+  border:1px solid #8cebed!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  box-sizing:border-box!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame{padding:0!important;margin:0!important;min-height:0!important;height:auto!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{
+  display:block!important;width:auto!important;height:auto!important;
+  max-width:min(100%,330px)!important;max-height:390px!important;
+  object-fit:contain!important;margin:0 auto!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy{margin-top:8px!important;gap:3px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy strong{font-size:17px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy span{font-size:12px!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy small{font-size:11px!important}
+#subscriptionPage .subscription-payment-right .subscription-section-title{margin-bottom:12px!important}
+#subscriptionPage .subscription-payment-right .subscription-payment-note{
+  display:block!important;box-sizing:border-box!important;width:100%!important;
+  padding:10px 12px!important;margin:0 0 12px!important;
+  border:1px solid #d8f5f5!important;border-radius:9px!important;
+  background:#e8fcfc!important;color:#087e8b!important;
+  font-size:11px!important;line-height:1.4!important;text-align:left!important;
+}
+#subscriptionPage .subscription-payment-right .subscription-payment-note strong{font-size:11px!important;line-height:1.4!important}
+#subscriptionPage .subscription-payment-right .subscription-form-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;margin:0 0 10px!important}
+#subscriptionPage .subscription-payment-right .subscription-extra-note-field{display:none!important}
+#subscriptionPage .subscription-payment-right #subscriptionReference{min-height:40px!important}
+#subscriptionPage .subscription-payment-right #subscriptionProof{min-height:48px!important}
+#subscriptionPage .subscription-payment-right .subscription-submit-btn{margin:5px 0 0!important;min-height:44px!important;padding:11px 14px!important}
+#subscriptionPage .subscription-panel{margin-bottom:12px!important}
+#subscriptionPage .subscription-page-wrap{padding-bottom:0!important}
+@media(max-width:760px){
+ #subscriptionPage .subscription-payment-two-column{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+ #subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,300px)!important;max-height:360px!important}
+}
 </style>
 
 </head>
