@@ -8830,62 +8830,79 @@ await supabaseClient.auth.signOut();
 
 
 /* =========================================================
+   MONTHLY SUBSCRIPTION FEATURE GATE
+   Keep portal tools locked until the current account has an
+   approved/active subscription whose expiry date is still valid.
+========================================================= */
+let portalSubscriptionUnlocked = false;
+let portalSubscriptionCheckComplete = false;
+let portalSubscriptionGateMessage = '';
+
+async function refreshPortalSubscriptionAccess(user=currentUser){
+  portalSubscriptionUnlocked = false;
+  portalSubscriptionCheckComplete = false;
+  portalSubscriptionGateMessage = 'Please submit your ₱69 monthly subscription payment and wait for approval.';
+  if(!user || !supabaseClient){ portalSubscriptionCheckComplete = true; return false; }
+  try{
+    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('access_status').eq('id',user.id).maybeSingle();
+    if(profileError) throw profileError;
+    const profileStatus=String(profile?.access_status||'PENDING').trim().toUpperCase();
+    const {data:sub,error:subError}=await supabaseClient.from('subscriptions').select('expiry_date,status,plan_name,price').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(subError) throw subError;
+    const subStatus=String(sub?.status||'').trim().toUpperCase();
+    const approvedStatuses=['ACTIVE','APPROVED','PAID','SUCCESS','COMPLETED'];
+    const approvedProfile=['ACTIVE','APPROVED','PAID'];
+    const expiry=sub?.expiry_date ? new Date(sub.expiry_date) : null;
+    const expiryValid=!!expiry && !Number.isNaN(expiry.getTime()) && expiry.getTime() >= new Date().setHours(0,0,0,0);
+    portalSubscriptionUnlocked=!!sub && approvedStatuses.includes(subStatus) && approvedProfile.includes(profileStatus) && expiryValid;
+    if(portalSubscriptionUnlocked){portalSubscriptionGateMessage='Your subscription is active.';}
+    else if(sub && expiry && !expiryValid){portalSubscriptionGateMessage='Your monthly subscription has expired. Please renew for ₱69 to unlock portal features.';}
+    else if(sub && !approvedStatuses.includes(subStatus)){portalSubscriptionGateMessage='Your payment is still pending verification. Portal features will unlock after approval.';}
+    else {portalSubscriptionGateMessage='Your account is not yet approved for portal access. Submit your ₱69 payment and wait for verification.';}
+  }catch(error){
+    console.warn('Subscription access check failed:',error);
+    portalSubscriptionUnlocked=false;
+    portalSubscriptionGateMessage='We could not verify your subscription right now. Portal features remain locked for safety. Please open Monthly Subscription and try again.';
+  }
+  portalSubscriptionCheckComplete=true;
+  return portalSubscriptionUnlocked;
+}
+
+/* =========================================================
    SIGNED IN
 ========================================================= */
 
 async function handleSignedIn(user){
+  currentUser=user;
+  const savedProfile=getTeacherProfile();
+  const fullName=savedProfile.fullName || savedProfile.full_name || user.user_metadata?.full_name || user.email || 'Teacher';
+  document.getElementById('currentTeacher').textContent=fullName;
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
 
-/* =========================================================
-   FAST LOGIN
-   Show the dashboard immediately using the locally cached data.
-   Remote Supabase refreshes run in the background so login is not
-   blocked by slow network queries or appointment migration.
-========================================================= */
-
-currentUser=user;
-
-const savedProfile=getTeacherProfile();
-
-const fullName=
-savedProfile.fullName ||
-savedProfile.full_name ||
-user.user_metadata?.full_name ||
-user.email ||
-'Teacher';
-
-document.getElementById('currentTeacher').textContent=fullName;
-
-document.getElementById('authScreen').classList.add('hidden');
-document.getElementById('appShell').classList.remove('hidden');
-
-/* Render immediately from cached/local data. */
-loadTeacherProfile();
-renderDashboard();
-populateStudentSelect();
-renderRecords();
-
-/* Refresh Supabase data in the background.
-   IMPORTANT: do not await these here. */
-Promise.allSettled([
-  loadTeacherProfileFromSupabase(),
-  loadStudentsFromSupabase(),
-  loadAppointmentsFromSupabase()
-]).then(()=>{
-  try{
-    loadTeacherProfile();
-    renderDashboard();
-    populateStudentSelect();
-    renderRecords();
-  }catch(error){
-    console.warn('Background dashboard refresh skipped:',error);
+  // Do not expose the dashboard while access is being verified.
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const subscriptionPage=document.getElementById('subscriptionPage');
+  if(subscriptionPage)subscriptionPage.classList.add('active');
+  await refreshPortalSubscriptionAccess(user);
+  if(portalSubscriptionUnlocked){
+    loadTeacherProfile(); renderDashboard(); populateStudentSelect(); renderRecords();
+    Promise.allSettled([loadTeacherProfileFromSupabase(),loadStudentsFromSupabase(),loadAppointmentsFromSupabase()]).then(()=>{
+      try{loadTeacherProfile();renderDashboard();populateStudentSelect();renderRecords();}catch(error){console.warn('Background dashboard refresh skipped:',error);}
+    });
+    Promise.resolve().then(()=>migrateExistingAppointmentsToSupabase()).catch(error=>console.warn('Background appointment migration skipped:',error));
+    showPage('dashboard');
+  }else{
+    showPage('subscription');
+    const message=document.getElementById('subscriptionSubmitMessage');
+    if(message){message.textContent=portalSubscriptionGateMessage;message.style.display='block';message.style.color='#007f83';}
+    // Keep the subscription page available; navigation guard locks all other pages.
+    document.querySelectorAll('.nav button').forEach(button=>{
+      const isSubscription=button.id==='navSubscription';
+      button.classList.toggle('subscription-locked-nav',!isSubscription);
+      if(!isSubscription){button.setAttribute('aria-disabled','true');button.title='Locked until your ₱69 subscription is approved and active';}
+    });
   }
-});
-
-/* Migration is deliberately separate and non-blocking. */
-Promise.resolve()
-  .then(()=>migrateExistingAppointmentsToSupabase())
-  .catch(error=>console.warn('Background appointment migration skipped:',error));
-
 }
 
 /* =========================================================
@@ -8895,6 +8912,8 @@ Promise.resolve()
 function handleSignedOut(){
 
 currentUser=null;
+portalSubscriptionUnlocked=false;
+portalSubscriptionCheckComplete=false;
 
 closeProfilePanel();
 
@@ -9567,6 +9586,16 @@ function backToDashboard(){
 ========================================================= */
 
 function showPage(page){
+
+if(currentUser && portalSubscriptionCheckComplete && !portalSubscriptionUnlocked && page!=='subscription'){
+  const subPage=document.getElementById('subscriptionPage');
+  if(subPage){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));subPage.classList.add('active');}
+  const gateMessage=document.getElementById('subscriptionSubmitMessage');
+  if(gateMessage){gateMessage.textContent=portalSubscriptionGateMessage||'Your ₱69 monthly subscription must be approved and active to unlock portal features.';gateMessage.style.display='block';gateMessage.style.color='#007f83';}
+  renderSubscriptionPage();
+  window.scrollTo({top:0,behavior:'smooth'});
+  return;
+}
 
 closeProfilePanel();
 
