@@ -9583,6 +9583,28 @@ function backToDashboard(){
 }
 
 
+
+function showSubscriptionLockedFeatureModal(requestedPage=''){
+  const existing=document.getElementById('subscriptionLockedFeatureModal');
+  if(existing){existing.remove();}
+  const pageLabel=String(requestedPage||'this feature').replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+  const overlay=document.createElement('div');
+  overlay.id='subscriptionLockedFeatureModal';
+  overlay.style.cssText='position:fixed;inset:0;z-index:1000000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:18px;';
+  overlay.innerHTML=`<div role="dialog" aria-modal="true" aria-labelledby="subscriptionLockedTitle" style="width:min(100%,430px);background:#fff;border:1px solid #8cebed;border-radius:18px;padding:28px 24px 22px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.22);font-family:inherit;">
+    <div style="width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:#e5fbfc;color:#00aeb3;font-size:30px;">🔒</div>
+    <h2 id="subscriptionLockedTitle" style="margin:0 0 10px;color:#102a43;font-size:22px;font-weight:900;">Feature Locked</h2>
+    <p style="margin:0 0 8px;color:#334155;font-size:14px;line-height:1.6;"><strong>${pageLabel}</strong> is available to active subscribers only.</p>
+    <p style="margin:0 0 20px;color:#64748b;font-size:13px;line-height:1.6;">Please subscribe for <strong style="color:#008f98;">₱69 per month</strong> first. Your portal features will unlock after Teacher Danyeal verifies and approves your payment.</p>
+    <button type="button" id="subscriptionLockedSubscribeBtn" style="width:100%;border:0;border-radius:10px;background:#08c8ce;color:#fff;padding:13px 16px;font-size:14px;font-weight:900;cursor:pointer;">GO TO MONTHLY SUBSCRIPTION</button>
+    <button type="button" id="subscriptionLockedCloseBtn" style="margin-top:10px;width:100%;border:1px solid #dbe4ea;border-radius:10px;background:#fff;color:#334155;padding:11px 16px;font-size:13px;font-weight:800;cursor:pointer;">CLOSE</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.querySelector('#subscriptionLockedCloseBtn').addEventListener('click',()=>overlay.remove());
+  overlay.querySelector('#subscriptionLockedSubscribeBtn').addEventListener('click',()=>{overlay.remove();showPage('subscription');window.scrollTo({top:0,behavior:'smooth'});});
+}
+
 /* =========================================================
    PAGE NAVIGATION
 ========================================================= */
@@ -9590,12 +9612,7 @@ function backToDashboard(){
 function showPage(page){
 
 if(currentUser && portalSubscriptionCheckComplete && !portalSubscriptionUnlocked && !portalTemporaryUnlockUntilVerification && page!=='subscription'){
-  const subPage=document.getElementById('subscriptionPage');
-  if(subPage){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));subPage.classList.add('active');}
-  const gateMessage=document.getElementById('subscriptionSubmitMessage');
-  if(gateMessage){gateMessage.textContent=portalSubscriptionGateMessage||'Your ₱69 monthly subscription must be approved and active to unlock portal features.';gateMessage.style.display='block';gateMessage.style.color='#007f83';}
-  renderSubscriptionPage();
-  window.scrollTo({top:0,behavior:'smooth'});
+  showSubscriptionLockedFeatureModal(page);
   return;
 }
 
