@@ -8857,7 +8857,19 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
     const expiry=sub?.expiry_date ? new Date(sub.expiry_date) : null;
     const expiryValid=!!expiry && !Number.isNaN(expiry.getTime()) && expiry.getTime() >= new Date().setHours(0,0,0,0);
     portalSubscriptionUnlocked=!!sub && approvedStatuses.includes(subStatus) && approvedProfile.includes(profileStatus) && expiryValid;
-    if(portalSubscriptionUnlocked){portalSubscriptionGateMessage='Your subscription is active.';}
+    // A submitted payment grants temporary access while it is pending review.
+    const {data:latestPayment,error:paymentError}=await supabaseClient.from('payments')
+      .select('id,status,created_at').eq('user_id',user.id)
+      .order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(paymentError) throw paymentError;
+    if(!portalSubscriptionUnlocked && String(latestPayment?.status||'').toUpperCase()==='PENDING'){
+      portalTemporaryUnlockUntilVerification=true;
+      portalSubscriptionGateMessage='Your payment is pending verification. Temporary access is enabled while Teacher Danyeal reviews it.';
+    }else if(String(latestPayment?.status||'').toUpperCase()==='REJECTED'){
+      portalTemporaryUnlockUntilVerification=false;
+      portalSubscriptionGateMessage='Your payment was rejected. Please check the payment details and submit a new request.';
+    }
+    if(portalSubscriptionUnlocked){portalTemporaryUnlockUntilVerification=false;portalSubscriptionGateMessage='Your subscription is active.';}
     else if(sub && expiry && !expiryValid){portalSubscriptionGateMessage='Your monthly subscription has expired. Please renew for ₱69 to unlock portal features.';}
     else if(sub && !approvedStatuses.includes(subStatus)){portalSubscriptionGateMessage='Your payment is still pending verification. Portal features will unlock after approval.';}
     else {portalSubscriptionGateMessage='Your account is not yet approved for portal access. Submit your ₱69 payment and wait for verification.';}
@@ -8887,7 +8899,7 @@ async function handleSignedIn(user){
   const subscriptionPage=document.getElementById('subscriptionPage');
   if(subscriptionPage)subscriptionPage.classList.add('active');
   await refreshPortalSubscriptionAccess(user);
-  if(portalSubscriptionUnlocked){
+  if(portalSubscriptionUnlocked || portalTemporaryUnlockUntilVerification){
     loadTeacherProfile(); renderDashboard(); populateStudentSelect(); renderRecords();
     Promise.allSettled([loadTeacherProfileFromSupabase(),loadStudentsFromSupabase(),loadAppointmentsFromSupabase()]).then(()=>{
       try{loadTeacherProfile();renderDashboard();populateStudentSelect();renderRecords();}catch(error){console.warn('Background dashboard refresh skipped:',error);}
@@ -19953,82 +19965,79 @@ async function renderSubscriptionPage(){
   });
 }
 
-// Visible on-screen payment decision alert (approval or rejection).
-function showPaymentDecisionAlert(status, reference, isNewDecision){
-  const box=document.getElementById('subscriptionPaymentHistory');
-  if(!box)return;
-  let alert=document.getElementById('teacherPaymentDecisionAlert');
-  if(!alert){
-    alert=document.createElement('div');
-    alert.id='teacherPaymentDecisionAlert';
-    alert.setAttribute('role','status');
-    alert.setAttribute('aria-live','polite');
-    alert.style.cssText='display:none;margin:0 0 14px;padding:16px 18px;border-radius:12px;font-weight:700;font-size:15px;line-height:1.5;border:2px solid;box-shadow:0 4px 14px rgba(0,0,0,.08)';
-    box.parentNode.insertBefore(alert,box);
-  }
-  const approved=status==='VERIFIED';
-  alert.style.display='block';
-  alert.style.background=approved?'#ecfdf3':'#fff1f2';
-  alert.style.color=approved?'#166534':'#9f1239';
-  alert.style.borderColor=approved?'#22c55e':'#fb7185';
-  alert.innerHTML=`<div style="font-size:17px;margin-bottom:4px">${approved?'✓ PAYMENT APPROVED':'✕ PAYMENT REJECTED'}</div><div>${approved?'Your monthly subscription payment has been approved.':'Your monthly subscription payment was rejected. Please review your payment details and contact the administrator if you need help.'}</div><div style="font-weight:500;font-size:13px;margin-top:5px">Reference: ${subscriptionEscape(reference||'Not provided')}</div>`;
-  if(isNewDecision){
-    // Bring the decision into view so it is noticed without a page reload.
-    try{alert.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
-  }
+let lastKnownPaymentStatuses = {};
+let paymentStatusNoticeInitialized = false;
+function showTeacherPaymentStatusNotice(status, reference){
+  const old=document.getElementById('teacherPaymentStatusNotice');
+  if(old)old.remove();
+  const rejected=String(status).toUpperCase()==='REJECTED';
+  const approved=String(status).toUpperCase()==='VERIFIED';
+  const title=rejected?'PAYMENT REJECTED':approved?'PAYMENT APPROVED':'PAYMENT STATUS';
+  const detail=rejected
+    ?'Your payment was rejected by the Admin. Please review your payment details and submit a new request.'
+    :approved?'Your payment has been approved. Your monthly subscription is now active for one month.':'Your payment is awaiting verification.';
+  const overlay=document.createElement('div');
+  overlay.id='teacherPaymentStatusNotice';
+  overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${rejected?'❌':approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${rejected?'#b42318':approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085">Reference: ${subscriptionEscape(reference)}</p>`:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:12px;border:0;border-radius:10px;padding:12px 24px;background:${rejected?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('teacherPaymentStatusNoticeClose').onclick=()=>overlay.remove();
 }
-
 async function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
   let rows=getLocalSubscriptionRequests();
-  let newDecision=null;
-  // Read lightweight fields only; proof data can be large and is not needed here.
   if(currentUser && typeof supabaseClient!=='undefined' && supabaseClient){
     try{
       const {data,error}=await supabaseClient.from('payments')
         .select('id,user_id,amount,payment_method,reference_number,payment_date,created_at,status')
-        .eq('user_id',currentUser.id)
-        .order('created_at',{ascending:false})
-        .limit(50);
-      if(error) throw error;
+        .eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(50);
+      if(error)throw error;
       const remote=(data||[]).map(r=>({...r,created_at:r.created_at||r.payment_date||null}));
-      rows=rows.map(local=>{
-        const match=remote.find(r=>String(r.reference_number||'')===String(local.reference_number||''));
-        if(!match)return local;
-        const before=String(local.status||'PENDING').toUpperCase();
-        const after=String(match.status||'PENDING').toUpperCase();
-        if(before==='PENDING' && (after==='VERIFIED'||after==='REJECTED'))newDecision={status:after,reference:match.reference_number};
-        return {...local,...match,submission_number:local.submission_number||local.submissionNumber};
-      });
       for(const r of remote){
-        if(!rows.some(x=>String(x.reference_number||'')===String(r.reference_number||'')))rows.push(r);
+        const key=String(r.id||r.reference_number||'');
+        const newStatus=String(r.status||'PENDING').toUpperCase();
+        const oldStatus=lastKnownPaymentStatuses[key];
+        if(paymentStatusNoticeInitialized && oldStatus && oldStatus!==newStatus && ['VERIFIED','REJECTED'].includes(newStatus)){
+          showTeacherPaymentStatusNotice(newStatus,r.reference_number||'');
+          if(newStatus==='REJECTED'){
+            portalTemporaryUnlockUntilVerification=false;
+            portalSubscriptionUnlocked=false;
+            await refreshPortalSubscriptionAccess(currentUser);
+            if(String(r.status).toUpperCase()==='REJECTED')portalTemporaryUnlockUntilVerification=false;
+            showPage('subscription');
+            const msg=document.getElementById('subscriptionSubmitMessage');
+            if(msg){msg.textContent='Your payment was REJECTED by the Admin. Please check your payment details and submit a new payment.';msg.style.display='block';msg.style.color='#b42318';}
+          }else if(newStatus==='VERIFIED'){
+            portalTemporaryUnlockUntilVerification=false;
+            await refreshPortalSubscriptionAccess(currentUser);
+            if(portalSubscriptionUnlocked){
+              loadTeacherProfile();renderDashboard();populateStudentSelect();renderRecords();showPage('dashboard');
+            }
+          }
+        }
+        lastKnownPaymentStatuses[key]=newStatus;
       }
+      rows=rows.map(local=>{
+        const match=remote.find(r=>(r.id&&local.id&&String(r.id)===String(local.id)) || (String(r.reference_number||'')===String(local.reference_number||'')));
+        return match?{...local,...match,submission_number:local.submission_number||local.submissionNumber}:local;
+      });
+      for(const r of remote){if(!rows.some(x=>(x.id&&r.id&&String(x.id)===String(r.id)) || String(x.reference_number||'')===String(r.reference_number||'')))rows.push(r);}
       saveLocalSubscriptionRequests(rows);
+      if(!paymentStatusNoticeInitialized){
+        paymentStatusNoticeInitialized=true;
+      }
     }catch(err){console.warn('Could not refresh payment request statuses:',err);}
   }
   rows.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
   if(!rows.length){box.textContent='No payment requests yet.';return;}
-  box.innerHTML=rows.map(r=>{
-    const status=String(r.status||'PENDING').toUpperCase();
-    const color=status==='VERIFIED'?'#16803c':status==='REJECTED'?'#c62828':'#b7791f';
-    return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="color:${color};font-weight:700">${subscriptionEscape(status)}</div></div>`;
-  }).join('');
-  if(newDecision){
-    showPaymentDecisionAlert(newDecision.status,newDecision.reference,true);
-  }else{
-    // Keep the latest server-confirmed decision visible after refresh/navigation.
-    const latestDecision=rows.find(r=>['VERIFIED','REJECTED'].includes(String(r.status||'').toUpperCase()));
-    if(latestDecision)showPaymentDecisionAlert(String(latestDecision.status).toUpperCase(),latestDecision.reference_number,false);
-  }
+  box.innerHTML=rows.map(r=>{const status=String(r.status||'PENDING').toUpperCase();const color=status==='VERIFIED'?'#16803c':status==='REJECTED'?'#c62828':'#b7791f';return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="color:${color};font-weight:700">${subscriptionEscape(status)}</div></div>`;}).join('');
 }
-
-// Poll every five seconds while the portal is open. No manual reload needed.
 let subscriptionStatusPollStarted=false;
 function startSubscriptionStatusPolling(){
   if(subscriptionStatusPollStarted)return;
   subscriptionStatusPollStarted=true;
-  setInterval(()=>{if(currentUser)renderSubscriptionHistory();},5000);
+  setInterval(()=>{if(currentUser)renderSubscriptionHistory();},4000);
 }
 startSubscriptionStatusPolling();
 
