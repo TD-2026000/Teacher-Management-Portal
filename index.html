@@ -4451,8 +4451,8 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
     left.append(qrTitle,qrCard);
     if(hiddenMethod) right.append(hiddenMethod);
     right.append(detailsTitle);
-    if(instructionNote) right.append(instructionNote);
     right.append(formGrid);
+    if(instructionNote) right.append(instructionNote);
     if(noteWrap) { noteWrap.classList.add('subscription-extra-note-field'); right.append(noteWrap); }
     right.append(submit);
     if(message) right.append(message);
@@ -4672,6 +4672,76 @@ body.portal-dark .quote-author{color:#c5d2d6!important}
 @media(max-width:760px){
  #subscriptionPage .subscription-payment-two-column{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
  #subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,300px)!important;max-height:360px!important}
+}
+</style>
+
+
+<style id="subscription-user-reference-exact-layout-v3">
+/* Reference layout: soft cyan QR card on the left, pure white payment form on the right. */
+#subscriptionPage .subscription-payment-two-column{
+  display:grid!important;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr)!important;
+  align-items:stretch!important;gap:14px!important;margin:0 0 14px!important;
+}
+#subscriptionPage .subscription-payment-left,
+#subscriptionPage .subscription-payment-right{
+  min-width:0!important;box-sizing:border-box!important;align-self:stretch!important;
+  border:1px solid #8cebed!important;border-radius:13px!important;padding:16px!important;
+  box-shadow:none!important;
+}
+#subscriptionPage .subscription-payment-left{background:linear-gradient(145deg,#e7fbfc 0%,#eafcfc 100%)!important}
+#subscriptionPage .subscription-payment-right{background:#fff!important}
+#subscriptionPage .subscription-payment-left .subscription-section-title,
+#subscriptionPage .subscription-payment-right .subscription-section-title{
+  display:flex!important;align-items:center!important;gap:10px!important;margin:0 0 12px!important;
+  color:#102f3d!important;font-size:16px!important;line-height:1.2!important;font-weight:900!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-section-title:before{
+  content:'◉';display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;
+  border:1px solid #8cebed;border-radius:9px;background:#fff;color:#00b8c2;font-size:17px;
+}
+#subscriptionPage .subscription-payment-right .subscription-section-title:before{
+  content:'▤';display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;
+  border:1px solid #8cebed;border-radius:8px;background:#fff;color:#00b8c2;font-size:17px;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-card{
+  display:flex!important;flex-direction:column!important;gap:9px!important;margin:0!important;padding:0!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame{
+  display:flex!important;justify-content:center!important;align-items:center!important;width:100%!important;
+  min-height:0!important;height:auto!important;margin:0!important;padding:0!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{
+  display:block!important;width:auto!important;height:auto!important;max-width:min(100%,390px)!important;
+  max-height:440px!important;object-fit:contain!important;object-position:center!important;margin:0 auto!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy{
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:3px!important;
+  padding:0 3px 2px!important;text-align:left!important;color:#087e8b!important;
+}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy strong{font-size:16px!important;line-height:1.25!important;color:#00aeb3!important;font-weight:900!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy span{font-size:12px!important;line-height:1.35!important;color:#087e8b!important}
+#subscriptionPage .subscription-payment-left .subscription-gcash-payment-copy small{font-size:11px!important;line-height:1.45!important;color:#087e8b!important}
+#subscriptionPage .subscription-payment-right .subscription-payment-note{
+  display:block!important;box-sizing:border-box!important;width:100%!important;margin:0 0 12px!important;
+  padding:10px 12px!important;border:1px solid #d7f5f5!important;border-radius:10px!important;
+  background:#e5fbfb!important;color:#087e8b!important;font-size:11px!important;line-height:1.45!important;
+}
+#subscriptionPage .subscription-payment-right .subscription-payment-note strong{display:block!important;margin:0 0 4px!important;font-size:12px!important;color:#00aeb3!important}
+#subscriptionPage .subscription-payment-right .subscription-payment-note ul{margin:0!important;padding-left:18px!important}
+#subscriptionPage .subscription-payment-right .subscription-form-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:11px!important;margin:0 0 11px!important}
+#subscriptionPage .subscription-payment-right label{display:block!important;margin:0 0 5px!important;font-size:12px!important;line-height:1.3!important;font-weight:800!important;color:#111827!important}
+#subscriptionPage .subscription-payment-right #subscriptionReference,
+#subscriptionPage .subscription-payment-right #subscriptionProof{width:100%!important;box-sizing:border-box!important;min-height:40px!important;padding:9px 11px!important;border:1px solid #cddde5!important;border-radius:7px!important;background:#fff!important;font-size:12px!important}
+#subscriptionPage .subscription-payment-right #subscriptionProof{min-height:48px!important}
+#subscriptionPage .subscription-payment-right .subscription-field-note{display:block!important;margin-top:4px!important;font-size:10px!important;line-height:1.35!important;color:#64748b!important}
+#subscriptionPage .subscription-payment-right .subscription-submit-btn{display:block!important;width:100%!important;min-height:44px!important;margin:0!important;padding:11px 14px!important;border:0!important;border-radius:8px!important;background:#08c8ce!important;color:#fff!important;font-size:13px!important;font-weight:900!important;line-height:1.2!important;box-shadow:none!important}
+#subscriptionPage .subscription-history-panel{margin-top:14px!important;background:#fff!important}
+@media(max-width:760px){
+ #subscriptionPage .subscription-payment-two-column{grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+ #subscriptionPage .subscription-payment-left,#subscriptionPage .subscription-payment-right{padding:13px!important}
+ #subscriptionPage .subscription-payment-left .subscription-gcash-qr-frame img{max-width:min(100%,340px)!important;max-height:400px!important}
 }
 </style>
 
@@ -6249,9 +6319,13 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
       <input type="hidden" id="subscriptionPaymentMethod" value="GCash">
 
       <div class="subscription-section-title">PAYMENT DETAILS</div>
-      <div class="subscription-payment-note" style="padding:16px 18px;border-radius:12px;background:#dcfbfb;color:#087e8b;line-height:1.5;margin:0 0 18px;">
-        <strong style="display:block;margin-bottom:3px;">Please complete the payment and fill out the details below.</strong>
-        Your subscription will be activated after successful verification.
+      <div class="subscription-payment-note" style="padding:12px 14px;border-radius:10px;background:#e5fbfb;color:#087e8b;line-height:1.45;margin:0 0 12px;">
+        <strong style="display:block;margin-bottom:5px;">ⓘ Note</strong>
+        <ul style="margin:0;padding-left:20px;">
+          <li>Make sure the amount is ₱69.</li>
+          <li>Use only GCash QR for payment.</li>
+          <li>Wait for the verification process. You will be notified once your subscription is activated.</li>
+        </ul>
       </div>
       <div class="subscription-form-grid">
         <div>
