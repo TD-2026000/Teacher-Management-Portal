@@ -19953,12 +19953,37 @@ async function renderSubscriptionPage(){
   });
 }
 
+// Visible on-screen payment decision alert (approval or rejection).
+function showPaymentDecisionAlert(status, reference, isNewDecision){
+  const box=document.getElementById('subscriptionPaymentHistory');
+  if(!box)return;
+  let alert=document.getElementById('teacherPaymentDecisionAlert');
+  if(!alert){
+    alert=document.createElement('div');
+    alert.id='teacherPaymentDecisionAlert';
+    alert.setAttribute('role','status');
+    alert.setAttribute('aria-live','polite');
+    alert.style.cssText='display:none;margin:0 0 14px;padding:16px 18px;border-radius:12px;font-weight:700;font-size:15px;line-height:1.5;border:2px solid;box-shadow:0 4px 14px rgba(0,0,0,.08)';
+    box.parentNode.insertBefore(alert,box);
+  }
+  const approved=status==='VERIFIED';
+  alert.style.display='block';
+  alert.style.background=approved?'#ecfdf3':'#fff1f2';
+  alert.style.color=approved?'#166534':'#9f1239';
+  alert.style.borderColor=approved?'#22c55e':'#fb7185';
+  alert.innerHTML=`<div style="font-size:17px;margin-bottom:4px">${approved?'✓ PAYMENT APPROVED':'✕ PAYMENT REJECTED'}</div><div>${approved?'Your monthly subscription payment has been approved.':'Your monthly subscription payment was rejected. Please review your payment details and contact the administrator if you need help.'}</div><div style="font-weight:500;font-size:13px;margin-top:5px">Reference: ${subscriptionEscape(reference||'Not provided')}</div>`;
+  if(isNewDecision){
+    // Bring the decision into view so it is noticed without a page reload.
+    try{alert.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+  }
+}
+
 async function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
   let rows=getLocalSubscriptionRequests();
-  // Read only lightweight columns and scope to the signed-in teacher. This avoids
-  // downloading encoded proof images stored in notes and keeps status current.
+  let newDecision=null;
+  // Read lightweight fields only; proof data can be large and is not needed here.
   if(currentUser && typeof supabaseClient!=='undefined' && supabaseClient){
     try{
       const {data,error}=await supabaseClient.from('payments')
@@ -19968,22 +19993,37 @@ async function renderSubscriptionHistory(){
         .limit(50);
       if(error) throw error;
       const remote=(data||[]).map(r=>({...r,created_at:r.created_at||r.payment_date||null}));
-      // Merge server status into locally saved requests using the payment reference.
       rows=rows.map(local=>{
         const match=remote.find(r=>String(r.reference_number||'')===String(local.reference_number||''));
-        return match?{...local,...match,submission_number:local.submission_number||local.submissionNumber}:local;
+        if(!match)return local;
+        const before=String(local.status||'PENDING').toUpperCase();
+        const after=String(match.status||'PENDING').toUpperCase();
+        if(before==='PENDING' && (after==='VERIFIED'||after==='REJECTED'))newDecision={status:after,reference:match.reference_number};
+        return {...local,...match,submission_number:local.submission_number||local.submissionNumber};
       });
-      // Include remote records even if local browser storage was cleared.
-      for(const r of remote){if(!rows.some(x=>String(x.reference_number||'')===String(r.reference_number||''))) rows.push(r);}
+      for(const r of remote){
+        if(!rows.some(x=>String(x.reference_number||'')===String(r.reference_number||'')))rows.push(r);
+      }
       saveLocalSubscriptionRequests(rows);
     }catch(err){console.warn('Could not refresh payment request statuses:',err);}
   }
   rows.sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
   if(!rows.length){box.textContent='No payment requests yet.';return;}
-  box.innerHTML=rows.map(r=>{const status=String(r.status||'PENDING').toUpperCase();const color=status==='VERIFIED'?'#16803c':status==='REJECTED'?'#c62828':'#b7791f';return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="color:${color};font-weight:700">${subscriptionEscape(status)}</div></div>`;}).join('');
+  box.innerHTML=rows.map(r=>{
+    const status=String(r.status||'PENDING').toUpperCase();
+    const color=status==='VERIFIED'?'#16803c':status==='REJECTED'?'#c62828':'#b7791f';
+    return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="color:${color};font-weight:700">${subscriptionEscape(status)}</div></div>`;
+  }).join('');
+  if(newDecision){
+    showPaymentDecisionAlert(newDecision.status,newDecision.reference,true);
+  }else{
+    // Keep the latest server-confirmed decision visible after refresh/navigation.
+    const latestDecision=rows.find(r=>['VERIFIED','REJECTED'].includes(String(r.status||'').toUpperCase()));
+    if(latestDecision)showPaymentDecisionAlert(String(latestDecision.status).toUpperCase(),latestDecision.reference_number,false);
+  }
 }
 
-// Poll the server while the portal is open so approval/rejection appears without reload.
+// Poll every five seconds while the portal is open. No manual reload needed.
 let subscriptionStatusPollStarted=false;
 function startSubscriptionStatusPolling(){
   if(subscriptionStatusPollStarted)return;
