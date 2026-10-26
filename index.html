@@ -6330,29 +6330,21 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
       </div>
       <input type="hidden" id="subscriptionPaymentMethod" value="GCash">
 
-      
       <div class="subscription-section-title">PAYMENT DETAILS</div>
       <div class="subscription-verification-notice" style="display:flex;align-items:center;gap:16px;box-sizing:border-box;width:100%;padding:16px 20px;border-radius:14px;background:#e3fbfc;color:#087e8b;line-height:1.45;margin:0 0 18px;font-size:14px;">
         <span aria-hidden="true" style="flex:0 0 40px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:28px;font-weight:900;">⬟</span>
         <span>Please complete the payment and fill out the details below.<br>Your subscription will be activated after successful verification.</span>
       </div>
-
-      
       <div class="subscription-form-grid">
         <div>
           <label for="subscriptionReference">Reference Number (RN) <span style="color:#e5484d">*</span></label>
           <input id="subscriptionReference" type="text" placeholder="Enter your GCash reference number (RN)">
         </div>
-
-        
         <div>
           <label for="subscriptionProof">Payment Proof <span style="color:#e5484d">*</span></label>
           <input id="subscriptionProof" type="file" accept="image/*,.pdf">
-          
           <small class="subscription-field-note">Upload a screenshot of your payment (optional but recommended).</small>
         </div>
-
-        
       </div>
       <div class="subscription-payment-note" style="padding:12px 14px;border-radius:10px;background:#e5fbfb;color:#087e8b;line-height:1.45;margin:12px 0;">
         <strong style="display:block;margin-bottom:5px;">ⓘ Note</strong>
@@ -6363,7 +6355,6 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
         </ul>
       </div>
 
-      
       <button type="button" class="subscription-submit-btn" onclick="submitSubscriptionPayment()">SUBMIT ₱69 PAYMENT</button>
       <div id="subscriptionSubmitMessage" class="subscription-submit-message" aria-live="polite"></div>
     </div>
