@@ -8837,6 +8837,8 @@ await supabaseClient.auth.signOut();
 let portalSubscriptionUnlocked = false;
 let portalSubscriptionCheckComplete = false;
 let portalSubscriptionGateMessage = '';
+// Temporary access is memory-only: it ends when the page is reloaded or the session ends.
+let portalTemporaryUnlockUntilVerification = false;
 
 async function refreshPortalSubscriptionAccess(user=currentUser){
   portalSubscriptionUnlocked = false;
@@ -9587,7 +9589,7 @@ function backToDashboard(){
 
 function showPage(page){
 
-if(currentUser && portalSubscriptionCheckComplete && !portalSubscriptionUnlocked && page!=='subscription'){
+if(currentUser && portalSubscriptionCheckComplete && !portalSubscriptionUnlocked && !portalTemporaryUnlockUntilVerification && page!=='subscription'){
   const subPage=document.getElementById('subscriptionPage');
   if(subPage){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));subPage.classList.add('active');}
   const gateMessage=document.getElementById('subscriptionSubmitMessage');
@@ -20005,14 +20007,22 @@ async function submitSubscriptionPayment(){
       remoteSaved=true;
     }
 
-    const msg=remoteSaved
-      ? 'Payment submitted successfully. Teacher Danyeal will verify your ₱69 payment.'
-      : 'Payment saved on this device, but the online submission table is not connected yet. Please contact Teacher Danyeal to complete verification.<br><br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" aria-label="Visit Teacher Danyeal on Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#1877F2;color:#fff;text-decoration:none;font-family:Arial,sans-serif;font-size:24px;font-weight:700;line-height:1;">f</a>';
-    if(message)message.textContent=msg;
+    // A submitted request grants temporary in-memory access only; the normal
+    // subscription gate remains in place after a reload until Teacher Danyeal approves it.
+    portalTemporaryUnlockUntilVerification=true;
+    portalSubscriptionGateMessage='Your ₱69 payment request is pending verification. Temporary portal access is available for this session only.';
+    if(message){
+      message.textContent=remoteSaved
+        ? 'Payment submitted. Temporary portal access is enabled for this session while Teacher Danyeal verifies your payment.'
+        : 'Payment was saved on this device, but online verification is not connected. Temporary access is enabled for this session only; contact Teacher Danyeal to ensure the request is received.';
+      message.style.display='block';
+      message.style.color='#087e8b';
+    }
     const refEl=document.getElementById('subscriptionReference');if(refEl)refEl.value='';
     const noteEl=document.getElementById('subscriptionNote');if(noteEl)noteEl.value='';
     const proofEl=document.getElementById('subscriptionProof');if(proofEl)proofEl.value='';
     renderSubscriptionHistory();
+    showSubscriptionSubmittedModal();
   }catch(err){
     console.error('Subscription payment submission failed:',err);
     if(message){
@@ -20078,6 +20088,30 @@ function closeAppointmentSuccess(){const overlay=document.getElementById('appoin
   updateTeacherDashboardClock();
   setInterval(updateTeacherDashboardClock,1000);
 })();
+</script>
+
+
+<div id="subscriptionSubmittedModal" role="dialog" aria-modal="true" aria-labelledby="subscriptionSubmittedTitle" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(15,23,42,.58);align-items:center;justify-content:center;padding:18px;">
+  <div style="width:min(100%,520px);background:#fff;border:1px solid #8cebed;border-radius:18px;padding:26px;box-shadow:0 18px 55px rgba(0,0,0,.22);text-align:center;color:#17313a;">
+    <div style="width:58px;height:58px;border-radius:50%;background:#e3fbfc;color:#08bfc5;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;margin:0 auto 14px;">✓</div>
+    <h2 id="subscriptionSubmittedTitle" style="margin:0 0 12px;font-size:24px;font-weight:900;">Monthly Payment Submitted!</h2>
+    <p style="margin:0 0 12px;line-height:1.55;">You have submitted your ₱69 monthly subscription payment. Your portal access is <strong>temporarily unlocked</strong> while you wait for Teacher Danyeal to verify your payment.</p>
+    <div style="text-align:left;background:#e8fbfc;border-radius:12px;padding:14px 16px;margin:0 0 18px;line-height:1.5;font-size:14px;">
+      <strong>Important:</strong><br>• Please make sure your GCash reference number and payment details are correct.<br>• Incorrect or unverifiable details may cause your payment to be rejected.<br>• Your full one-month subscription will begin only after Teacher Danyeal approves the payment.<br>• Temporary access ends if you reload or leave this session before approval.
+    </div>
+    <button type="button" onclick="closeSubscriptionSubmittedModal()" style="border:0;border-radius:10px;background:#08bfc5;color:#fff;font-weight:900;padding:12px 24px;cursor:pointer;">Continue to Portal</button>
+  </div>
+</div>
+<script>
+function closeSubscriptionSubmittedModal(){
+  const modal=document.getElementById('subscriptionSubmittedModal');
+  if(modal)modal.style.display='none';
+  if(currentUser)showPage('dashboard');
+}
+function showSubscriptionSubmittedModal(){
+  const modal=document.getElementById('subscriptionSubmittedModal');
+  if(modal)modal.style.display='flex';
+}
 </script>
 
 </body>
