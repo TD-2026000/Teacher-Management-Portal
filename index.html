@@ -8399,70 +8399,6 @@ await supabaseClient.auth.signOut();
 
 
 /* =========================================================
-   SUBSCRIPTION ACCESS GATE
-   UI protection: only ACTIVE profiles with an unexpired ACTIVE
-   subscription can open teacher features. Supabase RLS must also
-   enforce this server-side; client-side checks alone are not security.
-========================================================= */
-let teacherPortalAccessState = 'CHECKING';
-let teacherPortalAccessCheckedAt = 0;
-let teacherPortalAccessCheckPromise = null;
-let teacherPortalAccessNoticeShown = false;
-
-async function refreshTeacherPortalAccess(force = false){
-  if(!currentUser || !supabaseClient){
-    teacherPortalAccessState = 'BLOCKED';
-    return false;
-  }
-  if(teacherPortalAccessCheckPromise) return teacherPortalAccessCheckPromise;
-  if(!force && Date.now()-teacherPortalAccessCheckedAt < 15000 && teacherPortalAccessState !== 'CHECKING'){
-    return teacherPortalAccessState === 'ACTIVE';
-  }
-  teacherPortalAccessCheckPromise = (async()=>{
-    try{
-      const [profileResult, subscriptionResult] = await Promise.all([
-        supabaseClient.from('profiles').select('access_status').eq('id',currentUser.id).maybeSingle(),
-        supabaseClient.from('subscriptions').select('status,expiry_date').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(1).maybeSingle()
-      ]);
-      if(profileResult.error) throw profileResult.error;
-      if(subscriptionResult.error) throw subscriptionResult.error;
-      const profileStatus=String(profileResult.data?.access_status||'PENDING').toUpperCase();
-      const sub=subscriptionResult.data;
-      const subStatus=String(sub?.status||'INACTIVE').toUpperCase();
-      const expiry=sub?.expiry_date ? new Date(sub.expiry_date) : null;
-      const validExpiry=!!expiry && !Number.isNaN(expiry.getTime()) && expiry.getTime()>Date.now();
-      teacherPortalAccessState = profileStatus==='ACTIVE' && subStatus==='ACTIVE' && validExpiry ? 'ACTIVE' : 'BLOCKED';
-      teacherPortalAccessCheckedAt=Date.now();
-      if(teacherPortalAccessState!=='ACTIVE'){
-        if(!teacherPortalAccessNoticeShown){
-          teacherPortalAccessNoticeShown=true;
-          alert(profileStatus==='INACTIVE' || subStatus==='INACTIVE'
-            ? 'Your subscription access is inactive or has been revoked. Teacher Portal features are locked. If you have a question, please contact Chat Support.'
-            : 'An active, unexpired subscription is required to use Teacher Portal features. Please check your subscription status or contact Chat Support.');
-        }
-        if(document.getElementById('appShell') && !document.getElementById('appShell').classList.contains('hidden')) showPage('subscription');
-      }else{
-        teacherPortalAccessNoticeShown=false;
-      }
-      return teacherPortalAccessState==='ACTIVE';
-    }catch(err){
-      console.error('Subscription access check failed:',err);
-      teacherPortalAccessState='BLOCKED';
-      teacherPortalAccessCheckedAt=Date.now();
-      if(!teacherPortalAccessNoticeShown){
-        teacherPortalAccessNoticeShown=true;
-        alert('Unable to verify your subscription right now. Teacher features are temporarily locked for safety. Please try again or contact Chat Support.');
-      }
-      if(document.getElementById('appShell') && !document.getElementById('appShell').classList.contains('hidden')) showPage('subscription');
-      return false;
-    }finally{
-      teacherPortalAccessCheckPromise=null;
-    }
-  })();
-  return teacherPortalAccessCheckPromise;
-}
-
-/* =========================================================
    SIGNED IN
 ========================================================= */
 
@@ -8476,9 +8412,6 @@ async function handleSignedIn(user){
 ========================================================= */
 
 currentUser=user;
-teacherPortalAccessState = 'CHECKING';
-teacherPortalAccessCheckedAt = 0;
-teacherPortalAccessNoticeShown = false;
 
 const savedProfile=getTeacherProfile();
 
@@ -8499,9 +8432,6 @@ loadTeacherProfile();
 renderDashboard();
 populateStudentSelect();
 renderRecords();
-
-/* Verify subscription before allowing protected portal pages. */
-refreshTeacherPortalAccess(true);
 
 /* Refresh Supabase data in the background.
    IMPORTANT: do not await these here. */
@@ -8534,9 +8464,6 @@ Promise.resolve()
 function handleSignedOut(){
 
 currentUser=null;
-teacherPortalAccessState = 'BLOCKED';
-teacherPortalAccessCheckedAt = 0;
-teacherPortalAccessNoticeShown = false;
 
 closeProfilePanel();
 
@@ -9209,10 +9136,6 @@ function backToDashboard(){
 ========================================================= */
 
 function showPage(page){
-
-if(page !== 'subscription' && teacherPortalAccessState !== 'ACTIVE'){
-  page = 'subscription';
-}
 
 closeProfilePanel();
 
@@ -16276,10 +16199,6 @@ document.getElementById('editStudentDuration')?.addEventListener(
 );
 
 initAuth();
-if(!window.__teacherPortalAccessMonitorStarted){
-  window.__teacherPortalAccessMonitorStarted=true;
-  window.setInterval(()=>{if(currentUser) refreshTeacherPortalAccess(true);},30000);
-}
 
 
 /* Automatically mark scheduled classes as Completed once their class end time has passed. */
