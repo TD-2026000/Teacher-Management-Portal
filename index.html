@@ -20465,8 +20465,29 @@ function showSubscriptionSubmittedModal(){
  function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  function linkify(u){try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:''}catch(e){return ''}}
  function mediaSource(u,type){if(/^data:(image|video)\//i.test(String(u||''))&&String(u).startsWith('data:'+type+'/'))return String(u);return linkify(u)}
- window.loadTeacherProfileDraft=function(){try{fill(JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){fill({})}};
- window.saveTeacherProfileDraft=function(){const o=values();const preview=document.getElementById('teacherProfilePreview');preview.innerHTML=render(o);preview.style.display='block';document.getElementById('teacherProfileMessage').textContent='Changes applied to the Teacher Profile preview. Your form entries have not been cleared.';try{const lightweight={...o};['Photo','Resume','Diploma','Video','Certs'].forEach(k=>{if(String(lightweight[k]||'').startsWith('data:'))lightweight[k]='';});localStorage.setItem(key,JSON.stringify(lightweight));}catch(e){}preview.scrollIntoView({behavior:'smooth',block:'start'});};
+ // Keep the complete profile (including uploaded media) in IndexedDB. localStorage is only a small fallback
+ // for text fields because large data URLs can exceed the browser's localStorage quota.
+ const tpDbName='TeacherPortalProfileDB_v2',tpStoreName='profiles',tpRecordId='current-profile';
+ function tpOpenDb(){return new Promise((resolve,reject)=>{if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}const req=indexedDB.open(tpDbName,1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(tpStoreName))db.createObjectStore(tpStoreName,{keyPath:'id'});};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Could not open profile storage'));});}
+ async function tpStoreFullProfile(o){const db=await tpOpenDb();return new Promise((resolve,reject)=>{const tx=db.transaction(tpStoreName,'readwrite');tx.objectStore(tpStoreName).put({id:tpRecordId,profile:o,savedAt:Date.now()});tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{db.close();reject(tx.error||new Error('Profile save failed'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('Profile save was cancelled'))};});}
+ async function tpReadFullProfile(){const db=await tpOpenDb();return new Promise((resolve,reject)=>{const tx=db.transaction(tpStoreName,'readonly');const req=tx.objectStore(tpStoreName).get(tpRecordId);req.onsuccess=()=>{const result=req.result;resolve(result&&result.profile?result.profile:null)};req.onerror=()=>reject(req.error||new Error('Could not read saved profile'));tx.oncomplete=()=>db.close();tx.onerror=()=>{db.close();reject(tx.error||new Error('Could not read saved profile'))};});}
+ function tpSaveSmallFallback(o){const light={...o};['Photo','Resume','Diploma','Video','Certs'].forEach(k=>{if(String(light[k]||'').startsWith('data:'))light[k]='';});try{localStorage.setItem(key,JSON.stringify(light));}catch(e){}}
+ window.loadTeacherProfileDraft=async function(){try{const full=await tpReadFullProfile();if(full){fill(full);return true}}catch(e){}try{fill(JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){fill({})}return false};
+ window.saveTeacherProfileDraft=async function(){
+   const o=values();
+   // Render from the live form first; never reset or clear inputs after Save Changes.
+   const preview=document.getElementById('teacherProfilePreview');
+   if(preview){preview.innerHTML=render(o);preview.style.display='block';}
+   const message=document.getElementById('teacherProfileMessage');
+   if(message)message.textContent='Saving your profile and uploaded files…';
+   tpSaveSmallFallback(o);
+   try{
+     await tpStoreFullProfile(o);
+     if(message)message.textContent='Saved successfully. Your information and uploaded images/video are kept on this device, and the preview is updated.';
+   }catch(err){
+     if(message)message.textContent='Preview updated, but the browser could not permanently save all uploaded files. Please keep this page open and try smaller media files.';
+   }
+ };
  function tpRefreshPreviewIfVisible(){const preview=document.getElementById('teacherProfilePreview');if(preview&&preview.style.display!=='none'&&preview.innerHTML)preview.innerHTML=render(values());}
  window.tpRefreshPreviewIfVisible=tpRefreshPreviewIfVisible;
  function render(o){
@@ -20538,7 +20559,7 @@ function showSubscriptionSubmittedModal(){
  window.tpCloseImageViewer=function(){document.querySelectorAll('.tp-image-viewer.is-open').forEach(modal=>modal.classList.remove('is-open'));document.body.style.overflow=''};
  document.addEventListener('keydown',e=>{if(e.key==='Escape')window.tpCloseImageViewer()});
  window.previewTeacherProfile=function(){const el=document.getElementById('teacherProfilePreview');el.innerHTML=render(values());el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'start'})};
- document.addEventListener('DOMContentLoaded',()=>{const saved=localStorage.getItem(key);if(saved){try{fill(JSON.parse(saved))}catch(e){}}});
+ document.addEventListener('DOMContentLoaded',()=>{window.loadTeacherProfileDraft();});
  window.copyTeacherProfileLink=async function(){const o=values();if(!o.Name){document.getElementById('teacherProfileMessage').textContent='Please enter the teacher name first.';return}const base=location.href.split('#')[0];const slug=String(o.Name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');const url=base+'#/teacher/'+slug+'/ESL/teacherph?data='+encodeURIComponent(JSON.stringify(o));try{await navigator.clipboard.writeText(url);document.getElementById('teacherProfileMessage').textContent='Teacher-profile-only link copied. Parents will see only the public profile view. This static HTML link uses a URL fragment; a clean URL like https://domain/teacher-name/ESL/teacherph requires hosting and domain routing support.'}catch(e){window.prompt('Copy this profile link:',url)}};
  function publicView(){const m=location.hash.match(/^#\/teacher\/[^?]+\/ESL\/teacherph\?data=(.*)$/)||location.hash.match(/^#teacher-profile=(.*)$/);if(!m)return;let o;try{o=JSON.parse(decodeURIComponent(m[1]))}catch(e){return}document.addEventListener('DOMContentLoaded',()=>{const auth=document.getElementById('authScreen'),shell=document.getElementById('appShell');if(auth)auth.style.display='none';if(shell)shell.style.display='none';document.body.innerHTML='<main style="min-height:100vh;background:#f3f7fc;padding:28px 20px;box-sizing:border-box"><div style="max-width:1180px;margin:0 auto 18px;color:#64748b;font:14px Arial,sans-serif">Teacher profile shared for parent information</div><div id="publicTeacherProfile"></div><div style="text-align:center;margin:22px;color:#94a3b8;font:12px Arial,sans-serif">Teacher Profile</div></main>'; document.getElementById('publicTeacherProfile').innerHTML=render(o)});}
  publicView();
