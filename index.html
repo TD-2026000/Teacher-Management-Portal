@@ -8878,15 +8878,26 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
       .select('id,status,created_at').eq('user_id',user.id)
       .order('created_at',{ascending:false}).limit(1).maybeSingle();
     if(paymentError) throw paymentError;
-    if(!portalSubscriptionUnlocked && String(latestPayment?.status||'').toUpperCase()==='PENDING'){
+    const latestPaymentStatus=String(latestPayment?.status||'').trim().toUpperCase();
+    // A revoked/rejected payment must not keep access open just because an old
+    // subscription row still says ACTIVE. Allow access only if another VERIFIED
+    // payment exists and the subscription/profile are still valid.
+    if(latestPaymentStatus==='REJECTED'){
+      const {data:otherVerified,error:verifiedError}=await supabaseClient.from('payments')
+        .select('id').eq('user_id',user.id).eq('status','VERIFIED').limit(1);
+      if(verifiedError) throw verifiedError;
+      if(!otherVerified || otherVerified.length===0){
+        portalSubscriptionUnlocked=false;
+        portalTemporaryUnlockUntilVerification=false;
+        portalSubscriptionGateMessage='Your payment approval was revoked or rejected. Portal features are locked. Please contact Chat Support if you have questions.';
+      }
+    }
+    if(!portalSubscriptionUnlocked && latestPaymentStatus==='PENDING'){
       portalTemporaryUnlockUntilVerification=true;
       portalSubscriptionGateMessage='Your payment is pending verification. Temporary access is enabled while Teacher Danyeal reviews it.';
-    }else if(String(latestPayment?.status||'').toUpperCase()==='REJECTED'){
+    }else if(latestPaymentStatus==='REJECTED' && !portalSubscriptionUnlocked){
       portalTemporaryUnlockUntilVerification=false;
-      portalSubscriptionGateMessage='Your payment was rejected. Please check the payment details and submit a new request.';
-    }else if(String(latestPayment?.status||'').toUpperCase()==='REVOKED'){
-      portalTemporaryUnlockUntilVerification=false;
-      portalSubscriptionGateMessage='Your previous payment approval was revoked. Portal access is disabled until the Admin restores access or approves a new payment.';
+      portalSubscriptionGateMessage='Your payment was rejected or its approval was revoked. Please contact Chat Support if you have questions.';
     }
     if(portalSubscriptionUnlocked){portalTemporaryUnlockUntilVerification=false;portalSubscriptionGateMessage='Your subscription is active.';}
     else if(sub && expiry && !expiryValid){portalSubscriptionGateMessage='Your monthly subscription has expired. Please renew for ₱69 to unlock portal features.';}
@@ -19993,22 +20004,37 @@ function showTeacherPaymentStatusNotice(status, reference){
   const normalizedStatus=String(status).toUpperCase();
   const revoked=normalizedStatus==='REVOKED';
   const rejected=normalizedStatus==='REJECTED';
+  const restored=normalizedStatus==='RESTORED';
   const approved=normalizedStatus==='VERIFIED';
-  const title=revoked?'PAYMENT APPROVAL REVOKED':rejected?'PAYMENT REJECTED':approved?'PAYMENT APPROVED':'PAYMENT STATUS';
+  const title=revoked?'PAYMENT APPROVAL REVOKED':rejected?'PAYMENT REJECTED':restored?'PAYMENT ACCESS RESTORED':approved?'PAYMENT APPROVED':'PAYMENT STATUS';
   const detail=revoked
-    ?'The Admin has revoked the previous approval after further review. Your subscription access may be disabled. Please contact the Admin if you believe this is a mistake.'
-    :rejected?'Your payment was rejected by the Admin. Please review your payment details and submit a new request.'
-    :approved?'Your payment has been approved. Your monthly subscription is now active for one month.':'Your payment is awaiting verification.';
+    ?'The Admin has revoked the previous approval. Your Teacher Portal features are now locked until access is restored or a valid subscription is approved.'
+    :rejected?'Your payment was rejected by the Admin. Please review your payment details before submitting another request.'
+    :restored?'The Admin has restored your payment approval. Your portal access will resume if your subscription is still valid.'
+    :approved?'Your payment has been approved. Your monthly subscription is active for one month.'
+    :'Your payment is awaiting verification.';
+  const support='<div style="margin-top:16px;padding:12px;background:#f0f9ff;border-radius:12px;color:#344054;font-size:13px;line-height:1.55"><strong>Questions or concerns about a rejected or revoked payment?</strong><br>Please reach out through Chat Support.<br><a href="https://www.facebook.com/profile.php?id=61593957519844" target="_blank" rel="noopener noreferrer" style="color:#087e8b;font-weight:700">Facebook Chat Support</a> · <a href="mailto:teacherdanyeal@gmail.com" style="color:#087e8b;font-weight:700">Email Support</a></div>';
   const overlay=document.createElement('div');
   overlay.id='teacherPaymentStatusNotice';
   overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
-  overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${(rejected||revoked)?'❌':approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${(rejected||revoked)?'#b42318':approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085">Reference: ${subscriptionEscape(reference)}</p>`:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:12px;border:0;border-radius:10px;padding:12px 24px;background:${(rejected||revoked)?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
+  overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${(rejected||revoked)?'❌':restored||approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${(rejected||revoked)?'#b42318':restored||approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085">Reference: ${subscriptionEscape(reference)}</p>`:''}${(rejected||revoked)?support:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:16px;border:0;border-radius:10px;padding:12px 24px;background:${(rejected||revoked)?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
   document.body.appendChild(overlay);
   document.getElementById('teacherPaymentStatusNoticeClose').onclick=()=>overlay.remove();
 }
 async function renderSubscriptionHistory(){
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
+  // Re-check the access gate every poll, not only when a popup is detected.
+  // This also locks a portal session that was already open when access was revoked.
+  if(currentUser){
+    await refreshPortalSubscriptionAccess(currentUser);
+    const activePage=document.querySelector('.page.active');
+    if(portalSubscriptionCheckComplete && !portalSubscriptionUnlocked && !portalTemporaryUnlockUntilVerification && activePage && activePage.id!=='subscriptionPage'){
+      showPage('subscription');
+      const msg=document.getElementById('subscriptionSubmitMessage');
+      if(msg){msg.textContent=portalSubscriptionGateMessage;msg.style.display='block';msg.style.color='#b42318';}
+    }
+  }
   let rows=getLocalSubscriptionRequests();
   if(currentUser && typeof supabaseClient!=='undefined' && supabaseClient){
     try{
@@ -20021,12 +20047,13 @@ async function renderSubscriptionHistory(){
         const key=String(r.id||r.reference_number||'');
         const newStatus=String(r.status||'PENDING').toUpperCase();
         const oldStatus=lastKnownPaymentStatuses[key];
-        if(paymentStatusNoticeInitialized && oldStatus && oldStatus!==newStatus && ['VERIFIED','REJECTED','REVOKED'].includes(newStatus)){
-          const wasRevokedAfterApproval = oldStatus==='VERIFIED' && ['REJECTED','REVOKED'].includes(newStatus);
+        if(paymentStatusNoticeInitialized && oldStatus && oldStatus!==newStatus && ['VERIFIED','REJECTED'].includes(newStatus)){
+          const wasRevokedAfterApproval = oldStatus==='VERIFIED' && newStatus==='REJECTED';
+          const wasRestored = oldStatus==='REJECTED' && newStatus==='VERIFIED';
           if(wasRevokedAfterApproval){
             try{localStorage.setItem('teacherPaymentRevoked:'+String(currentUser?.id||'')+':'+key,'1');}catch(_e){}
           }
-          showTeacherPaymentStatusNotice(newStatus==='REVOKED'||wasRevokedAfterApproval&&newStatus==='REJECTED'?'REVOKED':newStatus,r.reference_number||'');
+          showTeacherPaymentStatusNotice(wasRevokedAfterApproval?'REVOKED':wasRestored?'RESTORED':newStatus,r.reference_number||'');
           if(newStatus==='REJECTED'){
             portalTemporaryUnlockUntilVerification=false;
             portalSubscriptionUnlocked=false;
@@ -20037,6 +20064,7 @@ async function renderSubscriptionHistory(){
             if(msg){msg.textContent='Your payment was REJECTED by the Admin. Please check your payment details and submit a new payment.';msg.style.display='block';msg.style.color='#b42318';}
           }else if(newStatus==='VERIFIED'){
             portalTemporaryUnlockUntilVerification=false;
+            try{localStorage.removeItem('teacherPaymentRevoked:'+String(currentUser?.id||'')+':'+key);}catch(_e){}
             await refreshPortalSubscriptionAccess(currentUser);
             if(portalSubscriptionUnlocked){
               loadTeacherProfile();renderDashboard();populateStudentSelect();renderRecords();showPage('dashboard');
