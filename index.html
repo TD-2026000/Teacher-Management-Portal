@@ -314,6 +314,23 @@ body{
   margin:0;
   font-size:22px;
 }
+#dashboardPage .dashboard-menu-icon{
+  display:block;
+  width:34px;
+  height:34px;
+  margin:0 auto 12px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex:0 0 auto;
+}
+#dashboardPage .dashboard-menu-btn{
+  flex-direction:column;
+  gap:0;
+}
+
 
 
 #dashboardPage .dashboard-menu-label{
@@ -5361,35 +5378,44 @@ Dashboard
 
 <div class="dashboard-menu">
 <button type="button" class="dashboard-menu-btn" onclick="showPage('student')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 <span class="dashboard-menu-label">STUDENT</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('teacherProfile')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M18 5h4M20 3v4"/></svg>
 <span class="dashboard-menu-label">TEACHER PROFILE</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn" onclick="showPage('contract')">
-<span class="dashboard-menu-label">STUDENT CONTRACT</span>
+<button type="button" class="dashboard-menu-btn" onclick="showPage('evaluation')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l2 2 4-4"/><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/></svg>
+<span class="dashboard-menu-label">EVALUATION</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('appointment')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h7"/></svg>
 <span class="dashboard-menu-label">STUDENT APPOINTMENT</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('payment')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
 <span class="dashboard-menu-label">PAYMENT</span>
 </button>
 
-
+<button type="button" class="dashboard-menu-btn" onclick="showPage('contract')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>
+<span class="dashboard-menu-label">STUDENT CONTRACT</span>
+</button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h8"/></svg>
 <span class="dashboard-menu-label">LESSON MATERIALS</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('subscription')">
+<svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h3"/><circle cx="17" cy="15" r="1"/></svg>
 <span class="dashboard-menu-label">SUBSCRIPTION</span>
 </button>
-
 </div>
 
 <div class="dashboard-grid">
