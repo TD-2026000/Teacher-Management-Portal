@@ -6447,7 +6447,7 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 <label style="grid-column:1/-1">Teaching Philosophy<textarea id="tpPhilosophy" class="form-control" rows="3" placeholder="Describe your teaching approach..."></textarea></label>
 </div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
-<button type="button" class="primary" onclick="saveTeacherProfileDraft()">Save Profile on This Device</button>
+<button type="button" class="primary" onclick="saveTeacherProfileDraft()">Save Changes</button>
 <button type="button" class="primary" onclick="previewTeacherProfile()">Preview Profile</button>
 <button type="button" class="primary" onclick="copyTeacherProfileLink()">Copy Profile Link</button>
 </div>
@@ -20466,7 +20466,7 @@ function showSubscriptionSubmittedModal(){
  function linkify(u){try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:''}catch(e){return ''}}
  function mediaSource(u,type){if(/^data:(image|video)\//i.test(String(u||''))&&String(u).startsWith('data:'+type+'/'))return String(u);return linkify(u)}
  window.loadTeacherProfileDraft=function(){try{fill(JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){fill({})}};
- window.saveTeacherProfileDraft=function(){const o=values();try{localStorage.setItem(key,JSON.stringify(o));document.getElementById('teacherProfileMessage').textContent='Profile saved on this device. Your preview has been updated.';}catch(e){document.getElementById('teacherProfileMessage').textContent='Preview updated, but browser storage is full. Large videos/images may not persist after closing this page.';}const preview=document.getElementById('teacherProfilePreview');preview.innerHTML=render(o);preview.style.display='block';preview.scrollIntoView({behavior:'smooth',block:'start'});};
+ window.saveTeacherProfileDraft=function(){const o=values();const preview=document.getElementById('teacherProfilePreview');preview.innerHTML=render(o);preview.style.display='block';document.getElementById('teacherProfileMessage').textContent='Changes applied to the Teacher Profile preview. Your form entries have not been cleared.';try{const lightweight={...o};['Photo','Resume','Diploma','Video','Certs'].forEach(k=>{if(String(lightweight[k]||'').startsWith('data:'))lightweight[k]='';});localStorage.setItem(key,JSON.stringify(lightweight));}catch(e){}preview.scrollIntoView({behavior:'smooth',block:'start'});};
  function tpRefreshPreviewIfVisible(){const preview=document.getElementById('teacherProfilePreview');if(preview&&preview.style.display!=='none'&&preview.innerHTML)preview.innerHTML=render(values());}
  window.tpRefreshPreviewIfVisible=tpRefreshPreviewIfVisible;
  function render(o){
@@ -20495,8 +20495,9 @@ function showSubscriptionSubmittedModal(){
       .tp-public-content>.tp-public-card:nth-child(1){grid-column:1/-1;min-height:132px}
       .tp-public-content>.tp-public-card:nth-child(2){grid-column:span 3}
       .tp-public-content>.tp-public-card:nth-child(3){grid-column:span 3}
-      .tp-public-content>.tp-public-card:nth-child(4){grid-column:span 3}
-      .tp-public-content>.tp-public-card:nth-child(5){grid-column:span 3}
+      .tp-public-content>.tp-public-card:nth-child(4){grid-column:span 6;min-height:360px}
+      .tp-public-content>.tp-public-card:nth-child(4) video{display:block;width:100%;height:360px;max-height:none;object-fit:contain;border-radius:12px;background:#0f172a}
+      .tp-public-content>.tp-public-card:nth-child(5){grid-column:span 6}
       .tp-public-content>.tp-public-card:nth-child(6){grid-column:1/-1}
       .tp-public-card{background:#fff;border:1px solid #e0eaf5;border-radius:14px;padding:20px;min-width:0;box-shadow:0 4px 14px rgba(15,23,42,.035)}
       .tp-zoom-image{cursor:zoom-in;transition:transform .18s ease,box-shadow .18s ease}
@@ -20518,9 +20519,9 @@ function showSubscriptionSubmittedModal(){
       .tp-public-section-wide{grid-column:1/-1}
       .tp-public-contact{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:12px;color:#40516a;font-size:13px;overflow-wrap:anywhere}
       .tp-public-contact a{color:#1769d2;text-decoration:none}
-      @media(max-width:1000px){.tp-public-content{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-public-content>.tp-public-card:nth-child(n){grid-column:span 1}.tp-public-content>.tp-public-card:nth-child(1),.tp-public-content>.tp-public-card:nth-child(6){grid-column:1/-1}}
+      @media(max-width:1000px){.tp-public-content{grid-template-columns:repeat(2,minmax(0,1fr))}.tp-public-content>.tp-public-card:nth-child(n){grid-column:span 1}.tp-public-content>.tp-public-card:nth-child(1),.tp-public-content>.tp-public-card:nth-child(4),.tp-public-content>.tp-public-card:nth-child(5),.tp-public-content>.tp-public-card:nth-child(6){grid-column:1/-1}.tp-public-content>.tp-public-card:nth-child(4) video{height:420px}}
       @media(max-width:760px){.tp-public-hero{grid-template-columns:130px minmax(0,1fr);gap:16px;padding:18px}.tp-public-photo{width:125px;height:125px}.tp-public-name{font-size:24px}.tp-public-content{grid-template-columns:1fr 1fr;padding:14px;gap:12px}.tp-public-content>.tp-public-card:nth-child(n){grid-column:span 1}.tp-public-content>.tp-public-card:nth-child(1),.tp-public-content>.tp-public-card:nth-child(6){grid-column:1/-1}.tp-public-section-wide{grid-column:1/-1}}
-      @media(max-width:520px){.tp-public-hero{grid-template-columns:1fr;text-align:center;justify-items:center}.tp-public-photo{width:140px;height:165px}.tp-public-meta{justify-content:center}.tp-public-content{grid-template-columns:1fr}.tp-public-content>.tp-public-card:nth-child(n){grid-column:auto}.tp-public-section-wide{grid-column:auto}.tp-public-name{font-size:23px}.tp-image-viewer{padding:12px}.tp-image-viewer-title{left:12px;top:14px}.tp-image-viewer-close{right:12px;top:10px}}
+      @media(max-width:520px){.tp-public-hero{grid-template-columns:1fr;text-align:center;justify-items:center}.tp-public-photo{width:140px;height:165px}.tp-public-meta{justify-content:center}.tp-public-content{grid-template-columns:1fr}.tp-public-content>.tp-public-card:nth-child(n){grid-column:auto}.tp-public-content>.tp-public-card:nth-child(4) video{height:300px}.tp-public-section-wide{grid-column:auto}.tp-public-name{font-size:23px}.tp-image-viewer{padding:12px}.tp-image-viewer-title{left:12px;top:14px}.tp-image-viewer-close{right:12px;top:10px}}
     </style>
     <header class="tp-public-hero">${photoBlock}<div><div class="tp-public-eyebrow">Professional Teacher Profile</div><h2 class="tp-public-name">${safe(o.Name||'Teacher Name')}</h2><div class="tp-public-title">${safe(o.Title||'Teacher')}</div><div class="tp-public-meta">${o.Location?`<span>⌖ ${safe(o.Location)}</span>`:''}${o.Experience?`<span>✦ ${safe(o.Experience)} experience</span>`:''}${o.Subjects?`<span>▤ ${safe(o.Subjects)}</span>`:''}</div><div class="tp-public-chip">✓ Teacher Information &amp; Credentials</div>${o.Intro?`<p class="tp-public-bio">${safe(o.Intro)}</p>`:''}${o.Email?`<div class="tp-public-contact"><span>Contact: <a href="mailto:${safe(o.Email)}">${safe(o.Email)}</a></span></div>`:''}</div></header>
     <div class="tp-public-content">
