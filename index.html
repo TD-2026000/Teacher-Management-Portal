@@ -5287,10 +5287,10 @@ Evaluation
 </button>
 
 <button
-id="navRecords"
-onclick="showPage('records')"
+id="navTeacherProfile"
+onclick="showPage('teacherProfile')"
 >
-Record of Evaluation
+Teacher Profile
 </button>
 
 </div>
@@ -5380,8 +5380,8 @@ Dashboard
 <span class="dashboard-menu-label">PAYMENT</span>
 </button>
 
-<button type="button" class="dashboard-menu-btn" onclick="showPage('records')">
-<span class="dashboard-menu-label">RECORD OF EVALUATION</span>
+<button type="button" class="dashboard-menu-btn" onclick="showPage('teacherProfile')">
+<span class="dashboard-menu-label">TEACHER PROFILE</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
@@ -6401,6 +6401,34 @@ The evaluation is saved to Record of Evaluation. Use Download/PDF to download th
 <div id="lessonMaterialsList" class="lesson-materials-list"></div>
 </div>
 </div>
+
+<div id="teacherProfilePage" class="page">
+<div class="page-back-wrap"><button type="button" class="page-back-btn" onclick="backToDashboard()">← Back to Dashboard</button></div>
+<h2 style="margin-top:0">Teacher Profile</h2>
+<div class="panel"><div class="panel-title">PUBLIC TEACHER PROFILE</div><div class="panel-body">
+<p style="color:#64748b;line-height:1.6;margin-top:0">Create a professional profile that parents can view from a shared link. For privacy, enter only information you want parents to see. Use public image/video/document URLs for the media fields.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+<label>Teacher Name<input id="tpName" class="form-control" placeholder="e.g. Teacher Danyeal"></label>
+<label>Professional Title<input id="tpTitle" class="form-control" placeholder="e.g. English Language Teacher"></label>
+<label>Location<input id="tpLocation" class="form-control" placeholder="City / Country"></label>
+<label>Teaching Experience<input id="tpExperience" class="form-control" placeholder="e.g. 5 years"></label>
+<label>Subjects / Levels<input id="tpSubjects" class="form-control" placeholder="e.g. Kids English, Beginner English"></label>
+<label>Contact Email (optional)<input id="tpEmail" class="form-control" type="email" placeholder="Email for parent inquiries"></label>
+<label style="grid-column:1/-1">Profile Picture URL<input id="tpPhoto" class="form-control" placeholder="https://.../profile-picture.jpg"></label>
+<label style="grid-column:1/-1">Resume / CV URL<input id="tpResume" class="form-control" placeholder="Public PDF or document link"></label>
+<label style="grid-column:1/-1">Self-Introduction Video URL<input id="tpVideo" class="form-control" placeholder="Public video URL (YouTube, etc.)"></label>
+<label style="grid-column:1/-1">Certifications (one per line)<textarea id="tpCerts" class="form-control" rows="4" placeholder="TESOL Certificate&#10;TEFL Certificate"></textarea></label>
+<label style="grid-column:1/-1">Self Introduction<textarea id="tpIntro" class="form-control" rows="4" placeholder="Write a short introduction for parents..."></textarea></label>
+<label style="grid-column:1/-1">Teaching Philosophy<textarea id="tpPhilosophy" class="form-control" rows="3" placeholder="Describe your teaching approach..."></textarea></label>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+<button type="button" class="primary" onclick="saveTeacherProfileDraft()">Save Profile on This Device</button>
+<button type="button" class="primary" onclick="previewTeacherProfile()">Preview Profile</button>
+<button type="button" class="primary" onclick="copyTeacherProfileLink()">Copy Profile Link</button>
+</div>
+<div id="teacherProfileMessage" role="status" style="margin-top:12px;color:#475569"></div>
+<div id="teacherProfilePreview" style="display:none;margin-top:22px"></div>
+</div></div></div>
 
 <div id="recordsPage" class="page">
 
@@ -9711,6 +9739,9 @@ if(page==='evaluation'){
 
 if(page==='records')
 renderRecords();
+
+if(page==='teacherProfile')
+loadTeacherProfileDraft();
 
 if(page==='appointment')
 renderAppointments();
@@ -13179,19 +13210,76 @@ function editAppointmentTime(id){
   updateDayPreview();dateInput.addEventListener('change',updateDayPreview);
   overlay.querySelector('.sa-reschedule-cancel').onclick=()=>overlay.remove();
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
-  overlay.querySelector('#saSaveEditedDateTime').onclick=()=>{
+  overlay.querySelector('#saSaveEditedDateTime').onclick=async()=>{
     const date=dateInput.value;const time=timeInput.value;
     if(!date||!time){alert('Please select both the date and time.');return;}
     if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)){alert('Please choose a valid time.');return;}
     const duration=durationToMinutes(item.duration||student?.duration||'30 Minutes');
     if(hasAppointmentConflict(date,time,duration,String(item.id))){alert('That date and time conflicts with another appointment. Please choose another slot.');return;}
+    const saveButton=overlay.querySelector('#saSaveEditedDateTime');
+    saveButton.disabled=true;saveButton.textContent='Saving…';
     const day=new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'long'});
     const now=new Date().toISOString();
-    appointments[index]={...item,date,time,day,updatedAt:now,timeEditedAt:now,dateEditedAt:now,dayEditedAt:now};
-    saveAppointments(appointments);overlay.remove();renderStudentAppointmentDashboard();
+    const updatedItem={...item,date,time,day,updatedAt:now,timeEditedAt:now,dateEditedAt:now,dayEditedAt:now};
+
+    /* Update the existing Supabase row using its old identity/date/time BEFORE
+       changing local storage. Otherwise the old database row can be loaded
+       again after refresh and overwrite the edited schedule. */
+    if(currentUser && supabaseClient){
+      try{
+        const rowUpdate={
+          student_id:String(item.studentId||item.student_id||''),
+          class_date:date,
+          class_time:`${time}:00`,
+          duration:duration,
+          class_type:String(item.type||'Regular Class'),
+          status:String(item.status||'Scheduled'),
+          attendance:item.attendance||null,
+          cancel_reason:item.cancelReason||null,
+          notes:item.notes||null
+        };
+        let updatedRows=[];
+        if(item.id && !String(item.id).startsWith('appt_')){
+          const byId=await supabaseClient.from('appointments').update(rowUpdate)
+            .eq('user_id',currentUser.id).eq('id',String(item.id)).select('id');
+          if(byId.error)throw byId.error;
+          updatedRows=byId.data||[];
+        }
+        if(!updatedRows.length){
+          const oldTime=String(item.time||'');
+          const byOldKey=await supabaseClient.from('appointments').update(rowUpdate)
+            .eq('user_id',currentUser.id)
+            .eq('student_id',String(item.studentId||item.student_id||''))
+            .eq('class_date',String(item.date||''))
+            .eq('class_time',oldTime ? (oldTime.length===5?`${oldTime}:00`:oldTime) : null)
+            .select('id');
+          if(byOldKey.error)throw byOldKey.error;
+          updatedRows=byOldKey.data||[];
+        }
+        if(!updatedRows.length){
+          const inserted=await supabaseClient.from('appointments').insert([{
+            user_id:currentUser.id,...rowUpdate,created_at:item.createdAt||now
+          }]).select('id');
+          if(inserted.error)throw inserted.error;
+          if(!inserted.data?.length)throw new Error('Supabase did not confirm that the edited appointment was saved.');
+        }
+      }catch(error){
+        console.error('Edit appointment date/time save failed:',error);
+        saveButton.disabled=false;saveButton.textContent='Save Changes';
+        alert('The date/time was NOT marked as saved because Supabase could not confirm the update. Please try again.\n\n'+(error.message||'Database update failed.'));
+        return;
+      }
+    }
+
+    appointments[index]=updatedItem;
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+    overlay.remove();
+    renderStudentAppointmentDashboard();
+    if(typeof renderAppointments==='function')renderAppointments();
+    if(typeof renderStudentCalendarModal==='function'&&document.getElementById('studentAppointmentCalendarModal'))renderStudentCalendarModal();
     const display=typeof formatAppointmentTime==='function'?formatAppointmentTime(time):time;
     const success=document.createElement('div');success.className='sa-reschedule-overlay';
-    success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3 style="color:#087a48">✓ Class Updated</h3><p>The date, day, and time for this class have been updated.</p><div class="sa-attendance-confirm-detail">${saEscape(saDateLabel(date,time))}<br>${saEscape(day)} · ${saEscape(display)}</div><p>Please double-check the updated class in the table and Student All Record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;
+    success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3 style="color:#087a48">✓ Class Updated</h3><p>The date, day, and time for this class have been saved.</p><div class="sa-attendance-confirm-detail">${saEscape(saDateLabel(date,time))}<br>${saEscape(day)} · ${saEscape(display)}</div><p>Please double-check the updated class in the table and Student All Record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;
     document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
   };
 }
@@ -20340,6 +20428,24 @@ function showSubscriptionSubmittedModal(){
 }
 </script>
 
+<script>
+/* Teacher Profile builder. The share link stores only the entered profile fields in the URL fragment. */
+(function(){
+ const ids=['Name','Title','Location','Experience','Subjects','Email','Photo','Resume','Video','Certs','Intro','Philosophy'];
+ const key='teacherProfileDraft_v1';
+ function values(){const o={};ids.forEach(k=>{const e=document.getElementById('tp'+k);o[k]=e?e.value.trim():''});return o}
+ function fill(o){ids.forEach(k=>{const e=document.getElementById('tp'+k);if(e)e.value=o&&o[k]||''})}
+ function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function linkify(u){try{const x=new URL(u);return ['http:','https:'].includes(x.protocol)?x.href:''}catch(e){return ''}}
+ window.loadTeacherProfileDraft=function(){try{fill(JSON.parse(localStorage.getItem(key)||'{}'))}catch(e){fill({})}};
+ window.saveTeacherProfileDraft=function(){try{localStorage.setItem(key,JSON.stringify(values()));document.getElementById('teacherProfileMessage').textContent='Profile draft saved on this device.'}catch(e){document.getElementById('teacherProfileMessage').textContent='Could not save on this device. Please try another browser.'}};
+ function render(o){const photo=linkify(o.Photo),resume=linkify(o.Resume),video=linkify(o.Video);const certs=(o.Certs||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);return `<div style="max-width:900px;margin:auto;border:1px solid #dbe5f0;border-radius:20px;overflow:hidden;background:#fff;color:#1e293b;box-shadow:0 8px 30px #0f172a12;font-family:inherit"><div style="background:linear-gradient(120deg,#eaf4ff,#f7fbff);padding:28px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">${photo?`<img src="${safe(photo)}" alt="Teacher profile picture" style="width:120px;height:120px;object-fit:cover;border-radius:50%;border:4px solid white">`:`<div style="width:120px;height:120px;border-radius:50%;background:#dbeafe;display:grid;place-items:center;font-size:42px">👩‍🏫</div>`}<div><div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#2563eb">TEACHER PROFILE</div><h2 style="margin:7px 0;font-size:28px">${safe(o.Name||'Teacher Name')}</h2><div style="font-weight:700;color:#475569">${safe(o.Title||'Teacher')}</div><div style="margin-top:7px;color:#64748b">${safe(o.Location)}${o.Experience?' · '+safe(o.Experience)+' experience':''}</div></div></div><div style="padding:26px;display:grid;gap:20px"><div><h3>About Me</h3><p style="white-space:pre-wrap;line-height:1.7">${safe(o.Intro||'Add a short introduction about the teacher.')}</p></div>${o.Subjects?`<div><h3>Subjects & Levels</h3><p>${safe(o.Subjects)}</p></div>`:''}${o.Philosophy?`<div><h3>Teaching Philosophy</h3><p style="white-space:pre-wrap;line-height:1.7">${safe(o.Philosophy)}</p></div>`:''}<div><h3>Resume</h3>${resume?`<a href="${safe(resume)}" target="_blank" rel="noopener">View / Download Resume</a>`:'<p>Resume link not provided.</p>'}</div><div><h3>Self-Introduction Video</h3>${video?`<a href="${safe(video)}" target="_blank" rel="noopener">Watch Introduction Video</a>`:'<p>Video link not provided.</p>'}</div><div><h3>Certifications</h3>${certs.length?'<ul>'+certs.map(c=>'<li>'+safe(c)+'</li>').join('')+'</ul>':'<p>Certifications not added yet.</p>'}</div>${o.Email?`<div><h3>Contact</h3><a href="mailto:${safe(o.Email)}">${safe(o.Email)}</a></div>`:''}</div></div>`}
+ window.previewTeacherProfile=function(){const el=document.getElementById('teacherProfilePreview');el.innerHTML=render(values());el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'start'})};
+ window.copyTeacherProfileLink=async function(){const o=values();if(!o.Name){document.getElementById('teacherProfileMessage').textContent='Please enter the teacher name first.';return}const base=location.href.split('#')[0];const url=base+'#teacher-profile='+encodeURIComponent(JSON.stringify(o));try{await navigator.clipboard.writeText(url);document.getElementById('teacherProfileMessage').textContent='Profile link copied. Share it with parents. Keep in mind that profile media URLs must be publicly accessible.'}catch(e){window.prompt('Copy this profile link:',url)}};
+ function publicView(){const m=location.hash.match(/^#teacher-profile=(.*)$/);if(!m)return;let o;try{o=JSON.parse(decodeURIComponent(m[1]))}catch(e){return}document.addEventListener('DOMContentLoaded',()=>{const auth=document.getElementById('authScreen'),shell=document.getElementById('appShell');if(auth)auth.style.display='none';if(shell)shell.style.display='none';document.body.innerHTML='<main style="min-height:100vh;background:#f3f7fc;padding:24px 14px;box-sizing:border-box"><div style="max-width:900px;margin:0 auto 18px;color:#64748b;font:14px Arial,sans-serif">Teacher profile shared for parent information</div><div id="publicTeacherProfile"></div><div style="text-align:center;margin:22px;color:#94a3b8;font:12px Arial,sans-serif">Teacher Profile</div></main>';document.getElementById('publicTeacherProfile').innerHTML=render(o)});}
+ publicView();
+})();
+</script>
 </body>
 </html>
 
