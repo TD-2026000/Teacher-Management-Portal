@@ -18771,7 +18771,7 @@ function renderDashboardWallpaperGallery(){
  const grid=document.getElementById('dashboardWallpaperGallery');if(!grid)return;
  const choices=DASHBOARD_WALLPAPERS.map(w=>{
    const src=getWallpaperImage(w);
-   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="lazy" onerror="this.style.display='none';this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Image preview unavailable')">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
+   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="lazy" onerror="this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Preview unavailable');this.remove()">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
    return `<button type="button" class="dashboard-wallpaper-choice ${portalSettings.dashboardWallpaper===w.id?'active':''}" onclick="applyDashboardWallpaper('${w.id}')"><div class="dashboard-wallpaper-swatch">${preview}<span class="dashboard-wallpaper-preview-overlay"></span></div><span class="dashboard-wallpaper-choice-name">${w.name}</span></button>`;
  }).join('');
  let custom='';
@@ -21126,6 +21126,57 @@ body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-d
 body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{text-shadow:0 1px 4px rgba(0,0,0,.65)}
 @media(max-width:900px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:600px){#dashboardWallpaperGroup.dashboard-wallpaper-group{padding:9px!important}#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:1fr!important}#dashboardWallpaperGroup .teacher-dashboard-card{margin-bottom:10px!important}}
+</style>
+
+
+<style id="dashboard-wallpaper-visibility-wording-fix">
+/* Restore the familiar dashboard wording and readable dark text. */
+#dashboardWallpaperGroup .teacher-dashboard-card{
+  display:flex!important; align-items:center!important; justify-content:flex-start!important;
+  text-align:left!important; gap:18px!important; min-height:126px!important;
+}
+#dashboardWallpaperGroup .teacher-dashboard-card #dashboardTeacherPhoto{flex:0 0 92px!important}
+#dashboardWallpaperGroup .teacher-dashboard-card > div:nth-child(2){
+  min-width:0!important; margin:0!important; flex:1 1 auto!important;
+  text-align:left!important; order:0!important;
+}
+#dashboardWallpaperGroup .teacher-dashboard-title{
+  color:#111!important; text-align:left!important; text-shadow:none!important;
+}
+#dashboardWallpaperGroup .teacher-dashboard-label{
+  color:#111!important; text-align:left!important; text-shadow:none!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-grid{
+  display:grid!important; grid-template-columns:repeat(4,minmax(0,1fr))!important; gap:12px!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-card{
+  min-width:0!important; background:rgba(255,255,255,.86)!important;
+  border:1px solid rgba(255,255,255,.95)!important; color:#111!important;
+  box-shadow:0 3px 12px rgba(0,0,0,.10)!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-label,
+#dashboardWallpaperGroup .dashboard-summary-number,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-label,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-time,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-date{
+  color:#111!important; text-shadow:none!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-label{color:#111!important}
+#dashboardWallpaperGroup .teacher-dashboard-card.wallpaper-selected .teacher-dashboard-title,
+#dashboardWallpaperGroup .teacher-dashboard-card.wallpaper-selected .teacher-dashboard-label{ text-shadow:none!important; color:#111!important; }
+.dashboard-wallpaper-swatch.wallpaper-preview-fallback .dashboard-wallpaper-preview-img{display:none!important}
+.dashboard-wallpaper-swatch.wallpaper-preview-fallback .dashboard-wallpaper-preview-fallback{display:flex!important}
+.dashboard-wallpaper-swatch.wallpaper-preview-fallback:after{
+ content:attr(data-fallback); position:absolute; z-index:4; inset:0; display:flex;
+ align-items:center; justify-content:center; padding:8px; text-align:center;
+ background:linear-gradient(135deg,#e2e8f0,#fef3c7); color:#111; font-weight:800; font-size:11px;
+}
+.dashboard-wallpaper-preview-img{background:transparent!important}
+@media(max-width:760px){
+ #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #dashboardWallpaperGroup .teacher-dashboard-title{font-size:clamp(22px,5vw,34px)!important}
+ #dashboardWallpaperGroup .teacher-dashboard-photo{width:68px!important;height:68px!important;flex-basis:68px!important}
+}
 </style>
 
 </body>
