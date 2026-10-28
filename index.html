@@ -13122,7 +13122,7 @@ function renderStudentAppointmentDashboard(){
  const p=getStudentProgress(student);
  const bonus=Math.max(0,Number(student.bonusFreeLessons??student.bonusLessons??student.freeLessons??student.bonusClasses??0)||0);
  const additional=Math.max(0,Number(student.additionalLessons??student.addedLessons??student.extraLessons??0)||0);
- const total=Math.max(0,Number(p.purchased||0)+bonus+additional); const remaining=Math.max(0,total-Number(p.completed||0));
+ const total=Math.max(0,Number(p.purchased||0)+bonus+additional); const remaining=getRemainingScheduledClassCount(student.id);
  const board=visibleStudents.map(st=>`<button type="button" class="sa-student ${String(st.id)===String(student.id)?'active':''}" onclick="selectStudentAppointmentBoard('${String(st.id).replace(/'/g,"\'")}')"><span class="sa-student-avatar">${saEscape(String(st.nickname||st.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</span><span><span class="sa-student-name">${saEscape(st.nickname||st.name||'Student')}</span><span class="sa-student-id">ID: ${saEscape(st.id||'—')}</span></span></button>`).join('')||'<div class="sa-empty">No matching students.</div>';
  const lessonRows=(items,mode)=>items.map((a,i)=>{
    const dt=getAppointmentDateTime(a);const date=a.date|| (dt?getLocalDateString(dt):'');const time=a.time||(dt?`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`:'');
@@ -13230,8 +13230,15 @@ function getNextPreferredRescheduleSlot(student, appointments, oldItem){
   };
   // Find the latest active appointment by actual calendar date and clock time,
   // rather than sorting time strings alphabetically (which misorders 1 PM/4 PM).
-  const active=appointments.filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['cancelled','rescheduled'].includes(String(a.status||'').toLowerCase())&&a.date&&a.time);
+  // The appointment being moved must NOT be used as the anchor. Otherwise a
+  // Sunday class being rescheduled can incorrectly push itself past Sunday,
+  // instead of filling the next preferred slot after the last other class.
+  const active=appointments.filter(a=>String(a.studentId||a.student_id)===String(student.id)
+    &&String(a.id)!==String(oldItem.id)
+    &&!['cancelled','canceled','rescheduled','completed','deleted','removed'].includes(String(a.status||'').trim().toLowerCase())
+    &&!a.attendance&&a.date&&a.time);
   const latest=active.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))||toMinutes(a.time)-toMinutes(b.time)).pop();
+  // If there are no other active classes, use the original class as a fallback.
   const anchorDate=latest?.date||oldItem.date;
   const anchorMinutes=latest?toMinutes(latest.time):toMinutes(oldItem.time);
   let cursor=new Date(`${anchorDate}T12:00:00`);
@@ -13968,6 +13975,20 @@ if(!history.length)return null;
 return history.find(p=>p.id===student.currentPackageId)||history[history.length-1];
 }
 
+function getRemainingScheduledClassCount(studentId){
+  const now=Date.now();
+  return getAppointments().filter(a=>{
+    if(String(a.studentId||a.student_id||'')!==String(studentId||''))return false;
+    const status=String(a.status||'Scheduled').trim().toLowerCase();
+    if(['cancelled','canceled','rescheduled','completed','deleted','removed'].includes(status))return false;
+    if(String(a.attendance||'').trim().toLowerCase()==='present')return false;
+    const dt=getAppointmentDateTime(a);
+    // Match the record table: a class whose scheduled duration has elapsed is no longer remaining.
+    if(dt && dt.getTime()+durationToMinutes(a.duration||'30 Minutes')*60000<=now)return false;
+    return true;
+  }).length;
+}
+
 function getStudentProgress(student){
 const current=getCurrentStudentPackage(student);
 const packageCount=current?Math.max(0,parseInt(current.classCount,10)||getPackageClassCount(current.packageName)):getPackageClassCount(student.packageName);
@@ -14326,7 +14347,7 @@ content.innerHTML=`
       const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
       const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
       const totalAvailable=Math.max(0,Number(p.purchased||0)+bonus+additional);
-      const totalRemaining=Math.max(0,Number(p.remaining ?? (totalAvailable-Number(p.completed||0)))||0);
+      const totalRemaining=getRemainingScheduledClassCount(student.id);
       const percent=totalAvailable?Math.min(100,Math.round((Number(p.completed||0)/totalAvailable)*100)):0;
       const booked=appointments.filter(a=>{
         const status=String(a.status||'Scheduled').trim().toLowerCase();
@@ -14337,7 +14358,7 @@ content.innerHTML=`
       return `<div class="student-detail-stat"><b>${p.purchased}</b><span>Purchased</span></div>
       <div class="student-detail-stat"><b>${totalAvailable}</b><span>Total Lesson</span></div>
       <div class="student-detail-stat"><b>${p.completed}</b><span>Completed</span></div>
-      <div class="student-detail-stat"><b>${Number(p.remaining ?? totalRemaining)||0}</b><span>Remaining</span></div>
+      <div class="student-detail-stat"><b>${totalRemaining}</b><span>Remaining</span></div>
       <div class="student-detail-stat"><b>${bonus}</b><span>Free/Bonus</span></div>
       <div class="student-detail-stat"><b>${additional}</b><span>Additional</span></div>
 
@@ -20340,7 +20361,8 @@ async function renderSubscriptionPage(){
 
 let lastKnownPaymentStatuses = {};
 let paymentStatusNoticeInitialized = false;
-function showTeacherPaymentStatusNotice(status, reference){
+let subscriptionHistoryRefreshInFlight = false;
+function showTeacherPaymentStatusNotice(status, reference, noticeKey=''){ 
   const old=document.getElementById('teacherPaymentStatusNotice');
   if(old)old.remove();
   const normalizedStatus=String(status).toUpperCase();
@@ -20360,9 +20382,16 @@ function showTeacherPaymentStatusNotice(status, reference){
   overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
   overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${(rejected||revoked)?'❌':restored||approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${(rejected||revoked)?'#b42318':restored||approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085">Reference: ${subscriptionEscape(reference)}</p>`:''}${(rejected||revoked)?support:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:16px;border:0;border-radius:10px;padding:12px 24px;background:${(rejected||revoked)?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
   document.body.appendChild(overlay);
-  document.getElementById('teacherPaymentStatusNoticeClose').onclick=()=>overlay.remove();
+  document.getElementById('teacherPaymentStatusNoticeClose').onclick=()=>{
+    try{if(noticeKey)localStorage.setItem('teacherPaymentNoticeDismissed:'+noticeKey,'1');}catch(_e){}
+    overlay.remove();
+  };
 }
 async function renderSubscriptionHistory(){
+  // Prevent overlapping 4-second polling calls from processing the same status transition more than once.
+  if(subscriptionHistoryRefreshInFlight)return;
+  subscriptionHistoryRefreshInFlight=true;
+  try{
   const box=document.getElementById('subscriptionPaymentHistory');
   if(!box)return;
   // Re-check access while polling so an already-open portal session is locked too.
@@ -20393,7 +20422,15 @@ async function renderSubscriptionHistory(){
           if(wasRevokedAfterApproval){
             try{localStorage.setItem('teacherPaymentRevoked:'+String(currentUser?.id||'')+':'+key,'1');}catch(_e){}
           }
-          showTeacherPaymentStatusNotice(wasRevokedAfterApproval&&newStatus==='REJECTED'?'REVOKED':wasRestored?'RESTORED':newStatus,r.reference_number||'');
+          const noticeStatus=wasRevokedAfterApproval&&newStatus==='REJECTED'?'REVOKED':wasRestored?'RESTORED':newStatus;
+          const noticeKey=encodeURIComponent(String(currentUser?.id||'')+'|'+key+'|'+noticeStatus);
+          let noticeAlreadyHandled=false;
+          try{noticeAlreadyHandled=localStorage.getItem('teacherPaymentNoticeDismissed:'+noticeKey)==='1'||localStorage.getItem('teacherPaymentNoticeShown:'+noticeKey)==='1';}catch(_e){}
+          if(!noticeAlreadyHandled){
+            // Record before displaying, so a concurrent refresh/re-render cannot show the same notice again.
+            try{localStorage.setItem('teacherPaymentNoticeShown:'+noticeKey,'1');}catch(_e){}
+            showTeacherPaymentStatusNotice(noticeStatus,r.reference_number||'',noticeKey);
+          }
           // Refresh the status badge immediately after an approval/revocation transition.
           await loadSubscriptionAccount();
           if(newStatus==='REJECTED'){
@@ -20444,6 +20481,9 @@ async function renderSubscriptionHistory(){
     if(isApproved)displayStatus='APPROVED';
     return `<div class="subscription-history-item"><div><strong>₱${Number(r.amount||69).toLocaleString()} Monthly Subscription</strong><small>${subscriptionEscape(r.payment_method||'')} · ${subscriptionEscape(r.reference_number||'No reference')}<br>${subscriptionEscape(r.created_at?new Date(r.created_at).toLocaleString():'')}</small></div><div class="subscription-history-status" style="${badgeStyle}display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.3px;line-height:1.2">${subscriptionEscape(displayStatus)}</div></div>`;
   }).join('');
+  }finally{
+    subscriptionHistoryRefreshInFlight=false;
+  }
 }
 let subscriptionStatusPollStarted=false;
 function startSubscriptionStatusPolling(){
