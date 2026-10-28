@@ -21085,6 +21085,49 @@ function showSubscriptionSubmittedModal(){
 })();
 </script>
 
+
+<style id="dashboard-connected-photogrid-layout-v2">
+/* One continuous wallpaper shared by the teacher banner and all four summary boxes. */
+#dashboardWallpaperGroup.dashboard-wallpaper-group{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:center!important;
+  padding:14px!important;border-radius:18px!important;
+}
+#dashboardWallpaperGroup.dashboard-wallpaper-group:before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:rgba(255,255,255,.22)!important;
+}
+#dashboardWallpaperGroup .teacher-dashboard-card{
+  background:transparent!important;background-image:none!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  box-shadow:none!important;backdrop-filter:none!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-grid{
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-card{
+  /* Transparent card surface lets the same parent wallpaper show through each clipped box. */
+  background:rgba(255,255,255,.30)!important;
+  border:1px solid rgba(255,255,255,.82)!important;border-radius:13px!important;
+  box-shadow:0 3px 12px rgba(0,0,0,.08)!important;
+  backdrop-filter:blur(1.5px)!important;-webkit-backdrop-filter:blur(1.5px)!important;
+  position:relative!important;z-index:0!important;overflow:hidden!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-date-card{min-width:0!important;text-align:left!important}
+#dashboardWallpaperGroup .teacher-dashboard-title,#dashboardWallpaperGroup .teacher-dashboard-label,
+#dashboardWallpaperGroup .dashboard-summary-label,#dashboardWallpaperGroup .dashboard-summary-number,
+#dashboardWallpaperGroup .tdb-label,#dashboardWallpaperGroup .tdb-time,#dashboardWallpaperGroup .tdb-date{
+  text-shadow:0 1px 3px rgba(255,255,255,.8);
+}
+body.portal-dark #dashboardWallpaperGroup.dashboard-wallpaper-group:before{background:rgba(12,22,28,.35)!important}
+body.portal-dark #dashboardWallpaperGroup .dashboard-summary-card{background:rgba(20,32,38,.43)!important;color:#f5fbff!important}
+body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-title,body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-label,
+body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-dark #dashboardWallpaperGroup .dashboard-summary-number,
+body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{text-shadow:0 1px 4px rgba(0,0,0,.65)}
+@media(max-width:900px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){#dashboardWallpaperGroup.dashboard-wallpaper-group{padding:9px!important}#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:1fr!important}#dashboardWallpaperGroup .teacher-dashboard-card{margin-bottom:10px!important}}
+</style>
+
 </body>
 </html>
 
