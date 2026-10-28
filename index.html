@@ -3229,7 +3229,7 @@ a,
 .sa-student.active .sa-student-avatar{background:#fff;color:#008c97}
 .sa-student-name{font-weight:900;font-size:12px;display:block;overflow-wrap:anywhere}.sa-student-id{font-size:10px;opacity:.8;display:block;margin-top:3px}
 .sa-table-wrap{width:100%;overflow-x:auto}.sa-table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}.sa-table th{background:#e5fbfc;color:#173c56;text-align:left;padding:10px 8px;border:1px solid #c8f1f3;white-space:nowrap}.sa-table td{padding:9px 8px;border:1px solid #e0f4f5;vertical-align:middle}.sa-table tr:nth-child(even) td{background:#fbffff}
-.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#e6f8ff;color:#006c9a}.sa-lesson-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sa-btn.lesson-download{border:1px solid #b8c9e4;background:#edf4ff;color:#244d83;cursor:pointer}
+.sa-status{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:900;white-space:nowrap;background:#fff0f0;color:#c62828}.sa-status.done{background:#d8f8e7;color:#07834f}.sa-status.wait{background:#e7f2ff;color:#2463a6}.sa-btn{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;margin:2px}.sa-btn.present{background:#10c783;color:white}.sa-btn.absent{background:#ff5555;color:white}.sa-btn.evaluate{background:#00bdc8;color:white}.sa-btn.view{background:#eadcff;color:#6336a8;border:1px solid #d4bfff}.sa-btn.view:hover{background:#ddc9ff;color:#4c258e}.sa-lesson-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.sa-btn.lesson-download{border:1px solid #b8c9e4;background:#edf4ff;color:#244d83;cursor:pointer}
 .sa-btn.lesson{background:#2589ef;color:white}.sa-btn.reschedule{background:#8b5cf6;color:#fff} .sa-btn:disabled{opacity:.55;cursor:not-allowed}
 .sa-row-actions{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;white-space:nowrap;width:100%;min-width:0}.sa-row-actions .sa-row-more{margin-left:auto}.sa-row-actions .sa-row-more-trigger{flex:0 0 28px}.sa-table td:nth-child(5){min-width:245px}
 .sa-row-more{position:relative;display:inline-flex;flex:0 0 auto}
@@ -13132,7 +13132,7 @@ function renderStudentAppointmentDashboard(){
    let actions='';
    if(mode==='attendance'){
      const safeApptId=String(a.id).replace(/'/g, "\\'");
-     const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" onclick="editAppointmentTime('${safeApptId}')">Edit Time</button><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button><button type="button" class="delete-option" onclick="deleteStudentAppointmentRecord('${safeApptId}')">Delete</button></span></span>`;
+     const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button><button type="button" class="delete-option" onclick="deleteStudentAppointmentRecord('${safeApptId}')">Delete</button></span></span>`;
      if(String(a.status||'').toLowerCase()==='rescheduled'){actions=`<div class="sa-row-actions"><span class="sa-status rescheduled">Rescheduled</span>${rowMenu}</div>`;}
      else if(ended&&!attendance){actions=`<div class="sa-row-actions"><button class="sa-btn present" onclick="confirmAppointmentAttendance('${safeApptId}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${safeApptId}','Absent')">Absent</button>${rowMenu}</div>`;}
      else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
@@ -13147,11 +13147,11 @@ function renderStudentAppointmentDashboard(){
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
    const linkBtn=link?`<div class="sa-row-actions sa-lesson-actions"><a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Link</a><button type="button" class="sa-btn lesson-download" onclick="downloadStudentLessonLink(decodeURIComponent('${encodeURIComponent(link)}'),decodeURIComponent('${encodeURIComponent(lessonTitle)}'))">Download</button></div>`:'<span class="sa-muted">No lesson link</span>';
-   return `<tr class="${String(a.status||'').toLowerCase()==='rescheduled'?'sa-rescheduled-row':''}"><td>${i+1}</td><td>${saDateLabel(date,time)}${String(a.status||'').toLowerCase()==='rescheduled'?'<span class="sa-rescheduled-note">NOTE: THIS CLASS WAS RESCHEDULED</span>':''}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
+   return `<tr class="${String(a.status||'').toLowerCase()==='rescheduled'?'sa-rescheduled-row':''}"><td>${i+1}</td><td>${saDateLabel(date,time)}${String(a.status||'').toLowerCase()==='rescheduled'?'<span class="sa-rescheduled-note">NOTE: THIS CLASS WAS RESCHEDULED</span>':''}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td></tr>`;
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
- <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th><th>Lesson Link</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px"><button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button></div><p class="sa-muted">Purchased classes are generated automatically from the package count. Use the + button below the list to add extra classes one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
+ <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="5" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px"><button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button></div><p class="sa-muted">Purchased classes are generated automatically from the package count. Use the + button below the list to add extra classes one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.</p></div></section>
  <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
  <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${total}</b><span>Total Lesson</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Free/Bonus</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
@@ -13261,6 +13261,31 @@ function getNextPreferredRescheduleSlot(student, appointments, oldItem){
   return null;
 }
 function rescheduleStudentAppointment(id){
+  document.querySelectorAll('.sa-row-more.open').forEach(el=>el.classList.remove('open'));
+  const item=getAppointments().find(a=>String(a.id)===String(id));
+  if(!item){alert('Appointment not found.');return;}
+  const student=getStudents().find(st=>String(st.id)===String(item.studentId||item.student_id));
+  if(!student){alert('Student record not found.');return;}
+  const overlay=document.createElement('div');overlay.className='sa-reschedule-overlay';overlay.id='saRescheduleChoiceModal';
+  const today=getLocalDateString(new Date());
+  overlay.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule / Rebook Class</h3><p>Choose how you want to arrange the replacement class for <strong>${saEscape(student.nickname||student.name||'Student')}</strong>.</p><div style="display:grid;grid-template-columns:1fr;gap:10px;margin:16px 0"><button type="button" class="sa-reschedule-confirm" id="saAutoReschedule">Automatic Reschedule</button><p style="font-size:12px;color:#64748b;margin:0">Finds the next available preferred slot after the student's last active class.</p><div style="border-top:1px solid #e2e8f0;padding-top:12px"><h4 style="margin:0 0 8px">Manual Arrangement</h4><label style="display:block;font-weight:700;margin:7px 0 4px">Choose date</label><input id="saManualRescheduleDate" type="date" min="${today}" value="${today}" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box"><label style="display:block;font-weight:700;margin:10px 0 4px">Choose time</label><input id="saManualRescheduleTime" type="time" style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box"><button type="button" class="sa-reschedule-confirm" id="saManualReschedule" style="margin-top:12px;width:100%">Use Manual Date & Time</button></div></div><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel" id="saCancelRescheduleChoice">Cancel</button></div></div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#saCancelRescheduleChoice').onclick=()=>overlay.remove();
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  overlay.querySelector('#saAutoReschedule').onclick=()=>{overlay.remove();performRescheduleStudentAppointment(id);};
+  overlay.querySelector('#saManualReschedule').onclick=()=>{
+    const date=overlay.querySelector('#saManualRescheduleDate').value;
+    const time=overlay.querySelector('#saManualRescheduleTime').value;
+    if(!date||!time){alert('Please choose both a date and time.');return;}
+    if(hasExactStudentAppointment(student.id,date,time)){alert('This student already has a class at that date and time. Please choose another slot.');return;}
+    const duration=durationToMinutes(item.duration||student.duration||'30 Minutes');
+    if(hasAppointmentConflict(date,time,duration,String(item.id))){alert('This time conflicts with another class. Please choose another time.');return;}
+    overlay.remove();const dt=new Date(`${date}T12:00:00`);const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    performRescheduleStudentAppointment(id,{date,time,day:days[dt.getDay()===0?6:dt.getDay()-1]});
+  };
+}
+
+function performRescheduleStudentAppointment(id,forcedSlot=null){
   const appointments=getAppointments();
   const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0)return;
@@ -13268,7 +13293,7 @@ function rescheduleStudentAppointment(id){
   if(['completed','cancelled','canceled','rescheduled','deleted','removed'].includes(String(old.status||'').trim().toLowerCase())||old.attendance){alert('Only upcoming classes without attendance can be rescheduled.');return;}
   const student=getStudents().find(s=>String(s.id)===String(old.studentId||old.student_id));
   if(!student){alert('Student record not found.');return;}
-  const slot=getNextPreferredRescheduleSlot(student,appointments,old);
+  const slot=forcedSlot||getNextPreferredRescheduleSlot(student,appointments,old);
   if(!slot){alert('Could not find an available preferred schedule slot in the next 2 years. Please check the student preferred schedule and other appointments.');return;}
   const modal=document.createElement('div');modal.className='sa-reschedule-overlay';modal.id='saRescheduleModal';
   const dateLabel=saDateLabel(slot.date,slot.time);const timeLabel=typeof formatAppointmentTime==='function'?formatAppointmentTime(slot.time):slot.time;
@@ -16990,7 +17015,7 @@ function evaluationBulletsHtml(value,emptyText){
 ========================================================= */
 
 function viewEvaluationRecord(studentId,index){
-
+window.currentViewedEvaluation={studentId:String(studentId),index:Number(index)};
 const student=
 getStudents().find(
 s=>String(s.id)===String(studentId)
@@ -17297,6 +17322,23 @@ document.getElementById(
 /* =========================================================
    CLOSE INDIVIDUAL EVALUATION
 ========================================================= */
+
+function editViewedEvaluation(){
+  const ctx=window.currentViewedEvaluation;
+  if(!ctx)return;
+  const student=getStudents().find(s=>String(s.id)===String(ctx.studentId));
+  const ev=getStudentEvaluations(ctx.studentId)[Number(ctx.index)];
+  if(!student||!ev){alert('Saved evaluation not found.');return;}
+  const appointmentId=ev.appointmentId||ev.appointment_id;
+  closeEvaluationView();
+  if(appointmentId){
+    openAppointmentEvaluation(String(appointmentId));
+  }else{
+    showPage('evaluation');
+    if(typeof loadEvaluationForStudent==='function')loadEvaluationForStudent(ctx.studentId);
+    else alert('This older evaluation has no linked class record. Please open the Evaluation page and select the student to edit it.');
+  }
+}
 
 function closeEvaluationView(){
 
@@ -20362,7 +20404,7 @@ async function renderSubscriptionPage(){
 let lastKnownPaymentStatuses = {};
 let paymentStatusNoticeInitialized = false;
 let subscriptionHistoryRefreshInFlight = false;
-function showTeacherPaymentStatusNotice(status, reference, noticeKey=''){ 
+function showTeacherPaymentStatusNotice(status, reference, submissionNumber='', noticeKey=''){ 
   const old=document.getElementById('teacherPaymentStatusNotice');
   if(old)old.remove();
   const normalizedStatus=String(status).toUpperCase();
@@ -20380,7 +20422,7 @@ function showTeacherPaymentStatusNotice(status, reference, noticeKey=''){
   const overlay=document.createElement('div');
   overlay.id='teacherPaymentStatusNotice';
   overlay.style.cssText='position:fixed;inset:0;z-index:999999;background:rgba(10,20,35,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
-  overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${(rejected||revoked)?'❌':restored||approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${(rejected||revoked)?'#b42318':restored||approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085">Reference: ${subscriptionEscape(reference)}</p>`:''}${(rejected||revoked)?support:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:16px;border:0;border-radius:10px;padding:12px 24px;background:${(rejected||revoked)?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
+  overlay.innerHTML=`<div role="alertdialog" aria-modal="true" style="max-width:480px;width:100%;max-height:90vh;overflow:auto;background:#fff;border-radius:20px;padding:28px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.35);font-family:inherit"><div style="font-size:42px;margin-bottom:10px">${(rejected||revoked)?'❌':restored||approved?'✅':'⏳'}</div><h2 style="margin:0 0 12px;color:${(rejected||revoked)?'#b42318':restored||approved?'#16803c':'#9a6700'}">${title}</h2><p style="line-height:1.6;color:#344054">${detail}</p>${reference?`<p style="font-size:13px;color:#667085"><strong>Reference Number:</strong> ${subscriptionEscape(reference)}</p>`:''}${submissionNumber?`<p style="font-size:13px;color:#667085"><strong>Submission Number:</strong> ${subscriptionEscape(submissionNumber)}</p>`:''}${(rejected||revoked)?support:''}<button id="teacherPaymentStatusNoticeClose" style="margin-top:16px;border:0;border-radius:10px;padding:12px 24px;background:${(rejected||revoked)?'#b42318':'#087e8b'};color:#fff;font-weight:700;cursor:pointer">OK, GOT IT</button></div>`;
   document.body.appendChild(overlay);
   document.getElementById('teacherPaymentStatusNoticeClose').onclick=()=>{
     try{if(noticeKey)localStorage.setItem('teacherPaymentNoticeDismissed:'+noticeKey,'1');}catch(_e){}
@@ -20429,7 +20471,15 @@ async function renderSubscriptionHistory(){
           if(!noticeAlreadyHandled){
             // Record before displaying, so a concurrent refresh/re-render cannot show the same notice again.
             try{localStorage.setItem('teacherPaymentNoticeShown:'+noticeKey,'1');}catch(_e){}
-            showTeacherPaymentStatusNotice(noticeStatus,r.reference_number||'',noticeKey);
+            // Submission number is generated when the teacher submits the request and may be stored locally.
+            // Match by payment ID first, then reference number; do not invent a number if it is unavailable.
+            let matchingLocalRequest=null;
+            try{
+              const localRequests=getLocalSubscriptionRequests();
+              matchingLocalRequest=(localRequests||[]).find(x=>(x.id&&r.id&&String(x.id)===String(r.id)) || (String(x.reference_number||'')===String(r.reference_number||'')));
+            }catch(_e){}
+            const submissionNumber=String(matchingLocalRequest?.submission_number||matchingLocalRequest?.submissionNumber||r.submission_number||r.submissionNumber||'').trim();
+            showTeacherPaymentStatusNotice(noticeStatus,r.reference_number||'',submissionNumber,noticeKey);
           }
           // Refresh the status badge immediately after an approval/revocation transition.
           await loadSubscriptionAccount();
