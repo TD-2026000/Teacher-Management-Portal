@@ -13276,22 +13276,64 @@ function rescheduleStudentAppointment(id){
     const replacement={...old,id:`appt_rescheduled_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:slot.date,time:slot.time,day:slot.day,status:'Scheduled',attendance:null,createdAt:now,updatedAt:now,rescheduledFromId:String(old.id),rescheduleReason:'Moved to end of schedule'};
     delete replacement.presentAt;delete replacement.absentAt;delete replacement.completedAt;delete replacement.evaluationId;
     try{
-      // Keep the original appointment as a visible historical record; do not delete it.
+      // Persist only this reschedule operation. Do NOT sync every local appointment here:
+      // a full-array upsert can overwrite unrelated records or recreate stale local data.
+      let savedReplacementId=replacement.id;
       if(currentUser && supabaseClient){
         if(!old.date || !old.time)throw new Error('Original appointment is missing date/time; refusing unsafe database update.');
-        const {error}=await supabaseClient.from('appointments').update({status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED'}).eq('user_id',currentUser.id).eq('student_id',String(old.studentId||old.student_id||'')).eq('class_date',old.date).eq('class_time',`${String(old.time).slice(0,5)}:00`);
-        if(error)throw error;
+        const studentKey=String(old.studentId||old.student_id||'');
+        const oldTime=String(old.time).slice(0,5)+':00';
+        const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        let oldRowQuery=supabaseClient.from('appointments').select('id,status,notes')
+          .eq('user_id',currentUser.id).eq('student_id',studentKey)
+          .eq('class_date',old.date).eq('class_time',oldTime);
+        if(uuidPattern.test(String(old.id||''))) oldRowQuery=oldRowQuery.eq('id',String(old.id));
+        const oldRowResult=await oldRowQuery.limit(1).maybeSingle();
+        if(oldRowResult.error)throw oldRowResult.error;
+        if(!oldRowResult.data?.id)throw new Error('Could not find the original class in Supabase. Please reload the portal and try again.');
+        const originalDbId=oldRowResult.data.id;
+
+        const markOld=await supabaseClient.from('appointments').update({status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED'})
+          .eq('user_id',currentUser.id).eq('id',originalDbId).select('id').maybeSingle();
+        if(markOld.error)throw markOld.error;
+        if(!markOld.data?.id)throw new Error('The original class was not updated in the database. Check database permissions and try again.');
+
+        const durationMinutes=parseInt(String(replacement.duration||student.duration||'30').match(/\d+/)?.[0]||30,10);
+        const replacementRow={
+          user_id:currentUser.id,
+          student_id:studentKey,
+          class_date:replacement.date,
+          class_time:String(replacement.time).slice(0,5)+':00',
+          duration:durationMinutes,
+          class_type:String(replacement.type||'Regular Class'),
+          status:'Scheduled',
+          attendance:null,
+          cancel_reason:null,
+          notes:replacement.notes||null,
+          created_at:now
+        };
+        const inserted=await supabaseClient.from('appointments').insert([replacementRow]).select('id').single();
+        if(inserted.error || !inserted.data?.id){
+          // Roll the original back if the new slot could not be saved.
+          await supabaseClient.from('appointments').update({status:old.status||'Scheduled',notes:old.notes||null}).eq('user_id',currentUser.id).eq('id',originalDbId);
+          throw inserted.error||new Error('The new preferred-schedule slot was not saved.');
+        }
+        savedReplacementId=String(inserted.data.id);
       }
+
       const latest=getAppointments();
       const oldIndex=latest.findIndex(a=>String(a.id)===String(old.id));
       if(oldIndex>=0){latest[oldIndex]={...latest[oldIndex],status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED',updatedAt:now};}
+      replacement.id=savedReplacementId;
       latest.push(replacement);
+      // Sort the student's classes by actual date/time so the replacement appears at the bottom.
+      latest.sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))||String(a.time||'').localeCompare(String(b.time||'')));
       localStorage.setItem(appointmentStorageKey(),JSON.stringify(latest));
-      // Save the replacement in its new preferred-schedule slot; preserve the original record.
-      const syncResult=await syncAppointmentsToSupabase(latest);
-      if(syncResult===false)throw new Error('Appointment sync reported an error after updating the rescheduled record.');
       modal.remove();renderStudentAppointmentDashboard();
-      const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original class has been removed from its old position and moved to the end of the student's schedule. All classes after its old position have shifted up one number automatically.</p><div class="sa-attendance-confirm-detail">New class date and time: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please check the updated class numbers in the student's record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
+      if(typeof renderAppointments==='function')renderAppointments();
+      if(typeof renderRecords==='function')renderRecords();
+      if(typeof renderDashboard==='function')renderDashboard();
+      const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original class remains in dark gray with a rescheduled note. The replacement class was saved to the next available slot after the last active class, following the student's Preferred Class Schedule.</p><div class="sa-attendance-confirm-detail">New class date and time: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please double-check the student's updated class order and remaining lesson balance.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
     }catch(error){
       console.error('Reschedule failed:',error);
       confirmButton.disabled=false;confirmButton.textContent='Confirm Reschedule';
@@ -14284,7 +14326,7 @@ content.innerHTML=`
       const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
       const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
       const totalAvailable=Math.max(0,Number(p.purchased||0)+bonus+additional);
-      const totalRemaining=Math.max(0,totalAvailable-Number(p.completed||0));
+      const totalRemaining=Math.max(0,Number(p.remaining ?? (totalAvailable-Number(p.completed||0)))||0);
       const percent=totalAvailable?Math.min(100,Math.round((Number(p.completed||0)/totalAvailable)*100)):0;
       const booked=appointments.filter(a=>{
         const status=String(a.status||'Scheduled').trim().toLowerCase();
@@ -14295,7 +14337,7 @@ content.innerHTML=`
       return `<div class="student-detail-stat"><b>${p.purchased}</b><span>Purchased</span></div>
       <div class="student-detail-stat"><b>${totalAvailable}</b><span>Total Lesson</span></div>
       <div class="student-detail-stat"><b>${p.completed}</b><span>Completed</span></div>
-      <div class="student-detail-stat"><b>${totalRemaining}</b><span>Remaining</span></div>
+      <div class="student-detail-stat"><b>${Number(p.remaining ?? totalRemaining)||0}</b><span>Remaining</span></div>
       <div class="student-detail-stat"><b>${bonus}</b><span>Free/Bonus</span></div>
       <div class="student-detail-stat"><b>${additional}</b><span>Additional</span></div>
 
@@ -16571,13 +16613,24 @@ function getLocalPackageClassRecord(studentId,packageId){try{return JSON.parse(l
 function saveLocalPackageClassRecord(record){localStorage.setItem(packageClassRecordStorageKey(record.studentId,record.packageId),JSON.stringify(record));}
 function packageRecordEntriesFromAppointments(studentId,packageId){return getAppointments().filter(a=>String(a.studentId)===String(studentId)&&String(a.packageId||'')===String(packageId)&&String(a.type||'Regular Class')==='Regular Class').sort((a,b)=>(getAppointmentDateTime(a)?.getTime()||0)-(getAppointmentDateTime(b)?.getTime()||0)).map((a,i)=>{const dt=getAppointmentDateTime(a);return {'Class Number':i+1,'Date':a.date|| (dt?getLocalDateString(dt):''),'Day':a.day|| (dt?dt.toLocaleDateString([], {weekday:'long'}):''),'Time':a.time|| (dt?dt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):''),'Attendance':a.attendance|| (a.status==='Completed'?'Present':''),'Late':a.late||'','Homework Score':a.homeworkScore||''};});}
 function getPackageRecordCompleted(studentId,packageId){
+  /* Count each actually attended/recorded regular class only once. Old
+     rescheduled/cancelled entries remain in history but must not consume a
+     lesson credit. Also ignore appointments explicitly assigned to another
+     package; unlinked legacy appointments remain eligible for compatibility. */
+  const seen=new Set();
   return getAppointments().filter(a => {
     const attendance=String(a.attendance||'').trim().toLowerCase();
-    const hasRecordedAttendance=attendance==='present'||attendance==='absent';
-    return String(a.studentId??a.student_id??'')===String(studentId) &&
-      String(a.type||'Regular Class').trim().toLowerCase()==='regular class' &&
-      hasRecordedAttendance &&
-      (String(a.packageId||'')===String(packageId)||!a.packageId);
+    const status=String(a.status||'').trim().toLowerCase();
+    const type=String(a.type||'Regular Class').trim().toLowerCase();
+    const hasRecordedAttendance=attendance==='present'||attendance==='absent'||status==='completed';
+    if(String(a.studentId??a.student_id??'')!==String(studentId)) return false;
+    if(type!=='regular class'||!hasRecordedAttendance) return false;
+    if(['cancelled','canceled','rescheduled','reschedule'].includes(status)) return false;
+    if(a.packageId && String(a.packageId)!==String(packageId)) return false;
+    const key=a.id ? `id:${String(a.id)}` : `slot:${a.date||a.class_date||''}:${a.time||a.class_time||''}:${attendance||status}`;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
   }).length;
 }
 function buildPackageClassRecord(studentId,packageId,existing){const student=getStudents().find(s=>String(s.id)===String(studentId));const pkg=student?ensureStudentPackageState(student).find(p=>String(p.id)===String(packageId)):null;const rows=Array.isArray(existing?.classEntries)?existing.classEntries:packageRecordEntriesFromAppointments(studentId,packageId);return {id:existing?.id||'',studentId,packageId,packageNumber:existing?.packageNumber||((student?ensureStudentPackageState(student):[]).findIndex(p=>String(p.id)===String(packageId))+1||1),packageName:pkg?.packageName||existing?.packageName||'',totalClasses:Number(pkg?.classCount||existing?.totalClasses||0),status:getPackageRecordCompleted(studentId,packageId)>=Number(pkg?.classCount||existing?.totalClasses||0)&&Number(pkg?.classCount||existing?.totalClasses||0)>0?'COMPLETED':'ACTIVE',studentInfo:existing?.studentInfo||{name:student?.name||'',nickname:student?.nickname||'',studentId:student?.id||'',country:student?.country||'',level:student?.level||'',birthday:student?.birthday||'',duration:student?.duration||''},preferredSchedule:existing?.preferredSchedule||student?.preferredSchedule||[],columns:Array.isArray(existing?.columns)&&existing.columns.length?existing.columns:PACKAGE_CLASS_RECORD_COLUMNS_DEFAULT.slice(),classEntries:rows};}
