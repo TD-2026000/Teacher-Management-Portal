@@ -18746,36 +18746,11 @@ const DASHBOARD_WALLPAPERS=[
  {id:'soft-pastel',name:'School Activities',kind:'url',url:'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=82'}
 ];
 function getDashboardWallpaperImage(){const im=document.querySelector('.teacher-dashboard-wallpaper img');return im?im.src:'';}
-function makeWallpaperPreview(choice){
- const palette={
-  'classroom':['#bdeeff','#fff1a8','#3867a8'],'kids-learning':['#ffe2ef','#d5f6ff','#e879a9'],
-  'playground':['#c8f5c0','#a7ddff','#ef8b42'],'colorful-class':['#ffe3a8','#d8d0ff','#f06b85'],
-  'school-kids':['#d7f7ff','#fff0b5','#3876b7'],'reading-room':['#f8e7c9','#d7edff','#926342'],
-  'school-books':['#dff4ff','#ffe2a6','#3975b5'],'bright-school':['#c9f5ff','#fff5ad','#4385d1'],
-  'outdoor-play':['#bff0b7','#b5e4ff','#f5a04c'],'art-class':['#ffe0e8','#d9f7d1','#9067d5'],
-  'school-garden':['#d9f6cb','#c3edff','#39875b'],'rainbow':['#c9efff','#ffe0f0','#d96b9b'],
-  'science-room':['#d6f3ff','#e4ddff','#4376bd'],'campus':['#d7f5ff','#dff6c9','#468c63'],
-  'playful-colors':['#ffdfed','#c9f4ff','#eb8c45'],'soft-pastel':['#e7e0ff','#d5f6ee','#d76f91']
- };
- const c=palette[choice.id]||palette.classroom, name=String(choice.name||'School').replace(/[&<>]/g,'');
- const scene=choice.id==='playground'||choice.id==='outdoor-play'||choice.id==='school-garden'||choice.id==='campus';
- const books=choice.id==='reading-room'||choice.id==='school-books';
- const kids=choice.id==='kids-learning'||choice.id==='school-kids'||choice.id==='playful-colors'||choice.id==='soft-pastel';
- let art='';
- if(scene){art=`<circle cx="420" cy="38" r="23" fill="#ffe17a"/><path d="M0 145 Q100 115 210 145 T430 142 T640 145 V220 H0Z" fill="#7dcc77"/><path d="M0 178 Q140 155 260 180 T640 175 V220 H0Z" fill="#5fb56b"/><rect x="45" y="70" width="110" height="62" rx="6" fill="#fff4c7" stroke="#b86f50" stroke-width="4"/><path d="M100 70V132 M45 100H155" stroke="#b86f50" stroke-width="4"/><path d="M250 146V95 M250 100l-28 -18 M250 112l28 -20" stroke="#8b603b" stroke-width="8" stroke-linecap="round"/><circle cx="230" cy="82" r="22" fill="#56b86d"/><circle cx="270" cy="88" r="24" fill="#48a85d"/><path d="M420 180V115 M420 130l-35 -25 M420 145l34 -26" stroke="#8b603b" stroke-width="8"/><circle cx="400" cy="105" r="24" fill="#4dbb70"/><circle cx="444" cy="112" r="24" fill="#3da85d"/>`}
- else if(books){art=`<rect x="35" y="35" width="570" height="142" rx="8" fill="#fffaf0" stroke="#a97750" stroke-width="5"/><rect x="55" y="50" width="530" height="108" rx="3" fill="#e9f4ff"/><path d="M55 105H585 M180 50V158 M310 50V158 M440 50V158" stroke="#b5d3e8" stroke-width="4"/><rect x="80" y="125" width="90" height="38" rx="3" fill="#df6d67"/><rect x="174" y="115" width="90" height="48" rx="3" fill="#4c9bd3"/><rect x="268" y="130" width="90" height="33" rx="3" fill="#e8bd4c"/><rect x="362" y="118" width="90" height="45" rx="3" fill="#6bbf8c"/><rect x="456" y="123" width="90" height="40" rx="3" fill="#a68be0"/>`}
- else {art=`<rect x="45" y="35" width="550" height="92" rx="8" fill="#fffdf6" stroke="#c9d8e7" stroke-width="4"/><rect x="62" y="48" width="245" height="62" rx="5" fill="#7ac6ef"/><rect x="326" y="48" width="250" height="62" rx="5" fill="#a7e3a2"/><rect x="72" y="55" width="226" height="48" rx="3" fill="#e9faff"/><path d="M185 55V103 M72 79H298" stroke="#8fc5dc" stroke-width="4"/><rect x="330" y="52" width="242" height="54" rx="3" fill="#b9edaa"/><path d="M450 52V106 M330 79H572" stroke="#84c878" stroke-width="4"/>`}
- if(!scene&&!books){
-  const n=kids?3:2; for(let i=0;i<n;i++){let x=150+i*170;let skin=['#f2c49a','#d99a6c','#f0c7a2'][i%3];art+=`<circle cx="${x}" cy="150" r="23" fill="${skin}"/><path d="M${x-24} 146 Q${x-25} 119 ${x} 121 Q${x+27} 121 ${x+24} 148 L${x+16} 138 L${x-15} 138Z" fill="#4b3029"/><rect x="${x-31}" y="174" width="62" height="40" rx="14" fill="${['#3e80cf','#ef8eaa','#f0b84b'][i%3]}"/><circle cx="${x-8}" cy="151" r="2.8" fill="#252525"/><circle cx="${x+8}" cy="151" r="2.8" fill="#252525"/><path d="M${x-7} 162 Q${x} 168 ${x+8} 162" fill="none" stroke="#9d4e48" stroke-width="2.5" stroke-linecap="round"/>`;}
-  art+=`<rect x="65" y="184" width="510" height="18" rx="5" fill="#c58b5a"/><path d="M105 202V220 M535 202V220" stroke="#94633e" stroke-width="7"/>`;
- }
- const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="220" viewBox="0 0 640 220"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient></defs><rect width="640" height="220" fill="url(#bg)"/><circle cx="35" cy="25" r="16" fill="#fff" opacity=".5"/><circle cx="600" cy="26" r="25" fill="#fff" opacity=".35"/>${art}<rect x="0" y="0" width="640" height="220" fill="none" stroke="${c[2]}" stroke-opacity=".25" stroke-width="8"/><rect x="12" y="12" width="616" height="196" rx="14" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="3"/><text x="320" y="25" font-family="Arial,sans-serif" font-size="1" fill="#000">${name}</text></svg>`;
- return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
-}
 function getWallpaperImage(choice){
  if(!choice)return '';
- /* Use self-contained illustrated previews so the gallery never depends on blocked external image hosts. */
- return makeWallpaperPreview(choice);
+ if(choice.kind==='url')return choice.url;
+ if(choice.kind==='embedded')return getDashboardWallpaperImage();
+ return '';
 }
 function applyDashboardWallpaper(id,persist=true){
  const card=document.querySelector('.teacher-dashboard-card');const group=document.getElementById('dashboardWallpaperGroup');if(!card||!group)return;
@@ -18796,7 +18771,7 @@ function renderDashboardWallpaperGallery(){
  const grid=document.getElementById('dashboardWallpaperGallery');if(!grid)return;
  const choices=DASHBOARD_WALLPAPERS.map(w=>{
    const src=getWallpaperImage(w);
-   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Image unavailable — check internet');this.remove()">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
+   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Preview could not load. Check internet or choose another design.');this.remove()">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
    return `<button type="button" class="dashboard-wallpaper-choice ${portalSettings.dashboardWallpaper===w.id?'active':''}" onclick="applyDashboardWallpaper('${w.id}')"><div class="dashboard-wallpaper-swatch">${preview}<span class="dashboard-wallpaper-preview-overlay"></span></div><span class="dashboard-wallpaper-choice-name">${w.name}</span></button>`;
  }).join('');
  let custom='';
@@ -21247,4 +21222,21 @@ body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboard
 <style>
 body.portal-dark .teacher-dashboard-card.wallpaper-selected{background-blend-mode:normal!important;}
 body.portal-dark .teacher-dashboard-card.wallpaper-selected .teacher-dashboard-wallpaper{display:none!important;}
+</style>
+
+<style id="wallpaper-real-image-preview-final-fix">
+/* Wallpaper choices must show the real photo, not a cyan placeholder. */
+#dashboardWallpaperGallery .dashboard-wallpaper-swatch { background:#e8edf2 !important; }
+#dashboardWallpaperGallery .dashboard-wallpaper-swatch img.dashboard-wallpaper-preview-img {
+  background:transparent !important; background-image:none !important; color:transparent !important;
+  object-fit:cover !important; opacity:1 !important; visibility:visible !important;
+}
+#dashboardWallpaperGallery .dashboard-wallpaper-preview-overlay { background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.08)) !important; }
+#dashboardWallpaperGallery .dashboard-wallpaper-swatch.wallpaper-preview-fallback {
+  background:linear-gradient(135deg,#dbeafe,#fef3c7) !important;
+}
+#dashboardWallpaperGallery .dashboard-wallpaper-swatch.wallpaper-preview-fallback:after {
+  content:attr(data-fallback) !important; background:linear-gradient(135deg,#dbeafe,#fef3c7) !important;
+  color:#111827 !important; font-size:12px !important; font-weight:800 !important;
+}
 </style>
