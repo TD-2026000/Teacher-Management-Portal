@@ -18806,7 +18806,16 @@ function loadPortalSettings(){
  applyDashboardWallpaper(portalSettings.dashboardWallpaper||'classroom',false);
  if(portalSettings.notifications!==false) startClassNotificationWatcher();
 }
-function savePortalSettings(){localStorage.setItem(PORTAL_SETTINGS_KEY,JSON.stringify(portalSettings));}
+function savePortalSettings(){
+ // Keep large uploaded wallpaper images in IndexedDB so browser localStorage quota
+ // cannot silently discard the settings or make the wallpaper disappear after reload.
+ const settingsToStore={...portalSettings};delete settingsToStore.dashboardWallpaperCustom;
+ try{localStorage.setItem(PORTAL_SETTINGS_KEY,JSON.stringify(settingsToStore));}catch(e){
+   try{const old=JSON.parse(localStorage.getItem(PORTAL_SETTINGS_KEY)||'{}');delete old.dashboardWallpaperCustom;localStorage.setItem(PORTAL_SETTINGS_KEY,JSON.stringify({...old,...settingsToStore}));}catch(ignore){}
+ }
+ try{const image=portalSettings.dashboardWallpaperCustom||'';const req=indexedDB.open('TeacherDanyealPortalAssets',1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('assets'))req.result.createObjectStore('assets');};req.onsuccess=()=>{const db=req.result;try{const tx=db.transaction('assets','readwrite');if(image)tx.objectStore('assets').put(image,'dashboardWallpaperCustom');else tx.objectStore('assets').delete('dashboardWallpaperCustom');tx.oncomplete=()=>db.close();tx.onerror=()=>db.close();}catch(e){db.close();}};
+ }catch(e){}
+}
 function renderPaletteButtons(){
  const grid=document.getElementById('paletteGrid'); if(!grid)return;
  grid.innerHTML=PORTAL_PALETTES.map((p,i)=>{const active=portalSettings.accent.toLowerCase()===p.accent.toLowerCase();const swatch=`linear-gradient(135deg,${p.accent},${p.dark})`;return `<button type="button" class="palette-btn ${active?'active':''}" onclick="choosePortalPalette(${i})"><div class="palette-swatch" style="background:${swatch} !important;background-image:${swatch} !important"></div>${p.name}</button>`}).join('');
@@ -21206,6 +21215,30 @@ body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboard
  align-items:center !important; justify-content:center !important; padding:10px !important; text-align:center !important;
  color:#111111 !important; background:linear-gradient(135deg,#e2e8f0,#fef3c7) !important; font-size:12px !important; font-weight:800 !important;
 }
+</style>
+
+
+<script id="wallpaper-persistence-and-dark-mode-fix">
+(function(){
+ function restoreUploadedWallpaper(){
+  if(!window.indexedDB)return;
+  let req;try{req=indexedDB.open('TeacherDanyealPortalAssets',1);}catch(e){return;}
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('assets'))req.result.createObjectStore('assets');};
+  req.onsuccess=()=>{const db=req.result;try{const tx=db.transaction('assets','readonly');const get=tx.objectStore('assets').get('dashboardWallpaperCustom');get.onsuccess=()=>{const image=get.result;if(image){portalSettings.dashboardWallpaperCustom=image;if(portalSettings.dashboardWallpaper==='custom'){applyDashboardWallpaper('custom',false);}renderDashboardWallpaperGallery();}db.close();};get.onerror=()=>db.close();}catch(e){db.close();}};
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(restoreUploadedWallpaper,250));else setTimeout(restoreUploadedWallpaper,250);
+})();
+</script>
+<style id="automatic-dark-mode-readable-text-fix">
+/* Dark mode: override hard-coded black text colors that otherwise remain invisible. */
+body.portal-dark :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,em,i,li,dt,dd,td,th,caption,legend,summary,a,figcaption,.form-label,.field-label,.section-title,.card-title,.modal-title,.settings-label,.dashboard-summary-label,.dashboard-summary-number,.teacher-dashboard-title,.teacher-dashboard-label,.tdb-label,.tdb-time,.tdb-date){color:#edf4f8!important;}
+body.portal-dark :is(input,textarea,select,option){color:#edf4f8!important;background-color:#1c2932!important;border-color:#465763!important;}
+body.portal-dark input::placeholder,body.portal-dark textarea::placeholder{color:#aebdc7!important;opacity:1!important;}
+body.portal-dark :is(.card,.panel,.modal-content,.settings-card,.profile-panel,.student-card,.table-wrap,.form-section){color:#edf4f8;}
+body.portal-dark :is(button,.btn,[role="button"]){color:inherit;}
+body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-title,body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-label,
+body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-dark #dashboardWallpaperGroup .dashboard-summary-number,
+body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.75)!important;}
 </style>
 
 </body>
