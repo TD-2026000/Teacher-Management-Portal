@@ -5129,13 +5129,11 @@ Update Password
 
 <div class="card">
 
-<div class="topbar">
+<div class="topbar" style="display:flex;align-items:center;gap:10px;">
 
-<span style="font-weight:800;letter-spacing:.5px">
-TD
-</span>
+<img src="./icons/icon-192.png" alt="Teacher Management Portal Logo" style="width:34px;height:34px;object-fit:contain;border-radius:8px;flex:0 0 auto;" onerror="this.style.display='none'">
 
-&nbsp; Teacher Management Portal
+<strong style="font-weight:800;letter-spacing:.2px;">Teacher Management Portal</strong>
 
 </div>
 
@@ -8988,7 +8986,7 @@ async function handleSignedIn(user){
     Promise.allSettled([loadTeacherProfileFromSupabase(),loadStudentsFromSupabase(),loadAppointmentsFromSupabase()]).then(()=>{
       try{loadTeacherProfile();renderDashboard();populateStudentSelect();renderRecords();}catch(error){console.warn('Background dashboard refresh skipped:',error);}
     });
-    Promise.resolve().then(()=>migrateExistingAppointmentsToSupabase()).catch(error=>console.warn('Background appointment migration skipped:',error));
+    // Do not auto-migrate localStorage appointments on login: stale browser cache can resurrect deleted database rows. Supabase is the shared source of truth.
     showPage('dashboard');
   }else{
     showPage('subscription');
@@ -11643,11 +11641,37 @@ function isExtraLessonAppointment(a){
 async function deleteAppointmentsFromSupabase(items){
   if(!currentUser||!supabaseClient||!Array.isArray(items)||!items.length)return true;
   for(const item of items){
-    let q=supabaseClient.from('appointments').delete().eq('user_id',currentUser.id).eq('student_id',String(item.studentId||item.student_id||''));
-    if(item.date)q=q.eq('class_date',item.date);else q=q.is('class_date',null);
-    if(item.time)q=q.eq('class_time',String(item.time).length===5?`${item.time}:00`:item.time);else q=q.is('class_time',null);
-    const result=await q;
+    const studentId=String(item.studentId||item.student_id||'');
+    const date=String(item.date||item.class_date||'');
+    const rawTime=String(item.time||item.class_time||'');
+    const time=rawTime.length===5?`${rawTime}:00`:rawTime;
+
+    // First try the exact database UUID, but never rely on a synthetic local ID.
+    const id=String(item.id||'');
+    if(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)){
+      const byId=await supabaseClient.from('appointments').delete()
+        .eq('user_id',currentUser.id).eq('id',id).select('id');
+      if(byId.error)throw byId.error;
+    }
+
+    // Delete any matching duplicate rows by the full student/date/time key too.
+    let q=supabaseClient.from('appointments').delete()
+      .eq('user_id',currentUser.id).eq('student_id',studentId);
+    q=date?q.eq('class_date',date):q.is('class_date',null);
+    q=time?q.eq('class_time',time):q.is('class_time',null);
+    const result=await q.select('id');
     if(result.error)throw result.error;
+
+    // Confirm the appointment is truly gone remotely before removing locally.
+    let check=supabaseClient.from('appointments').select('id')
+      .eq('user_id',currentUser.id).eq('student_id',studentId);
+    check=date?check.eq('class_date',date):check.is('class_date',null);
+    check=time?check.eq('class_time',time):check.is('class_time',null);
+    const verified=await check.limit(1);
+    if(verified.error)throw verified.error;
+    if(Array.isArray(verified.data)&&verified.data.length){
+      throw new Error('Supabase still contains a matching appointment. Check the database permissions or duplicate records.');
+    }
   }
   return true;
 }
@@ -11806,29 +11830,10 @@ async function loadAppointmentsFromSupabase(){
       };
     });
 
-    // Never discard a newly created local appointment just because the remote
-    // save has not completed or Supabase has not returned it yet. Match on the
-    // student/date/time key used by the sync function, then retry syncing only
-    // local records that are missing remotely.
-    const appointmentKey=a=>`${String(a.studentId||a.student_id||'')}|${String(a.date||'')}|${String(a.time||'').slice(0,5)}`;
-    const remoteKeys=new Set(appointments.map(appointmentKey));
-    const localOnly=localAppointments.filter(a=>{
-      const status=String(a.status||'').trim().toLowerCase();
-      if(['deleted','removed','rescheduled'].includes(status))return false;
-      const key=appointmentKey(a);
-      if(!a.studentId||!a.date||!a.time||remoteKeys.has(key))return false;
-      remoteKeys.add(key);
-      return true;
-    });
-    const mergedAppointments=appointments.concat(localOnly);
-    localStorage.setItem(appointmentStorageKey(),JSON.stringify(mergedAppointments));
-
-    if(localOnly.length){
-      console.warn(`Kept ${localOnly.length} local appointment(s) missing from Supabase; retrying sync.`);
-      await syncAppointmentsToSupabase(localOnly);
-    }
-
-    console.log(`Loaded ${appointments.length} appointments from Supabase; preserved ${localOnly.length} local-only appointments.`);
+    // Supabase is authoritative across browsers and code updates. Do not merge
+    // stale local-only appointments back in: that resurrects classes the user deleted.
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+    console.log(`Loaded ${appointments.length} appointments from Supabase; local cache reconciled.`);
 
   }catch(error){
     console.error(
