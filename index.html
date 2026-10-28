@@ -3237,7 +3237,7 @@ a,
 .sa-row-more-menu button.reschedule-option{color:#6d28d9}
 .sa-row-more-menu button.delete-option{color:#b91c1c}.sa-row-more-menu button.delete-option:hover{background:#fef2f2;color:#991b1b}
 
-.sa-status.rescheduled{background:#7c3aed;color:#fff}.student-calendar-overlay{position:fixed;inset:0;z-index:100100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}.student-calendar-modal{width:min(1100px,96vw);height:min(88vh,900px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.32);padding:18px}.student-calendar-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;padding:4px 0 12px;z-index:2;border-bottom:1px solid #d8eeee;margin-bottom:12px}.student-calendar-modal-head h3{margin:0;color:#00aeb8}.student-calendar-modal-close{border:0;border-radius:8px;padding:8px 12px;background:#e7fbfb;color:#006f75;font-weight:800;cursor:pointer}.student-calendar-modal .appointment-day-detail-footer{display:none!important}.student-calendar-modal .appointment-day-slot-actions,.student-calendar-modal .appointment-slot-actions,.student-calendar-modal button.add-class{display:none!important}.appointment-toolbar-right{display:flex;align-items:flex-end;justify-content:flex-end}.appointment-calendar-open{border:0;border-radius:8px;padding:10px 15px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer;white-space:nowrap}@media(max-width:700px){.student-calendar-modal{width:98vw;height:92vh;padding:12px}.appointment-toolbar{gap:10px;flex-wrap:wrap}.appointment-toolbar-right{width:100%;justify-content:flex-end}}
+.sa-status.rescheduled{background:#454b54;color:#fff}.sa-table tr.sa-rescheduled-row td{background:#e5e7eb!important;color:#374151!important}.sa-rescheduled-note{display:block;margin-top:4px;font-size:11px;font-weight:800;color:#374151}.student-calendar-overlay{position:fixed;inset:0;z-index:100100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}.student-calendar-modal{width:min(1100px,96vw);height:min(88vh,900px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.32);padding:18px}.student-calendar-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;padding:4px 0 12px;z-index:2;border-bottom:1px solid #d8eeee;margin-bottom:12px}.student-calendar-modal-head h3{margin:0;color:#00aeb8}.student-calendar-modal-close{border:0;border-radius:8px;padding:8px 12px;background:#e7fbfb;color:#006f75;font-weight:800;cursor:pointer}.student-calendar-modal .appointment-day-detail-footer{display:none!important}.student-calendar-modal .appointment-day-slot-actions,.student-calendar-modal .appointment-slot-actions,.student-calendar-modal button.add-class{display:none!important}.appointment-toolbar-right{display:flex;align-items:flex-end;justify-content:flex-end}.appointment-calendar-open{border:0;border-radius:8px;padding:10px 15px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer;white-space:nowrap}@media(max-width:700px){.student-calendar-modal{width:98vw;height:92vh;padding:12px}.appointment-toolbar{gap:10px;flex-wrap:wrap}.appointment-toolbar-right{width:100%;justify-content:flex-end}}
 .sa-reschedule-overlay{position:fixed;inset:0;z-index:100001;background:rgba(15,25,35,.48);display:flex;align-items:center;justify-content:center;padding:16px}.sa-reschedule-modal{width:min(440px,94vw);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 65px rgba(0,0,0,.3);text-align:center}.sa-reschedule-modal h3{margin:0 0 10px;color:#5b21b6}.sa-reschedule-modal p{font-size:13px;line-height:1.5;color:#475569}.sa-reschedule-actions{display:flex;justify-content:center;gap:10px;margin-top:16px}.sa-reschedule-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.sa-reschedule-cancel{background:#eef2f7;color:#334155}.sa-reschedule-confirm{background:#7c3aed;color:#fff}
 .sa-section-title{font-size:13px;font-weight:900;color:#007f89;padding:3px 0 9px}.sa-section{margin-bottom:14px}.sa-muted{font-size:11px;color:#687782;line-height:1.5}.sa-profile-top{display:flex;gap:11px;align-items:center;padding:12px;background:#f1fcfc;border-radius:9px;margin-bottom:10px}.sa-profile-avatar{width:60px;height:60px;border-radius:50%;border:2px solid #00cdd2;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#00a1a7;background:#fff;flex-shrink:0}.sa-profile-name{font-size:14px;font-weight:900;overflow-wrap:anywhere}.sa-info-list{list-style:none;padding:0;margin:0}.sa-info-list li{padding:7px 2px;border-bottom:1px solid #e6f5f5;font-size:11px;line-height:1.45}.sa-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}.sa-stat{border:1px solid #c8f1f3;border-radius:8px;text-align:center;padding:10px 3px}.sa-stat b{font-size:19px;display:block;color:#07536c}.sa-stat span{font-size:9px;color:#647b8c}.sa-empty{padding:22px 12px;text-align:center;color:#718096;font-size:12px}
 .student-appointment-calendar-legacy>summary{cursor:pointer;font-weight:800;color:#007f89;padding:10px;border:1px solid #bdebef;border-radius:8px;background:#f4ffff}
@@ -11654,17 +11654,21 @@ async function deleteAppointmentsFromSupabase(items){
 /* Deleting a purchased-package class also reduces the active package quantity.
    Extra/manual classes tagged bonus_additional do not reduce purchased credits. */
 async function deductPurchasedClassesForDeletedAppointments(items){
-  const byStudent={};
+  const byStudent={},extraByStudent={};
   (items||[]).forEach(a=>{
-    if(!isExtraLessonAppointment(a)){
-      const sid=String(a.studentId||a.student_id||'');
-      if(sid)(byStudent[sid]||=0,byStudent[sid]++);
-    }
+    const sid=String(a.studentId||a.student_id||'');
+    if(!sid)return;
+    if(isExtraLessonAppointment(a))(extraByStudent[sid]||=0,extraByStudent[sid]++);
+    else (byStudent[sid]||=0,byStudent[sid]++);
   });
-  if(!Object.keys(byStudent).length)return;
+  if(!Object.keys(byStudent).length&&!Object.keys(extraByStudent).length)return;
   const students=getStudents();let changed=false;
-  for(const [sid,qty] of Object.entries(byStudent)){
+  for(const sid of new Set([...Object.keys(byStudent),...Object.keys(extraByStudent)])){
     const student=students.find(st=>String(st.id)===sid);if(!student)continue;
+    const extraQty=extraByStudent[sid]||0;
+    if(extraQty){student.additionalLessons=Math.max(0,Math.floor(Number(student.additionalLessons??student.addedLessons??student.extraLessons??0)||0)-extraQty);}
+    const qty=byStudent[sid]||0;
+    if(!qty){student.updatedAt=new Date().toISOString();try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(student);}catch(err){console.error('Additional lesson balance sync after deletion failed:',err);}changed=true;continue;}
     const history=ensureStudentPackageState(student);
     const current=history.find(pkg=>String(pkg.id)===String(student.currentPackageId))||history[history.length-1];
     if(current){
@@ -11795,6 +11799,7 @@ async function loadAppointmentsFromSupabase(){
         attendance:row.attendance||'',
         cancelReason:row.cancel_reason||'',
         notes:row.notes||'',
+        packageId:String(row.notes||'')==='manual_additional_lesson'?'bonus_additional':'',
         scheduleMode:'manual',
         createdAt:row.created_at||new Date().toISOString(),
         updatedAt:row.created_at||row.updated_at||new Date().toISOString()
@@ -13052,9 +13057,9 @@ function renderStudentAppointmentDashboard(){
  const query=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
  const visibleStudents=students.filter(st=>!query||`${st.nickname||''} ${st.name||''} ${st.id||''}`.toLowerCase().includes(query));
  const student=students.find(st=>String(st.id)===String(window.currentStudentAppointmentBoardId))||students[0];
- const all=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['rescheduled','cancelled','canceled','deleted','removed'].includes(String(a.status||'Scheduled').trim().toLowerCase())).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
+ const all=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['cancelled','canceled','deleted','removed'].includes(String(a.status||'Scheduled').trim().toLowerCase())).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
  const now=Date.now();
- const finished=all.filter(a=>{const dt=getAppointmentDateTime(a);const status=String(a.status||'Scheduled').toLowerCase();return status==='completed'||(dt&&dt.getTime()+durationToMinutes(a.duration||student.duration||'30 Minutes')*60000<=now);});
+ const finished=all.filter(a=>{const dt=getAppointmentDateTime(a);const status=String(a.status||'Scheduled').toLowerCase();return !['rescheduled'].includes(status)&&(status==='completed'||(dt&&dt.getTime()+durationToMinutes(a.duration||student.duration||'30 Minutes')*60000<=now));});
  const upcoming=all.filter(a=>!finished.some(f=>String(f.id)===String(a.id))&&!['cancelled','rescheduled'].includes(String(a.status||'Scheduled').toLowerCase()));
  const p=getStudentProgress(student);
  const bonus=Math.max(0,Number(student.bonusFreeLessons??student.bonusLessons??student.freeLessons??student.bonusClasses??0)||0);
@@ -13084,7 +13089,7 @@ function renderStudentAppointmentDashboard(){
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
    const linkBtn=link?`<div class="sa-row-actions sa-lesson-actions"><a class="sa-btn lesson" href="${saEscape(link)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none">Open Link</a><button type="button" class="sa-btn lesson-download" onclick="downloadStudentLessonLink(decodeURIComponent('${encodeURIComponent(link)}'),decodeURIComponent('${encodeURIComponent(lessonTitle)}'))">Download</button></div>`:'<span class="sa-muted">No lesson link</span>';
-   return `<tr><td>${i+1}</td><td>${saDateLabel(date,time)}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
+   return `<tr class="${String(a.status||'').toLowerCase()==='rescheduled'?'sa-rescheduled-row':''}"><td>${i+1}</td><td>${saDateLabel(date,time)}${String(a.status||'').toLowerCase()==='rescheduled'?'<span class="sa-rescheduled-note">NOTE: THIS CLASS WAS RESCHEDULED</span>':''}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time||'—')}</td><td>${actions}</td><td>${linkBtn}</td></tr>`;
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
@@ -13112,15 +13117,43 @@ function openManualIndividualClass(studentId){
     const date=overlay.querySelector('#manualClassDate').value;const time=overlay.querySelector('#manualClassTime').value;
     if(!date||!time){releaseSaveLock();alert('Please choose both a class date and time.');return;}
     if(hasExactStudentAppointment(student.id,date,time)||hasAppointmentConflict(date,time,durationToMinutes(student.duration||'30 Minutes'))){releaseSaveLock();alert('That time slot is already booked or conflicts with another class. Please choose another date or time.');return;}
-    const appointments=getAppointments();const now=new Date().toISOString();
-    appointments.push({id:`appt_manual_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:'Regular Class',status:'Scheduled',scheduleMode:'manual',packageId:'bonus_additional',createdAt:now,updatedAt:now});
+
+    const now=new Date().toISOString();
+    const classRecord={id:`appt_manual_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,studentId:student.id,studentName:student.name,date,time,duration:student.duration||'30 Minutes',type:'Regular Class',status:'Scheduled',scheduleMode:'manual',packageId:'bonus_additional',createdAt:now,updatedAt:now};
     const students=getStudents();const idx=students.findIndex(st=>String(st.id)===String(student.id));
-    if(idx>=0){students[idx].additionalLessons=Math.max(0,Math.floor(Number(students[idx].additionalLessons??students[idx].addedLessons??students[idx].extraLessons??0)||0))+1;students[idx].updatedAt=now;saveStudents(students);try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(students[idx]);}catch(err){console.error('Student sync failed:',err);}}
-    try{await saveAppointments(appointments);}catch(err){console.error('Manual appointment sync failed:',err);}
-    // Refresh the student appointment table immediately from the saved local data.
-    closeManualIndividualClass();renderDashboard();populateStudentSelect(student.id);renderRecords();renderStudents();renderAppointments();renderStudentAppointmentDashboard();
-    releaseSaveLock();
-    const notice=document.createElement('div');notice.style.cssText='position:fixed;inset:0;z-index:100600;background:rgba(10,25,35,.38);display:flex;align-items:center;justify-content:center;padding:16px';notice.innerHTML=`<div role="dialog" aria-modal="true" style="max-width:420px;background:#fff;border-radius:16px;padding:24px;text-align:center;border:1px solid #b8f2f2;box-shadow:0 18px 60px rgba(0,0,0,.24)"><h3 style="color:#007f83;margin-top:0">Class Added</h3><p>One individual class was added to PREFERRED CLASS SCHEDULE AND CLASS RECORD.</p><p style="font-size:12px;color:#8a5a00">Please double-check the Student Record, especially after reloading, to confirm the appointment is saved.</p><button type="button" class="sa-btn lesson">Okay</button></div>`;document.body.appendChild(notice);notice.querySelector('button').onclick=()=>notice.remove();notice.addEventListener('click',e=>{if(e.target===notice)notice.remove();});
+    if(idx<0){releaseSaveLock();alert('Student record not found. Please refresh and try again.');return;}
+
+    try{
+      // Insert only this appointment instead of re-syncing every class serially.
+      // Supabase generates the real UUID; keep it locally so later delete/update requests use it.
+      if(currentUser && supabaseClient){
+        const row={user_id:currentUser.id,student_id:String(student.id),class_date:date,class_time:`${time}:00`,duration:parseInt(String(classRecord.duration).match(/\d+/)?.[0]||30,10)||30,class_type:'Regular Class',status:'Scheduled',attendance:null,cancel_reason:null,notes:'manual_additional_lesson',created_at:now};
+        const inserted=await supabaseClient.from('appointments').insert([row]).select('id').single();
+        if(inserted.error)throw inserted.error;
+        if(inserted.data?.id)classRecord.id=String(inserted.data.id);
+      }
+
+      // Only increment the Additional Lessons balance after the appointment save succeeds.
+      students[idx].additionalLessons=Math.max(0,Math.floor(Number(students[idx].additionalLessons??students[idx].addedLessons??students[idx].extraLessons??0)||0))+1;
+      students[idx].updatedAt=now;
+      saveStudents(students);
+      try{if(typeof syncStudentToSupabase==='function')await syncStudentToSupabase(students[idx]);}
+      catch(err){console.error('Student additional-lesson sync failed:',err);throw new Error('The class was saved, but the Additional Lessons balance could not be synced. Please reload and verify the student record before adding another class.');}
+
+      const appointments=getAppointments();
+      appointments.push(classRecord);
+      localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+      closeManualIndividualClass();
+      renderDashboard();populateStudentSelect(student.id);renderRecords();renderStudents();renderAppointments();renderStudentAppointmentDashboard();
+      releaseSaveLock();
+      const notice=document.createElement('div');notice.style.cssText='position:fixed;inset:0;z-index:100600;background:rgba(10,25,35,.38);display:flex;align-items:center;justify-content:center;padding:16px';
+      notice.innerHTML=`<div role="dialog" aria-modal="true" style="max-width:420px;background:#fff;border-radius:16px;padding:24px;text-align:center;border:1px solid #b8f2f2;box-shadow:0 18px 60px rgba(0,0,0,.24)"><h3 style="color:#007f83;margin-top:0">Class Added Successfully</h3><p>One manual class was saved to PREFERRED CLASS SCHEDULE AND CLASS RECORD.</p><p>Additional Lessons increased by 1. Please double-check the class date, time, and student lesson balance.</p><button type="button" class="sa-btn lesson">Okay</button></div>`;
+      document.body.appendChild(notice);notice.querySelector('button').onclick=()=>notice.remove();notice.addEventListener('click',e=>{if(e.target===notice)notice.remove();});
+    }catch(err){
+      console.error('Manual class save failed:',err);
+      releaseSaveLock();
+      alert('The class could not be confirmed as saved. No success message was shown. Please check the Student Record before trying again.\n\n'+(err?.message||'Unknown database error'));
+    }
   };
 }
 
@@ -13174,7 +13207,7 @@ function rescheduleStudentAppointment(id){
   if(!slot){alert('Could not find an available preferred schedule slot in the next 2 years. Please check the student preferred schedule and other appointments.');return;}
   const modal=document.createElement('div');modal.className='sa-reschedule-overlay';modal.id='saRescheduleModal';
   const dateLabel=saDateLabel(slot.date,slot.time);const timeLabel=typeof formatAppointmentTime==='function'?formatAppointmentTime(slot.time):slot.time;
-  modal.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule Class?</h3><p>The class will be removed from its current position and moved to the end of this student's schedule. The remaining classes will automatically shift up one class number.</p><div class="sa-attendance-confirm-detail">New appointment: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Student: <strong>${saEscape(student.nickname||student.name||'Student')}</strong><br>Lesson: ${saEscape(old.lessonTopic||old.lessonTitle||old.lesson||'Class lesson')}</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm">Confirm Reschedule</button></div></div>`;
+  modal.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>Reschedule Class?</h3><p>The original class will remain visible in dark gray with a rescheduled note. A new appointment will be added at the end of this student's Preferred Class Schedule.</p><div class="sa-attendance-confirm-detail">New appointment: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Student: <strong>${saEscape(student.nickname||student.name||'Student')}</strong><br>Lesson: ${saEscape(old.lessonTopic||old.lessonTitle||old.lesson||'Class lesson')}</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-cancel">Cancel</button><button type="button" class="sa-reschedule-confirm">Confirm Reschedule</button></div></div>`;
   document.body.appendChild(modal);
   modal.querySelector('.sa-reschedule-cancel').onclick=()=>modal.remove();
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
@@ -13185,23 +13218,20 @@ function rescheduleStudentAppointment(id){
     const replacement={...old,id:`appt_rescheduled_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,date:slot.date,time:slot.time,day:slot.day,status:'Scheduled',attendance:null,createdAt:now,updatedAt:now,rescheduledFromId:String(old.id),rescheduleReason:'Moved to end of schedule'};
     delete replacement.presentAt;delete replacement.absentAt;delete replacement.completedAt;delete replacement.evaluationId;
     try{
-      // Remove the original database row first so it cannot return on refresh.
+      // Keep the original appointment as a visible historical record; do not delete it.
       if(currentUser && supabaseClient){
-        if(!old.date || !old.time)throw new Error('Original appointment is missing date/time; refusing unsafe database deletion.');
-        const {error}=await supabaseClient.from('appointments').delete()
-          .eq('user_id',currentUser.id)
-          .eq('student_id',String(old.studentId||old.student_id||''))
-          .eq('class_date',old.date)
-          .eq('class_time',`${String(old.time).slice(0,5)}:00`);
+        if(!old.date || !old.time)throw new Error('Original appointment is missing date/time; refusing unsafe database update.');
+        const {error}=await supabaseClient.from('appointments').update({status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED'}).eq('user_id',currentUser.id).eq('student_id',String(old.studentId||old.student_id||'')).eq('class_date',old.date).eq('class_time',`${String(old.time).slice(0,5)}:00`);
         if(error)throw error;
       }
       const latest=getAppointments();
       const oldIndex=latest.findIndex(a=>String(a.id)===String(old.id));
-      if(oldIndex>=0)latest.splice(oldIndex,1);
+      if(oldIndex>=0){latest[oldIndex]={...latest[oldIndex],status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED',updatedAt:now};}
       latest.push(replacement);
       localStorage.setItem(appointmentStorageKey(),JSON.stringify(latest));
-      // Persist the replacement after the original row has been removed.
-      await syncAppointmentsToSupabase(latest);
+      // Save the replacement in its new preferred-schedule slot; preserve the original record.
+      const syncResult=await syncAppointmentsToSupabase(latest);
+      if(syncResult===false)throw new Error('Appointment sync reported an error after updating the rescheduled record.');
       modal.remove();renderStudentAppointmentDashboard();
       const success=document.createElement('div');success.className='sa-reschedule-overlay';success.innerHTML=`<div class="sa-reschedule-modal" role="dialog" aria-modal="true"><h3>✓ Class Rescheduled</h3><p>The original class has been removed from its old position and moved to the end of the student's schedule. All classes after its old position have shifted up one number automatically.</p><div class="sa-attendance-confirm-detail">New class date and time: ${saEscape(dateLabel)} · ${saEscape(timeLabel)}</div><p>Please check the updated class numbers in the student's record.</p><div class="sa-reschedule-actions"><button type="button" class="sa-reschedule-confirm">Okay, Got It</button></div></div>`;document.body.appendChild(success);success.querySelector('button').onclick=()=>success.remove();
     }catch(error){
@@ -13233,9 +13263,13 @@ async function deleteStudentAppointmentRecord(id){
   if(currentUser && supabaseClient){
     try{
       let deletedRows=[];
-      const byId=await supabaseClient.from('appointments').delete().eq('user_id',currentUser.id).eq('id',String(item.id)).select('id');
-      if(byId.error) throw byId.error;
-      deletedRows=byId.data||[];
+      const idText=String(item.id||'');
+      const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idText);
+      if(isUuid){
+        const byId=await supabaseClient.from('appointments').delete().eq('user_id',currentUser.id).eq('id',idText).select('id');
+        if(byId.error) throw byId.error;
+        deletedRows=byId.data||[];
+      }
       if(!deletedRows.length){
         let q=supabaseClient.from('appointments').delete().eq('user_id',currentUser.id).eq('student_id',studentId);
         if(item.date)q=q.eq('class_date',item.date);else q=q.is('class_date',null);
@@ -13853,9 +13887,12 @@ if(!current){
   completed=getStudentEvaluations(student.id).length;
 }
 
-const remaining=Math.max(0,packageCount-completed);
-const percent=packageCount?Math.min(100,Math.round((completed/packageCount)*100)):0;
-return {purchased:packageCount,completed,remaining,percent,currentPackage:current,history:ensureStudentPackageState(student)};
+const bonus=Math.max(0,Math.floor(Number(student.bonusFreeLessons ?? student.bonusLessons ?? student.freeLessons ?? student.bonusClasses ?? 0)||0));
+const additional=Math.max(0,Math.floor(Number(student.additionalLessons ?? student.addedLessons ?? student.extraLessons ?? 0)||0));
+const totalAvailable=packageCount+bonus+additional;
+const remaining=Math.max(0,totalAvailable-completed);
+const percent=totalAvailable?Math.min(100,Math.round((completed/totalAvailable)*100)):0;
+return {purchased:packageCount,completed,remaining,percent,totalAvailable,bonus,additional,currentPackage:current,history:ensureStudentPackageState(student)};
 }
 
 function studentAllRecordSafeText(value, fallback='—'){
