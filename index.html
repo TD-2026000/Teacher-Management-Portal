@@ -18771,7 +18771,7 @@ function renderDashboardWallpaperGallery(){
  const grid=document.getElementById('dashboardWallpaperGallery');if(!grid)return;
  const choices=DASHBOARD_WALLPAPERS.map(w=>{
    const src=getWallpaperImage(w);
-   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="lazy" onerror="this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Preview unavailable');this.remove()">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
+   const preview=src?`<img class="dashboard-wallpaper-preview-img" src="${src}" alt="${w.name} wallpaper preview" loading="eager" decoding="async" referrerpolicy="no-referrer" onerror="this.parentElement.classList.add('wallpaper-preview-fallback');this.parentElement.setAttribute('data-fallback','Image unavailable — check internet');this.remove()">`:`<div class="dashboard-wallpaper-preview-fallback">Classroom Preview</div>`;
    return `<button type="button" class="dashboard-wallpaper-choice ${portalSettings.dashboardWallpaper===w.id?'active':''}" onclick="applyDashboardWallpaper('${w.id}')"><div class="dashboard-wallpaper-swatch">${preview}<span class="dashboard-wallpaper-preview-overlay"></span></div><span class="dashboard-wallpaper-choice-name">${w.name}</span></button>`;
  }).join('');
  let custom='';
@@ -21176,6 +21176,35 @@ body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboard
  #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  #dashboardWallpaperGroup .teacher-dashboard-title{font-size:clamp(22px,5vw,34px)!important}
  #dashboardWallpaperGroup .teacher-dashboard-photo{width:68px!important;height:68px!important;flex-basis:68px!important}
+}
+</style>
+
+
+<style id="final-dashboard-wording-and-wallpaper-preview-fix">
+/* Preserve the existing dashboard wording/layout; force all dashboard labels and values to readable black. */
+#dashboardWallpaperGroup .teacher-dashboard-title,
+#dashboardWallpaperGroup .teacher-dashboard-label,
+#dashboardWallpaperGroup .dashboard-summary-label,
+#dashboardWallpaperGroup .dashboard-summary-number,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-label,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-time,
+#dashboardWallpaperGroup .dashboard-summary-date-card .tdb-date {
+  color:#111111 !important; -webkit-text-fill-color:#111111 !important; opacity:1 !important; text-shadow:none !important;
+}
+#dashboardWallpaperGroup .dashboard-summary-card { color:#111111 !important; }
+/* Real thumbnail image occupies the entire sample area; remove cyan placeholder styling. */
+.dashboard-wallpaper-swatch { background:#f1f5f9 !important; }
+.dashboard-wallpaper-preview-img {
+ display:block !important; position:absolute !important; inset:0 !important; width:100% !important; height:100% !important;
+ object-fit:cover !important; object-position:center !important; opacity:1 !important; visibility:visible !important; z-index:1 !important;
+ background:transparent !important;
+}
+.dashboard-wallpaper-preview-overlay { z-index:2 !important; }
+.dashboard-wallpaper-swatch.wallpaper-preview-fallback { background:linear-gradient(135deg,#e2e8f0,#fef3c7) !important; }
+.dashboard-wallpaper-swatch.wallpaper-preview-fallback:after {
+ content:attr(data-fallback) !important; position:absolute !important; inset:0 !important; z-index:4 !important; display:flex !important;
+ align-items:center !important; justify-content:center !important; padding:10px !important; text-align:center !important;
+ color:#111111 !important; background:linear-gradient(135deg,#e2e8f0,#fef3c7) !important; font-size:12px !important; font-weight:800 !important;
 }
 </style>
 
