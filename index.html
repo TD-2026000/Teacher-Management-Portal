@@ -13222,7 +13222,7 @@ function renderStudentAppointmentDashboard(){
      const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button><button type="button" class="delete-option" onclick="deleteStudentAppointmentRecord('${safeApptId}')">Delete</button></span></span>`;
      if(String(a.status||'').toLowerCase()==='rescheduled'){actions=`<div class="sa-row-actions"><span class="sa-status rescheduled">Rescheduled</span>${rowMenu}</div>`;}
      else if(ended&&!attendance){actions=`<div class="sa-row-actions"><button class="sa-btn present" onclick="confirmAppointmentAttendance('${safeApptId}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${safeApptId}','Absent')">Absent</button>${rowMenu}</div>`;}
-     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")}',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
+     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
      else if(attendance==='absent'){actions=`<div class="sa-row-actions"><span class="sa-status">Absent</span>${rowMenu}</div>`;}
      else if(!ended){actions=`<div class="sa-row-actions"><span class="sa-status wait">Upcoming</span>${rowMenu}</div>`;}
      else actions='<span class="sa-status done">Completed · Mark attendance</span>';
@@ -13240,7 +13240,7 @@ function renderStudentAppointmentDashboard(){
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
  <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="5" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed'].includes(String(a.status||'').toLowerCase()))?`<button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button>`:`<button type="button" class="sa-btn lesson" style="min-width:220px;padding:12px 20px;font-size:14px" onclick="confirmGenerateStudentClassSchedule('${saEscape(String(student.id))}')">＋ Generate Class Schedule</button>`}</div><p class="sa-muted">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed'].includes(String(a.status||'').toLowerCase()))?'Use Add Individual Class to add an extra class one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.':'Generate the purchased and free/bonus class records from the student’s saved preferred days and times. After the schedule is generated, use Add Individual Class only when you need an extra class.'}</p></div></section>
  <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
- <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age:</b> ${saEscape(student.age||'—')}</li><li><b>Country:</b> ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${total}</b><span>Total Lesson</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Free/Bonus</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
+ <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age / Country:</b> ${saEscape(student.age||'—')} / ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${total}</b><span>Total Lesson</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Free/Bonus</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn view" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
 function confirmGenerateStudentClassSchedule(studentId){
   const student=getStudents().find(st=>String(st.id)===String(studentId));
@@ -13289,10 +13289,16 @@ async function generateStudentClassScheduleConfirmed(studentId,total){
   try{
     const result=generatePreferredAppointments(student,getLocalDateString(new Date()),'Regular Class',total);
     if(!result.created){alert(result.reason||'No class records were generated. Please check the preferred schedule and existing appointments.');return;}
-    await saveAppointments(getAppointments());
+    // Refresh the visible list immediately from local records; remote Supabase
+    // synchronization should not block the UI from showing the newly created classes.
+    const savedRecords=getAppointments();
     renderStudentAppointmentDashboard();
     renderAppointments();
     renderDashboard();
+    saveAppointments(savedRecords).catch(syncError=>{
+      console.error('Background appointment sync failed:',syncError);
+      alert('The class records are visible locally, but syncing to the server may have failed. Please check your connection and reload before creating them again.');
+    });
     const note=result.created<total?`\n\n${result.created} of ${total} classes were created. Some slots may have conflicts; please review the schedule.`:`\n\nAll ${result.created} class records were generated successfully.`;
     alert(`Class schedule generated for ${student.nickname||student.name}.${note}`);
   }catch(error){
@@ -17458,35 +17464,9 @@ evaluation.teacher_comment ||
 
 `;
 
-const evaluationModal=document.getElementById('evaluationViewModal');
-evaluationModal.classList.add('show');
-
-// Show the saved evaluation as an image preview in the View modal.
-// Keep the original record HTML available as a fallback if image rendering fails.
-(async()=>{
-  if(typeof html2canvas!=='function') return;
-  const holder=document.createElement('div');
-  holder.style.cssText='position:fixed;left:-100000px;top:0;width:1000px;background:#fff;color:#172033;padding:24px;box-sizing:border-box;z-index:-1;';
-  holder.innerHTML=container.innerHTML;
-  document.body.appendChild(holder);
-  try{
-    const canvas=await html2canvas(holder,{scale:1.5,useCORS:true,backgroundColor:'#ffffff',logging:false});
-    const imageUrl=canvas.toDataURL('image/png');
-    const preview=document.createElement('div');
-    preview.className='evaluation-saved-image-preview';
-    preview.style.cssText='width:100%;max-height:72vh;overflow:auto;background:#f3f6f8;border:1px solid #d8e2e8;border-radius:12px;padding:10px;box-sizing:border-box;text-align:center;';
-    const img=document.createElement('img');
-    img.src=imageUrl;img.alt='Saved evaluation report image';
-    img.style.cssText='display:block;width:100%;height:auto;max-width:1000px;margin:0 auto;background:#fff;border-radius:6px;';
-    preview.appendChild(img);
-    const note=document.createElement('div');
-    note.textContent='Saved evaluation image';
-    note.style.cssText='font-size:12px;color:#64748b;text-align:center;padding:8px 0 2px;';
-    preview.appendChild(note);
-    container.innerHTML='';container.appendChild(preview);
-  }catch(err){console.warn('Could not render evaluation image preview; showing text record instead.',err);}
-  finally{holder.remove();}
-})();
+document.getElementById(
+'evaluationViewModal'
+).classList.add('show');
 
 }
 
