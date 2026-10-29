@@ -11855,7 +11855,11 @@ async function deductPurchasedClassesForDeletedAppointments(items){
 async function saveAppointments(data){
   localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));
   // Persist remotely before returning so callers can await completion when needed.
-  await syncAppointmentsToSupabase(data);
+  const synced=await syncAppointmentsToSupabase(data);
+  if(synced!==true && currentUser && supabaseClient){
+    throw new Error('Appointment sync to Supabase failed. Check the browser console and Supabase permissions before retrying.');
+  }
+  return true;
 }
 
 async function syncAppointmentsToSupabase(appointments){
@@ -12692,7 +12696,8 @@ function generatePreferredAppointments(student,startDate,type,maxAppointments=In
     }
     cursor.setDate(cursor.getDate()+1);
   }
-  saveAppointments(appointments);
+  // The caller must persist this mutated appointment list and await Supabase
+  // before reporting success. Do not fire-and-forget a remote sync here.
   return {created,remaining:Math.max(0,packageRemaining-packageCreated),first:createdSlots[0]||null,last:createdSlots[createdSlots.length-1]||null,reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
@@ -13289,17 +13294,18 @@ async function generateStudentClassScheduleConfirmed(studentId,total){
   try{
     const result=generatePreferredAppointments(student,getLocalDateString(new Date()),'Regular Class',total);
     if(!result.created){alert(result.reason||'No class records were generated. Please check the preferred schedule and existing appointments.');return;}
-    // Refresh the visible list immediately from local records; remote Supabase
-    // synchronization should not block the UI from showing the newly created classes.
+    // Persist and wait for Supabase before showing success. This prevents the
+    // schedule appearing only in localStorage and disappearing after reload.
     const savedRecords=getAppointments();
+    const synced=await saveAppointments(savedRecords);
+    if(synced!==true){
+      throw new Error('Supabase did not confirm that all generated appointments were saved. The schedule may be partially saved; reload and verify before retrying.');
+    }
     renderStudentAppointmentDashboard();
     renderAppointments();
     renderDashboard();
-    saveAppointments(savedRecords).catch(syncError=>{
-      console.error('Background appointment sync failed:',syncError);
-      alert('The class records are visible locally, but syncing to the server may have failed. Please check your connection and reload before creating them again.');
-    });
-    const note=result.created<total?`\n\n${result.created} of ${total} classes were created. Some slots may have conflicts; please review the schedule.`:`\n\nAll ${result.created} class records were generated successfully.`;
+    await refreshDashboardSummaryCounts();
+    const note=result.created<total?`\n\n${result.created} of ${total} classes were created. Some slots may have conflicts; please review the schedule.`:`\n\nAll ${result.created} class records were generated and synced successfully.`;
     alert(`Class schedule generated for ${student.nickname||student.name}.${note}`);
   }catch(error){
     console.error('Generate class schedule failed:',error);
@@ -14784,6 +14790,11 @@ return getNextPreferredDate(student,renewalDate);
 function openRenewPackage(id){
 const student=getStudents().find(s=>s.id===id);
 if(!student)return;
+const progress=getStudentProgress(student);
+if(progress.remaining>0){
+  showStudentStatus(`Renew Classes is unavailable. Please complete all required classes first (${progress.completed} of ${progress.totalAvailable} completed; ${progress.remaining} remaining).`,false);
+  return;
+}
 const modal=document.getElementById('renewPackageModal');
 if(!modal)return;
 document.getElementById('renewStudentId').value=student.id;
@@ -14829,13 +14840,15 @@ const end=time?addMinutesToTime(time,durationToMinutes(student.duration||'30 Min
 box.innerHTML=count?`<strong>${count} future classes</strong> will be generated automatically from the first preferred class.<br>First class: <strong>${date?new Date(`${date}T00:00:00`).toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}):'—'}</strong>${time?` · <strong>${formatAppointmentTime(time)}–${formatAppointmentTime(end)}</strong>`:' · No preferred time found for this date.'}`:'Select the number of classes.';
 }
 
-function confirmRenewPackage(){
+async function confirmRenewPackage(){
 try{
 const id=document.getElementById('renewStudentId')?.value||'';
 const student=getStudents().find(s=>s.id===id);
 const err=document.getElementById('renewPackageError');
 const fail=msg=>{err.textContent=msg;err.classList.add('show');};
 if(!student)return fail('Student record could not be found.');
+const currentProgressCheck=getStudentProgress(student);
+if(currentProgressCheck.remaining>0)return fail(`Renewal is locked until all required classes are completed (${currentProgressCheck.completed} of ${currentProgressCheck.totalAvailable} completed; ${currentProgressCheck.remaining} remaining).`);
 
 const rawCount=document.getElementById('renewClassCount')?.value||'';
 const addedClasses=Number.parseInt(rawCount,10);
@@ -14856,15 +14869,15 @@ if(index<0)return fail('Student record could not be found.');
 
 /* =========================================================
    RENEWAL LOGIC
-   Old unused/remaining classes are carried forward.
-   Example: 10 remaining + 20 renewed = 30 total remaining.
-   Existing future regular appointments are preserved and counted;
-   only the missing appointments are generated.
+   Renewal is allowed only after the current package is completed.
+   Start a clean new package; preserve old appointments/evaluations
+   as history and do not carry old package balances into the renewal.
 ========================================================= */
 const current=getCurrentStudentPackage(student);
 const currentProgress=getStudentProgress(student);
-const oldRemaining=Math.max(0,currentProgress.remaining||0);
-const targetRemaining=oldRemaining+addedClasses;
+if(currentProgress.remaining>0)return fail('Complete all required classes before renewing.');
+const oldRemaining=0;
+const targetRemaining=addedClasses;
 
 const history=ensureStudentPackageState(student).map(p=>({...p}));
 if(current){
@@ -14914,27 +14927,15 @@ students[index]={
 saveStudents(students);
 
 let appointments=getAppointments();
-
-/* Carry all still-upcoming regular classes into the new active classes.
-   This prevents the old remaining classes from being lost and prevents
-   duplicate booking when the renewal is submitted. */
 const nowMs=Date.now();
-appointments=appointments.map(a=>{
- if(a.studentId!==student.id)return a;
- if((a.type||'Regular Class')!=='Regular Class')return a;
- if(a.status==='Completed'||a.status==='Cancelled')return a;
- const dt=getAppointmentDateTime(a);
- if(dt && dt.getTime()>=nowMs){
-   return {...a,packageId:newPackageId,updatedAt:new Date().toISOString()};
- }
- return a;
-});
-
-/* Count the student's existing active/future regular classes after carry-over. */
+/* A completed old package should have no remaining active classes.
+   Count only appointments already linked to the new package, so old
+   history does not reduce the number generated for the renewed package. */
 const activeFutureCount=appointments.filter(a=>{
- if(a.studentId!==student.id)return false;
+ if(String(a.studentId||a.student_id||'')!==String(student.id))return false;
+ if(String(a.packageId||a.package_id||'')!==String(newPackageId))return false;
  if((a.type||'Regular Class')!=='Regular Class')return false;
- if(a.status==='Completed'||a.status==='Cancelled')return false;
+ if(['Completed','Cancelled'].includes(a.status))return false;
  const dt=getAppointmentDateTime(a);
  return dt ? dt.getTime()>=nowMs : false;
 }).length;
@@ -14974,15 +14975,16 @@ for(let i=0;i<1095&&created<needed;i++){
  cursor.setDate(cursor.getDate()+1);
 }
 
-saveAppointments(appointments);
+await saveAppointments(appointments);
+await syncStudentToSupabase(students[index]);
 closeRenewPackage();
 
 const totalBooked=activeFutureCount+created;
 const bookingMessage=created
- ? `${created} new future class${created===1?'':'es'} booked. ${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining.`
- : `${oldRemaining} previous remaining class${oldRemaining===1?'':'es'} carried forward + ${addedClasses} renewed = ${targetRemaining} total remaining. Existing future appointments were kept; no duplicate classes were created.`;
+ ? `${created} new future class${created===1?'':'es'} booked for the new package. ${addedClasses} newly purchased classes = ${targetRemaining} total classes in this package.`
+ : `${addedClasses} newly purchased classes = ${targetRemaining} total classes in this package. Old completed records were preserved; no duplicate classes were created.`;
 
-const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The existing Student Contract remains valid for this student.`;
+const successMessage=`${student.name}'s classes were renewed successfully. ${bookingMessage} ${totalBooked>=targetRemaining?'The active schedule now covers the full remaining balance.':'Some classes could not be booked because of schedule conflicts.'} The old package history is preserved. Please complete the new package payment and contract requirements.`;
 showStudentStatus(successMessage,true);
 
 /* LIVE UPDATE: all affected screens are refreshed in memory.
@@ -14995,7 +14997,7 @@ if(refreshMessage){
   refreshMessage.innerHTML=
     `<strong>${escapeHtml(successMessage)}</strong><br><br>`+
     `Everything has been updated automatically — <strong>no page refresh is needed.</strong> `+
-    `The new classes are active and the future classes are in the Appointment Calendar. The existing Student Contract remains on the student's record.`;
+    `The new classes are active and the future classes are in the Appointment Calendar. The old package history remains on the student's record. Please complete the new package payment and contract requirements.`;
 }
 if(refreshModal)refreshModal.classList.add('show');
 }catch(error){
