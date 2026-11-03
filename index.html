@@ -4860,7 +4860,31 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 @media(max-width:600px){.dashboard-wallpaper-group{padding:9px}.dashboard-wallpaper-group .dashboard-summary-grid{grid-template-columns:1fr}.dashboard-wallpaper-group .teacher-dashboard-card{padding:14px}.dashboard-summary-date-card{min-height:95px!important}}
 </style>
 
-</head>
+<style id="dashboard-timezone-layout">
+#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(110px,.72fr)) minmax(220px,1.15fr);align-items:stretch;gap:10px}
+#dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){min-height:88px!important;padding:14px 16px!important}
+#dashboardWallpaperGroup .dashboard-summary-number{font-size:clamp(27px,2.2vw,34px);margin-top:7px}
+.dashboard-timezone-card{min-height:88px!important;padding:12px 14px!important}
+.dashboard-timezone-card .tdb-label{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.timezone-fixed-tag{font-size:9px;padding:2px 6px;border-radius:20px;background:#d8fbf5;color:#087e77;letter-spacing:.4px}
+.dashboard-timezone-card .tdb-time{font-size:clamp(19px,1.8vw,27px)!important}
+.dashboard-extra-timezones{display:contents}
+.dashboard-timezone-controls{grid-column:1/-1;display:flex;align-items:center;gap:8px;justify-content:flex-end;min-width:0;margin-top:1px}
+.dashboard-timezone-controls select{max-width:220px;min-width:0;padding:7px 9px;border:1px solid #9bdfe0;border-radius:8px;background:#fff;color:#17313a;font-size:12px}
+.dashboard-timezone-controls button{border:0;border-radius:8px;padding:8px 12px;background:var(--portal-accent,#00cccc);color:#06383a;font-weight:800;cursor:pointer;font-size:12px}
+.dashboard-timezone-controls button:disabled{opacity:.45;cursor:not-allowed}
+.dashboard-timezone-controls span{font-size:11px;color:#49646a;white-space:nowrap}
+.dashboard-extra-timezone-card{min-width:0;min-height:88px;padding:12px 14px;border:1px solid rgba(255,255,255,.8);border-radius:12px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);box-shadow:0 2px 9px rgba(0,0,0,.07);display:flex;flex-direction:column;justify-content:center;gap:4px}
+.dashboard-extra-timezone-card .tz-title{font-size:10px;font-weight:900;letter-spacing:.7px;text-transform:uppercase;color:#008f96}
+.dashboard-extra-timezone-card .tz-time{font-size:clamp(19px,1.8vw,27px);font-weight:900;line-height:1.15;color:#111;font-variant-numeric:tabular-nums}
+.dashboard-extra-timezone-card .tz-date{font-size:11px;font-weight:700;color:#263238}
+.dashboard-extra-timezone-card .tz-remove{align-self:flex-end;border:0;background:transparent;color:#a33;font-size:10px;font-weight:800;cursor:pointer;padding:1px 3px}
+body.portal-dark .dashboard-extra-timezone-card{background:rgba(25,36,41,.84);border-color:rgba(255,255,255,.16)}
+body.portal-dark .dashboard-extra-timezone-card .tz-time,body.portal-dark .dashboard-extra-timezone-card .tz-date{color:#edf4f6}
+body.portal-dark .dashboard-timezone-controls select{background:#202c32;color:#edf4f6}
+@media(max-width:1100px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:1fr!important}.dashboard-timezone-controls{justify-content:flex-start;flex-wrap:wrap}.dashboard-timezone-controls select{flex:1;max-width:none}}
+</style></head>
 
 <body>
 
@@ -5443,10 +5467,20 @@ Dashboard
 <div class="dashboard-summary-label">CLASSES FOR TODAY</div>
 <div id="dashboardTodayClassCount" class="dashboard-summary-number">0</div>
 </div>
-<div class="dashboard-summary-card dashboard-summary-date-card" aria-live="off">
-<div class="tdb-label">TODAY · PHILIPPINES</div>
+<div class="dashboard-summary-card dashboard-summary-date-card dashboard-timezone-card" aria-live="off" data-timezone="Asia/Manila">
+<div class="tdb-label">TODAY · PHILIPPINES <span class="timezone-fixed-tag">FIXED</span></div>
 <div id="dashboardLiveTime" class="tdb-time">--:--:--</div>
 <div id="dashboardLiveDate" class="tdb-date">Loading date…</div>
+</div>
+<div id="dashboardExtraTimezones" class="dashboard-extra-timezones" aria-live="polite"></div>
+<div class="dashboard-timezone-controls">
+<select id="dashboardTimezoneSelect" aria-label="Choose a time zone to add">
+<option value="">Add a time zone…</option>
+<option value="Asia/Bangkok">Thailand</option><option value="Asia/Shanghai">China</option><option value="Asia/Ho_Chi_Minh">Vietnam</option>
+<option value="Asia/Tokyo">Japan</option><option value="Asia/Seoul">South Korea</option><option value="Asia/Singapore">Singapore</option>
+<option value="Australia/Sydney">Australia (Sydney)</option><option value="Europe/London">United Kingdom</option>
+<option value="America/Los_Angeles">USA (Los Angeles)</option><option value="America/New_York">USA (New York)</option>
+</select><button type="button" id="dashboardAddTimezoneBtn" disabled>＋ Add</button><span id="dashboardTimezoneCount">1 / 4 time zones</span>
 </div>
 </div>
 </div>
@@ -13311,11 +13345,32 @@ function confirmGenerateStudentClassSchedule(studentId){
     generateStudentClassScheduleConfirmed(String(student.id),total,startDate);
   });
 }
+function showGenerateScheduleLoading(){
+  document.getElementById('generateScheduleLoadingOverlay')?.remove();
+  const overlay=document.createElement('div');
+  overlay.id='generateScheduleLoadingOverlay';
+  overlay.setAttribute('role','status');
+  overlay.setAttribute('aria-live','polite');
+  overlay.style.cssText='position:fixed;inset:0;z-index:200000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(8,24,30,.48);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);';
+  overlay.innerHTML=`<div style="width:min(340px,92vw);padding:28px 24px;background:var(--card-bg,#fff);color:var(--text-color,#17343a);border:1px solid rgba(0,190,195,.35);border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.28);text-align:center"><div style="width:48px;height:48px;margin:0 auto 16px;border:5px solid rgba(0,190,195,.18);border-top-color:#00bfc5;border-radius:50%;animation:generateScheduleSpin .8s linear infinite"></div><div style="font-size:18px;font-weight:900;color:var(--accent-color,#009da3);margin-bottom:7px">Generating Class Schedule…</div><div style="font-size:13px;line-height:1.5;opacity:.78">Please wait while the class records are being created and saved. Do not close or refresh this page.</div></div>`;
+  if(!document.getElementById('generateScheduleLoadingStyle')){
+    const style=document.createElement('style');style.id='generateScheduleLoadingStyle';style.textContent='@keyframes generateScheduleSpin{to{transform:rotate(360deg)}}';document.head.appendChild(style);
+  }
+  document.body.appendChild(overlay);
+  document.body.style.overflow='hidden';
+}
+function hideGenerateScheduleLoading(){
+  document.getElementById('generateScheduleLoadingOverlay')?.remove();
+  document.body.style.overflow='';
+}
 async function generateStudentClassScheduleConfirmed(studentId,total,startDate){
   const student=getStudents().find(st=>String(st.id)===String(studentId));
   if(!student){alert('Student record not found.');return;}
   const existing=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase()));
   if(existing.length){alert('Class records already exist for this student. No new records were generated.');renderStudentAppointmentDashboard();return;}
+  if(window.__generatingStudentSchedule){return;}
+  window.__generatingStudentSchedule=true;
+  showGenerateScheduleLoading();
   try{
     // Keep a snapshot so only the newly generated records are sent to Supabase.
     // Syncing all 111+ historical appointments here can fail on unrelated old
@@ -13343,6 +13398,9 @@ async function generateStudentClassScheduleConfirmed(studentId,total,startDate){
   }catch(error){
     console.error('Generate class schedule failed:',error);
     alert(`The class schedule could not be fully saved. ${error?.message||'Please check the appointment records before retrying.'}`);
+  }finally{
+    hideGenerateScheduleLoading();
+    window.__generatingStudentSchedule=false;
   }
 }
 
@@ -20975,17 +21033,15 @@ function closeAppointmentSuccess(){const overlay=document.getElementById('appoin
 
 <script>
 (function(){
-  function updateTeacherDashboardClock(){
-    const now=new Date();
-    const time=document.getElementById('dashboardLiveTime');
-    const date=document.getElementById('dashboardLiveDate');
-    if(!time||!date)return;
-    const opts={timeZone:'Asia/Manila',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true};
-    time.textContent=new Intl.DateTimeFormat('en-PH',opts).format(now);
-    date.textContent=new Intl.DateTimeFormat('en-PH',{timeZone:'Asia/Manila',weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(now);
-  }
-  updateTeacherDashboardClock();
-  setInterval(updateTeacherDashboardClock,1000);
+  const STORAGE_KEY='teacherDashboardExtraTimezones_v1';
+  const ZONES={'Asia/Bangkok':{name:'THAILAND',locale:'en-TH'},'Asia/Shanghai':{name:'CHINA',locale:'en-CN'},'Asia/Ho_Chi_Minh':{name:'VIETNAM',locale:'en-VN'},'Asia/Tokyo':{name:'JAPAN',locale:'en-JP'},'Asia/Seoul':{name:'SOUTH KOREA',locale:'en-KR'},'Asia/Singapore':{name:'SINGAPORE',locale:'en-SG'},'Australia/Sydney':{name:'AUSTRALIA · SYDNEY',locale:'en-AU'},'Europe/London':{name:'UNITED KINGDOM',locale:'en-GB'},'America/Los_Angeles':{name:'USA · LOS ANGELES',locale:'en-US'},'America/New_York':{name:'USA · NEW YORK',locale:'en-US'}};
+  let extraZones=[];try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');if(Array.isArray(saved))extraZones=saved.filter(z=>ZONES[z]).slice(0,3)}catch(e){}
+  function fmt(zone,locale,now){return {time:new Intl.DateTimeFormat(locale,{timeZone:zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(now),date:new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(now)}}
+  function updateTeacherDashboardClock(){const now=new Date(),time=document.getElementById('dashboardLiveTime'),date=document.getElementById('dashboardLiveDate');if(time&&date){const ph=fmt('Asia/Manila','en-PH',now);time.textContent=ph.time;date.textContent=ph.date}extraZones.forEach((zone,i)=>{const t=document.getElementById('dashboardTimezoneTime'+i),d=document.getElementById('dashboardTimezoneDate'+i);if(t&&d){const v=fmt(zone,ZONES[zone].locale,now);t.textContent=v.time;d.textContent=v.date}})}
+  function saveZones(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(extraZones))}catch(e){}}
+  function renderExtraZones(){const host=document.getElementById('dashboardExtraTimezones'),select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn'),count=document.getElementById('dashboardTimezoneCount');if(!host||!select||!add||!count)return;host.innerHTML='';extraZones.forEach((zone,i)=>{const meta=ZONES[zone],card=document.createElement('div');card.className='dashboard-extra-timezone-card';const title=document.createElement('div');title.className='tz-title';title.textContent='TODAY · '+meta.name;const time=document.createElement('div');time.className='tz-time';time.id='dashboardTimezoneTime'+i;time.textContent='--:--:--';const date=document.createElement('div');date.className='tz-date';date.id='dashboardTimezoneDate'+i;date.textContent='Loading date…';const remove=document.createElement('button');remove.type='button';remove.className='tz-remove';remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+meta.name+' time zone');remove.addEventListener('click',()=>{extraZones=extraZones.filter((_,idx)=>idx!==i);saveZones();renderExtraZones();updateTeacherDashboardClock()});card.append(title,time,date,remove);host.appendChild(card)});const used=new Set(['Asia/Manila',...extraZones]);Array.from(select.options).forEach(o=>{if(o.value)o.disabled=used.has(o.value)});select.value='';const full=extraZones.length>=3;select.disabled=full;add.disabled=full||!select.value;count.textContent=(extraZones.length+1)+' / 4 time zones'}
+  function init(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn');if(select&&add){select.addEventListener('change',()=>{add.disabled=extraZones.length>=3||!select.value});add.addEventListener('click',()=>{const zone=select.value;if(!zone||!ZONES[zone]||extraZones.includes(zone)||extraZones.length>=3)return;extraZones.push(zone);saveZones();renderExtraZones();updateTeacherDashboardClock()})}renderExtraZones();updateTeacherDashboardClock()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();setInterval(updateTeacherDashboardClock,1000);
 })();
 </script>
 
