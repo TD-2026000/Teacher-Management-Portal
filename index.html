@@ -11767,7 +11767,25 @@ return currentUser
 :'teacherDanyealAppointments';
 }
 
+// Keep an in-memory fallback when the browser's localStorage quota is full.
+// Supabase remains the durable source of truth for signed-in teachers.
+let appointmentMemoryFallback=null;
+function writeAppointmentCache(data){
+  appointmentMemoryFallback=Array.isArray(data)?data:null;
+  try{
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));
+    return true;
+  }catch(error){
+    if(error?.name==='QuotaExceededError'||/quota/i.test(String(error?.message||''))){
+      console.warn('Appointment cache is full; continuing with Supabase and the in-memory appointment list.');
+      return false;
+    }
+    throw error;
+  }
+}
+
 function getAppointments(){
+if(Array.isArray(appointmentMemoryFallback))return appointmentMemoryFallback;
 try{
 const data=JSON.parse(localStorage.getItem(appointmentStorageKey())||'[]');
 return Array.isArray(data)?data:[];
@@ -11977,7 +11995,7 @@ async function loadAppointmentsFromSupabase(){
 
     // Supabase is authoritative across browsers and code updates. Do not merge
     // stale local-only appointments back in: that resurrects classes the user deleted.
-    localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+    writeAppointmentCache(appointments);
     console.log(`Loaded ${appointments.length} appointments from Supabase; local cache reconciled.`);
 
   }catch(error){
@@ -12699,7 +12717,7 @@ function generatePreferredAppointments(student,startDate,type,maxAppointments=In
   }
   // Persist the generated list locally before returning it to the caller.
   // The caller then syncs only the newly created records to Supabase.
-  localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+  writeAppointmentCache(appointments);
   return {created,remaining:Math.max(0,packageRemaining-packageCreated),first:createdSlots[0]||null,last:createdSlots[createdSlots.length-1]||null,reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
@@ -13311,7 +13329,7 @@ async function generateStudentClassScheduleConfirmed(studentId,total,startDate){
       throw new Error(`Generated ${result.created} class(es), but could identify only ${newRecords.length} new record(s) for saving. No success was reported.`);
     }
     // Save the complete local list, but remotely sync only the new rows.
-    localStorage.setItem(appointmentStorageKey(),JSON.stringify(savedRecords));
+    writeAppointmentCache(savedRecords);
     if(currentUser && supabaseClient){
       const synced=await syncAppointmentsToSupabase(newRecords);
       if(synced!==true) throw new Error('Supabase rejected one or more newly generated appointment records.');
