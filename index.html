@@ -4860,31 +4860,32 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 @media(max-width:600px){.dashboard-wallpaper-group{padding:9px}.dashboard-wallpaper-group .dashboard-summary-grid{grid-template-columns:1fr}.dashboard-wallpaper-group .teacher-dashboard-card{padding:14px}.dashboard-summary-date-card{min-height:95px!important}}
 </style>
 
-<style id="dashboard-timezone-layout">
-#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(110px,.72fr)) minmax(220px,1.15fr);align-items:stretch;gap:10px}
-#dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){min-height:88px!important;padding:14px 16px!important}
-#dashboardWallpaperGroup .dashboard-summary-number{font-size:clamp(27px,2.2vw,34px);margin-top:7px}
-.dashboard-timezone-card{min-height:88px!important;padding:12px 14px!important}
-.dashboard-timezone-card .tdb-label{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.timezone-fixed-tag{font-size:9px;padding:2px 6px;border-radius:20px;background:#d8fbf5;color:#087e77;letter-spacing:.4px}
-.dashboard-timezone-card .tdb-time{font-size:clamp(19px,1.8vw,27px)!important}
-.dashboard-extra-timezones{display:contents}
-.dashboard-timezone-controls{grid-column:1/-1;display:flex;align-items:center;gap:8px;justify-content:flex-end;min-width:0;margin-top:1px}
-.dashboard-timezone-controls select{max-width:220px;min-width:0;padding:7px 9px;border:1px solid #9bdfe0;border-radius:8px;background:#fff;color:#17313a;font-size:12px}
+
+<style id="dashboard-timezone-kpi-layout-fix">
+/* One horizontal dashboard row: compact centered KPI cards + one expandable clock panel. */
+#dashboardWallpaperGroup .dashboard-summary-grid{display:grid!important;grid-template-columns: minmax(125px,.72fr) minmax(145px,.82fr) minmax(175px,.95fr) minmax(470px,2.45fr)!important;gap:12px!important;align-items:stretch!important}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card){min-height:220px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:18px 10px!important}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card) .dashboard-summary-label{width:100%;text-align:center!important;font-size:clamp(12px,1vw,16px)!important;font-weight:900!important;line-height:1.25}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card) .dashboard-summary-number{width:100%;text-align:center!important;font-size:clamp(42px,4vw,62px)!important;line-height:1.05!important;font-weight:900!important;margin-top:10px!important}
+#dashboardWallpaperGroup .dashboard-summary-date-card{min-width:0!important;min-height:220px!important;padding:15px 18px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;gap:10px!important}
+.dashboard-timezone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(72px,auto));gap:9px 18px;align-items:center;flex:1}
+.dashboard-timezone-cell{min-width:0;position:relative;padding:3px 2px 16px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.dashboard-timezone-cell .tdb-label{font-size:11px!important;font-weight:900!important;letter-spacing:.55px;line-height:1.2}
+.dashboard-timezone-cell .tdb-time{font-size:clamp(22px,2vw,32px)!important;font-weight:900!important;line-height:1.1!important;margin-top:4px}
+.dashboard-timezone-cell .tdb-date{font-size:11px!important;font-weight:700!important;margin-top:3px}
+.dashboard-timezone-empty{display:none}
+.dashboard-timezone-controls{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:3px}
+.dashboard-timezone-controls select{max-width:210px;min-width:0;padding:7px 9px;border:1px solid #9bdfe0;border-radius:8px;background:#fff;color:#17313a;font-size:12px}
 .dashboard-timezone-controls button{border:0;border-radius:8px;padding:8px 12px;background:var(--portal-accent,#00cccc);color:#06383a;font-weight:800;cursor:pointer;font-size:12px}
 .dashboard-timezone-controls button:disabled{opacity:.45;cursor:not-allowed}
 .dashboard-timezone-controls span{font-size:11px;color:#49646a;white-space:nowrap}
-.dashboard-extra-timezone-card{min-width:0;min-height:88px;padding:12px 14px;border:1px solid rgba(255,255,255,.8);border-radius:12px;background:rgba(255,255,255,.76);backdrop-filter:blur(3px);box-shadow:0 2px 9px rgba(0,0,0,.07);display:flex;flex-direction:column;justify-content:center;gap:4px}
-.dashboard-extra-timezone-card .tz-title{font-size:10px;font-weight:900;letter-spacing:.7px;text-transform:uppercase;color:#008f96}
-.dashboard-extra-timezone-card .tz-time{font-size:clamp(19px,1.8vw,27px);font-weight:900;line-height:1.15;color:#111;font-variant-numeric:tabular-nums}
-.dashboard-extra-timezone-card .tz-date{font-size:11px;font-weight:700;color:#263238}
-.dashboard-extra-timezone-card .tz-remove{align-self:flex-end;border:0;background:transparent;color:#a33;font-size:10px;font-weight:800;cursor:pointer;padding:1px 3px}
-body.portal-dark .dashboard-extra-timezone-card{background:rgba(25,36,41,.84);border-color:rgba(255,255,255,.16)}
-body.portal-dark .dashboard-extra-timezone-card .tz-time,body.portal-dark .dashboard-extra-timezone-card .tz-date{color:#edf4f6}
+.dashboard-timezone-remove{position:absolute;right:0;bottom:0;border:0;background:transparent;color:#008f96;font-size:10px;font-weight:800;cursor:pointer;padding:1px 3px}
 body.portal-dark .dashboard-timezone-controls select{background:#202c32;color:#edf4f6}
-@media(max-width:1100px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:1fr!important}.dashboard-timezone-controls{justify-content:flex-start;flex-wrap:wrap}.dashboard-timezone-controls select{flex:1;max-width:none}}
-</style></head>
+body.portal-dark .dashboard-timezone-controls span{color:#d1e0e4}
+@media(max-width:1050px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1;min-height:190px!important}}
+@media(max-width:600px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card){min-height:125px!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1;min-height:200px!important}.dashboard-timezone-controls{justify-content:flex-start;flex-wrap:wrap}.dashboard-timezone-controls select{flex:1;max-width:none}}
+</style>
+</head>
 
 <body>
 
@@ -5467,21 +5468,29 @@ Dashboard
 <div class="dashboard-summary-label">CLASSES FOR TODAY</div>
 <div id="dashboardTodayClassCount" class="dashboard-summary-number">0</div>
 </div>
-<div class="dashboard-summary-card dashboard-summary-date-card dashboard-timezone-card" aria-live="off" data-timezone="Asia/Manila">
-<div class="tdb-label">TODAY · PHILIPPINES</div>
-<div id="dashboardLiveTime" class="tdb-time">--:--:--</div>
-<div id="dashboardLiveDate" class="tdb-date">Loading date…</div>
-<div class="dashboard-timezone-inline-row">
-<div id="dashboardExtraTimezones" class="dashboard-extra-timezones" aria-live="polite"></div>
-<div class="dashboard-timezone-controls">
-<select id="dashboardTimezoneSelect" aria-label="Choose a time zone to add">
-<option value="">Add a time zone…</option>
-<option value="Asia/Bangkok">Thailand</option><option value="Asia/Shanghai">China</option><option value="Asia/Ho_Chi_Minh">Vietnam</option>
-<option value="Asia/Tokyo">Japan</option><option value="Asia/Seoul">South Korea</option><option value="Asia/Singapore">Singapore</option>
-<option value="Australia/Sydney">Australia (Sydney)</option><option value="Europe/London">United Kingdom</option>
-<option value="America/Los_Angeles">USA (Los Angeles)</option><option value="America/New_York">USA (New York)</option>
-</select><button type="button" id="dashboardAddTimezoneBtn" disabled>＋ Add</button><span id="dashboardTimezoneCount">1 / 4 time zones</span>
-</div>
+<div class="dashboard-summary-card dashboard-summary-date-card dashboard-timezone-card" aria-live="off">
+  <div class="dashboard-timezone-grid" id="dashboardTimezoneGrid">
+    <div class="dashboard-timezone-cell dashboard-timezone-ph">
+      <div class="tdb-label">TODAY · PHILIPPINES</div>
+      <div id="dashboardLiveTime" class="tdb-time">--:--:--</div>
+      <div id="dashboardLiveDate" class="tdb-date">Loading date…</div>
+    </div>
+    <div id="dashboardTimezoneSlot1" class="dashboard-timezone-cell dashboard-timezone-empty"></div>
+    <div id="dashboardTimezoneSlot2" class="dashboard-timezone-cell dashboard-timezone-empty"></div>
+    <div id="dashboardTimezoneSlot3" class="dashboard-timezone-cell dashboard-timezone-empty"></div>
+  </div>
+  <div class="dashboard-timezone-controls">
+    <select id="dashboardTimezoneSelect" aria-label="Choose a time zone to add">
+      <option value="">Add a time zone…</option>
+      <option value="Asia/Bangkok">Thailand</option><option value="Asia/Shanghai">China</option>
+      <option value="Asia/Ho_Chi_Minh">Vietnam</option><option value="Asia/Tokyo">Japan</option>
+      <option value="Asia/Seoul">South Korea</option><option value="Asia/Singapore">Singapore</option>
+      <option value="Australia/Sydney">Australia (Sydney)</option><option value="Europe/London">United Kingdom</option>
+      <option value="America/Los_Angeles">USA (Los Angeles)</option><option value="America/New_York">USA (New York)</option>
+    </select>
+    <button type="button" id="dashboardAddTimezoneBtn" disabled>＋ Add</button>
+    <span id="dashboardTimezoneCount">1 / 4 time zones</span>
+  </div>
 </div>
 </div>
 </div>
@@ -21034,15 +21043,24 @@ function closeAppointmentSuccess(){const overlay=document.getElementById('appoin
 
 <script>
 (function(){
-  const STORAGE_KEY='teacherDashboardExtraTimezones_v1';
-  const ZONES={'Asia/Bangkok':{name:'THAILAND',locale:'en-TH'},'Asia/Shanghai':{name:'CHINA',locale:'en-CN'},'Asia/Ho_Chi_Minh':{name:'VIETNAM',locale:'en-VN'},'Asia/Tokyo':{name:'JAPAN',locale:'en-JP'},'Asia/Seoul':{name:'SOUTH KOREA',locale:'en-KR'},'Asia/Singapore':{name:'SINGAPORE',locale:'en-SG'},'Australia/Sydney':{name:'AUSTRALIA · SYDNEY',locale:'en-AU'},'Europe/London':{name:'UNITED KINGDOM',locale:'en-GB'},'America/Los_Angeles':{name:'USA · LOS ANGELES',locale:'en-US'},'America/New_York':{name:'USA · NEW YORK',locale:'en-US'}};
-  let extraZones=[];try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');if(Array.isArray(saved))extraZones=saved.filter(z=>ZONES[z]).slice(0,3)}catch(e){}
-  function fmt(zone,locale,now){return {time:new Intl.DateTimeFormat(locale,{timeZone:zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(now),date:new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(now)}}
-  function updateTeacherDashboardClock(){const now=new Date(),time=document.getElementById('dashboardLiveTime'),date=document.getElementById('dashboardLiveDate');if(time&&date){const ph=fmt('Asia/Manila','en-PH',now);time.textContent=ph.time;date.textContent=ph.date}extraZones.forEach((zone,i)=>{const t=document.getElementById('dashboardTimezoneTime'+i),d=document.getElementById('dashboardTimezoneDate'+i);if(t&&d){const v=fmt(zone,ZONES[zone].locale,now);t.textContent=v.time;d.textContent=v.date}})}
-  function saveZones(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(extraZones))}catch(e){}}
-  function renderExtraZones(){const host=document.getElementById('dashboardExtraTimezones'),select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn'),count=document.getElementById('dashboardTimezoneCount');if(!host||!select||!add||!count)return;host.innerHTML='';extraZones.forEach((zone,i)=>{const meta=ZONES[zone],card=document.createElement('div');card.className='dashboard-extra-timezone-card';const title=document.createElement('div');title.className='tz-title';title.textContent='TODAY · '+meta.name;const time=document.createElement('div');time.className='tz-time';time.id='dashboardTimezoneTime'+i;time.textContent='--:--:--';const date=document.createElement('div');date.className='tz-date';date.id='dashboardTimezoneDate'+i;date.textContent='Loading date…';const remove=document.createElement('button');remove.type='button';remove.className='tz-remove';remove.textContent='Remove';remove.setAttribute('aria-label','Remove '+meta.name+' time zone');remove.addEventListener('click',()=>{extraZones=extraZones.filter((_,idx)=>idx!==i);saveZones();renderExtraZones();updateTeacherDashboardClock()});card.append(title,time,date,remove);host.appendChild(card)});const used=new Set(['Asia/Manila',...extraZones]);Array.from(select.options).forEach(o=>{if(o.value)o.disabled=used.has(o.value)});select.value='';const full=extraZones.length>=3;select.disabled=full;add.disabled=full||!select.value;count.textContent=(extraZones.length+1)+' / 4 time zones'}
-  function init(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn');if(select&&add){select.addEventListener('change',()=>{add.disabled=extraZones.length>=3||!select.value});add.addEventListener('click',()=>{const zone=select.value;if(!zone||!ZONES[zone]||extraZones.includes(zone)||extraZones.length>=3)return;extraZones.push(zone);saveZones();renderExtraZones();updateTeacherDashboardClock()})}renderExtraZones();updateTeacherDashboardClock()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();setInterval(updateTeacherDashboardClock,1000);
+ const KEY='teacherDashboardExtraTimezones_v2';
+ const ZONES={
+  'Asia/Bangkok':['THAILAND','en-TH'],'Asia/Shanghai':['CHINA','en-CN'],
+  'Asia/Ho_Chi_Minh':['VIETNAM','en-VN'],'Asia/Tokyo':['JAPAN','en-JP'],
+  'Asia/Seoul':['SOUTH KOREA','en-KR'],'Asia/Singapore':['SINGAPORE','en-SG'],
+  'Australia/Sydney':['AUSTRALIA · SYDNEY','en-AU'],'Europe/London':['UNITED KINGDOM','en-GB'],
+  'America/Los_Angeles':['USA · LOS ANGELES','en-US'],'America/New_York':['USA · NEW YORK','en-US']
+ };
+ let zones=[];try{let v=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(v))zones=v.filter(z=>ZONES[z]).slice(0,3)}catch(e){}
+ function formatted(zone,locale,now){return {time:new Intl.DateTimeFormat(locale,{timeZone:zone,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).format(now),date:new Intl.DateTimeFormat(locale,{timeZone:zone,weekday:'long',year:'numeric',month:'long',day:'numeric'}).format(now)}}
+ function update(){const now=new Date();const ph=formatted('Asia/Manila','en-PH',now);const t=document.getElementById('dashboardLiveTime'),d=document.getElementById('dashboardLiveDate');if(t)t.textContent=ph.time;if(d)d.textContent=ph.date;
+  zones.forEach((z,i)=>{const v=formatted(z,ZONES[z][1],now),time=document.getElementById('dashboardTimezoneTime'+i),date=document.getElementById('dashboardTimezoneDate'+i);if(time)time.textContent=v.time;if(date)date.textContent=v.date;});}
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(zones))}catch(e){}}
+ function render(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn'),count=document.getElementById('dashboardTimezoneCount');if(!select||!add||!count)return;
+  for(let i=0;i<3;i++){const slot=document.getElementById('dashboardTimezoneSlot'+(i+1));slot.innerHTML='';slot.classList.toggle('dashboard-timezone-empty',!zones[i]);if(!zones[i])continue;const z=zones[i],meta=ZONES[z];const title=document.createElement('div');title.className='tdb-label';title.textContent='TODAY · '+meta[0];const time=document.createElement('div');time.className='tdb-time';time.id='dashboardTimezoneTime'+i;time.textContent='--:--:--';const date=document.createElement('div');date.className='tdb-date';date.id='dashboardTimezoneDate'+i;date.textContent='Loading date…';const remove=document.createElement('button');remove.type='button';remove.className='dashboard-timezone-remove';remove.textContent='Remove';remove.addEventListener('click',()=>{zones.splice(i,1);save();render();update()});slot.append(title,time,date,remove);}
+  const used=new Set(zones);Array.from(select.options).forEach(o=>{if(o.value)o.disabled=used.has(o.value)});select.value='';select.disabled=zones.length>=3;add.disabled=zones.length>=3||!select.value;count.textContent=(zones.length+1)+' / 4 time zones';}
+ function init(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn');if(!select||!add)return;select.addEventListener('change',()=>{add.disabled=zones.length>=3||!select.value});add.addEventListener('click',()=>{const z=select.value;if(!z||!ZONES[z]||zones.includes(z)||zones.length>=3)return;zones.push(z);save();render();update()});render();update();}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();setInterval(update,1000);
 })();
 </script>
 
@@ -21409,61 +21427,6 @@ body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-d
 body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.75)!important;}
 </style>
 
-
-<style id="dashboard-timezone-2x2-final">
-/* One shared clock panel. Clock order follows the requested visual layout:
-   PH | third added
-   second added | fourth added */
-#dashboardWallpaperGroup .dashboard-summary-grid{
- display:grid!important;
- grid-template-columns:minmax(105px,.68fr) minmax(125px,.78fr) minmax(145px,.9fr) minmax(430px,2.7fr)!important;
- gap:10px!important;align-items:stretch!important;
-}
-#dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){
- min-width:0!important;min-height:100px!important;padding:14px 15px!important;
-}
-#dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{
- min-width:0!important;min-height:100px!important;padding:12px 15px!important;
- display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
- grid-template-rows:auto auto auto auto!important;column-gap:14px!important;row-gap:5px!important;align-content:center!important;
-}
-#dashboardWallpaperGroup .dashboard-timezone-card>.tdb-label{grid-column:1!important;grid-row:1!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveTime{grid-column:1!important;grid-row:2!important;font-size:clamp(19px,1.65vw,25px)!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveDate{grid-column:1!important;grid-row:3!important;font-size:10px!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-timezone-inline-row{display:contents!important}
-#dashboardWallpaperGroup #dashboardExtraTimezones{display:contents!important}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card{
- min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;
- background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
- display:grid!important;grid-template-columns:minmax(0,1fr)!important;row-gap:2px!important;align-content:center!important;
-}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(1){grid-column:1!important;grid-row:4!important}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(2){grid-column:2!important;grid-row:1 / span 2!important}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(3){grid-column:2!important;grid-row:4!important}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-title{font-size:9px!important;line-height:1.15!important;color:#008f96!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-time{font-size:clamp(17px,1.35vw,22px)!important;line-height:1.1!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-date{font-size:9px!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-remove{justify-self:start!important;font-size:9px!important;padding:0!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls{
- grid-column:1 / -1!important;grid-row:5!important;display:flex!important;justify-content:flex-end!important;
- gap:6px!important;flex-wrap:nowrap!important;margin-top:3px!important;min-width:0!important;
-}
-#dashboardWallpaperGroup .dashboard-timezone-controls select{max-width:155px!important;width:155px!important;padding:5px 7px!important;font-size:10px!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls button{padding:5px 8px!important;font-size:10px!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls span{font-size:9px!important;white-space:nowrap!important}
-@media(max-width:1050px){
- #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
- #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1!important;min-height:140px!important}
-}
-@media(max-width:650px){
- #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1!important;min-height:160px!important}
- #dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){min-height:82px!important}
- #dashboardWallpaperGroup .dashboard-timezone-controls{justify-content:flex-start!important;flex-wrap:wrap!important}
- #dashboardWallpaperGroup .dashboard-timezone-controls select{flex:1!important;max-width:none!important}
-}
-</style>
-
 </body>
 </html>
 
@@ -21494,61 +21457,5 @@ body.portal-dark .teacher-dashboard-card.wallpaper-selected .teacher-dashboard-w
 #dashboardWallpaperGallery .dashboard-wallpaper-swatch.wallpaper-preview-fallback:after {
   content:attr(data-fallback) !important; background:linear-gradient(135deg,#dbeafe,#fef3c7) !important;
   color:#111827 !important; font-size:12px !important; font-weight:800 !important;
-}
-</style>
-
-<style id="dashboard-single-row-timezone-layout-final">
-/* Keep all dashboard summary information in one horizontal row. The clock card
-   grows internally as extra zones are added; it never creates a second card row. */
-#dashboardWallpaperGroup .dashboard-summary-grid{
- display:grid!important;
- grid-template-columns:minmax(105px,.72fr) minmax(125px,.82fr) minmax(145px,.95fr) minmax(420px,2.65fr)!important;
- gap:10px!important;align-items:stretch!important;
-}
-#dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){
- min-width:0!important;min-height:100px!important;padding:15px 16px!important;
-}
-#dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{
- min-width:0!important;min-height:100px!important;padding:12px 15px!important;
- display:grid!important;grid-template-columns:minmax(145px,.85fr) minmax(0,1.8fr)!important;
- grid-template-rows:auto auto auto;column-gap:16px;align-content:center;
-}
-#dashboardWallpaperGroup .dashboard-timezone-card>.tdb-label,
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveTime,
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveDate{grid-column:1;}
-#dashboardWallpaperGroup .dashboard-timezone-card>.tdb-label{grid-row:1}
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveTime{grid-row:2;font-size:clamp(20px,1.7vw,27px)!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveDate{grid-row:3;font-size:11px!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-timezone-inline-row{
- grid-column:2;grid-row:1/4;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px;
-}
-#dashboardWallpaperGroup #dashboardExtraTimezones{
- display:flex!important;flex-wrap:wrap;align-items:center;gap:5px 15px;min-width:0;
-}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card{
- min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;
- background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
- display:grid!important;grid-template-columns:auto auto;column-gap:6px;row-gap:1px;align-items:baseline;
-}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-title{grid-column:1/-1;font-size:9px!important;line-height:1.2;color:#008f96!important}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-time{font-size:clamp(14px,1.15vw,18px)!important;line-height:1.15;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-date{font-size:9px!important;white-space:nowrap}
-#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-remove{grid-column:1/-1;justify-self:start;align-self:auto;font-size:9px!important;padding:0!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls{display:flex!important;grid-column:auto!important;justify-content:flex-start!important;gap:6px!important;flex-wrap:nowrap!important;margin:0!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls select{max-width:155px!important;width:155px!important;padding:5px 7px!important;font-size:10px!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls button{padding:5px 8px!important;font-size:10px!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls span{font-size:9px!important}
-@media(max-width:1050px){
- #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
- #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1;grid-template-columns:minmax(145px,.7fr) minmax(0,2fr)!important}
-}
-@media(max-width:650px){
- #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1;grid-template-columns:1fr!important;grid-template-rows:auto auto auto auto!important}
- #dashboardWallpaperGroup .dashboard-timezone-card>.tdb-label,
- #dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveTime,
- #dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveDate{grid-column:1!important;grid-row:auto!important}
- #dashboardWallpaperGroup .dashboard-timezone-inline-row{grid-column:1!important;grid-row:auto!important}
- #dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){min-height:82px!important}
 }
 </style>
