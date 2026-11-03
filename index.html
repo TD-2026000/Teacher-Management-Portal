@@ -4860,36 +4860,6 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 @media(max-width:600px){.dashboard-wallpaper-group{padding:9px}.dashboard-wallpaper-group .dashboard-summary-grid{grid-template-columns:1fr}.dashboard-wallpaper-group .teacher-dashboard-card{padding:14px}.dashboard-summary-date-card{min-height:95px!important}}
 </style>
 
-
-<style id="dashboard-timezone-final-layout">
-#dashboardWallpaperGroup .dashboard-summary-grid{display:grid!important;grid-template-columns:minmax(125px,.72fr) minmax(125px,.72fr) minmax(145px,.82fr) minmax(390px,2.2fr)!important;gap:10px!important;align-items:stretch!important}
-#dashboardWallpaperGroup .dashboard-summary-card{min-height:112px!important;padding:14px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;min-width:0!important}
-#dashboardWallpaperGroup .dashboard-summary-label{align-self:flex-start!important;text-align:left!important;width:100%!important;margin:0!important;font-size:14px!important;font-weight:800!important}
-#dashboardWallpaperGroup .dashboard-summary-number{align-self:center!important;text-align:center!important;width:100%!important;margin:auto 0!important;font-size:clamp(34px,3vw,48px)!important;line-height:1!important;font-weight:900!important}
-#dashboardWallpaperGroup .dashboard-timezone-panel{display:flex!important;flex-direction:column!important;gap:10px!important;justify-content:space-between!important}
-#dashboardWallpaperGroup .dashboard-timezone-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;flex:1 1 auto!important}
-#dashboardWallpaperGroup .dashboard-timezone-item{min-width:0!important;min-height:84px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;padding:9px 10px!important;border:1px solid rgba(8,180,190,.24)!important;border-radius:11px!important;background:rgba(255,255,255,.82)!important;box-shadow:0 3px 9px rgba(0,0,0,.07)!important;overflow:hidden!important}
-#dashboardWallpaperGroup .dashboard-timezone-info{min-width:0!important;flex:1 1 auto!important}
-#dashboardWallpaperGroup .dashboard-timezone-item .tdb-label{font-size:11px!important;font-weight:900!important;letter-spacing:.035em!important;line-height:1.2!important;margin-bottom:4px!important;white-space:nowrap!important}
-#dashboardWallpaperGroup .dashboard-timezone-item .tdb-time{font-size:clamp(17px,1.35vw,23px)!important;font-weight:900!important;line-height:1.1!important;white-space:nowrap!important;overflow:visible!important}
-#dashboardWallpaperGroup .dashboard-timezone-item .tdb-date{font-size:10px!important;line-height:1.25!important;margin-top:3px!important}
-#dashboardWallpaperGroup .dashboard-timezone-remove{border:0!important;background:transparent!important;color:#00aeb5!important;font-size:10px!important;font-weight:800!important;padding:3px!important;cursor:pointer!important;display:block!important;margin-top:3px!important}
-#dashboardWallpaperGroup .dashboard-3d-clock{position:relative!important;flex:0 0 62px!important;width:62px!important;height:62px!important;border-radius:50%!important;background:radial-gradient(circle at 32% 25%,#fff 0 7%,#e9fbff 8% 30%,#9adbe7 55%,#347d99 78%,#17475f 100%)!important;border:4px solid #eafcff!important;box-shadow:inset 0 2px 6px #fff, inset 0 -5px 9px rgba(0,35,55,.45),0 5px 9px rgba(0,0,0,.24)!important}
-#dashboardWallpaperGroup .dashboard-3d-clock:before{content:'12';position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:900;color:#17475f!important}
-#dashboardWallpaperGroup .dashboard-3d-clock:after{content:'3        9';position:absolute;top:25px;left:7px;right:7px;text-align:center;font-size:7px;font-weight:900;color:#17475f!important;white-space:pre}
-#dashboardWallpaperGroup .dashboard-3d-clock i{position:absolute;width:7px;height:7px;border-radius:50%;background:#17475f;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4}
-#dashboardWallpaperGroup .clock-hand{position:absolute;left:50%;bottom:50%;transform-origin:bottom center;border-radius:4px;z-index:3}
-#dashboardWallpaperGroup .clock-hour{height:16px;width:3px;background:#17475f;transform:translateX(-50%) rotate(35deg)}
-#dashboardWallpaperGroup .clock-minute{height:22px;width:2px;background:#087f9c;transform:translateX(-50%) rotate(125deg)}
-#dashboardWallpaperGroup .clock-second{height:23px;width:1px;background:#e34d5b;transform:translateX(-50%) rotate(210deg)}
-#dashboardWallpaperGroup .dashboard-timezone-controls{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;flex-wrap:wrap!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls select{max-width:190px!important;min-width:145px!important;padding:6px 9px!important;border:1px solid #8de5e9!important;border-radius:8px!important;background:#fff!important;color:#111!important;font-size:11px!important}
-#dashboardWallpaperGroup .dashboard-timezone-controls button{padding:6px 10px!important;border:0!important;border-radius:8px!important;background:#00c9cf!important;color:#fff!important;font-size:11px!important;font-weight:800!important;cursor:pointer!important}
-#dashboardWallpaperGroup #dashboardTimezoneCount{font-size:10px!important;font-weight:700!important;color:#008f98!important;white-space:nowrap!important}
-@media(max-width:1050px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-timezone-panel{grid-column:1/-1!important}}
-@media(max-width:620px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-timezone-panel{grid-column:1/-1!important}#dashboardWallpaperGroup .dashboard-timezone-grid{grid-template-columns:1fr!important}}
-</style>
-
 </head>
 
 <body>
@@ -5473,15 +5443,15 @@ Dashboard
 <div class="dashboard-summary-label">CLASSES FOR TODAY</div>
 <div id="dashboardTodayClassCount" class="dashboard-summary-number">0</div>
 </div>
-<div class="dashboard-summary-card dashboard-summary-date-card dashboard-timezone-panel" aria-live="off">
+<section class="dashboard-summary-card dashboard-timezones-panel" aria-label="World clocks">
   <div id="dashboardTimezoneCards" class="dashboard-timezone-grid">
-    <div class="dashboard-timezone-item" data-zone="Asia/Manila">
-      <div class="dashboard-timezone-info"><div class="tdb-label">TODAY · PHILIPPINES</div><div id="dashboardLiveTime" class="tdb-time">--:--:--</div><div id="dashboardLiveDate" class="tdb-date">Loading date…</div></div>
-      <div class="dashboard-3d-clock" aria-hidden="true"><span class="clock-hand clock-hour"></span><span class="clock-hand clock-minute"></span><span class="clock-hand clock-second"></span><i></i></div>
-    </div>
+    <article class="dashboard-timezone-card" data-zone="Asia/Manila">
+      <div class="dashboard-timezone-copy"><div class="tdb-label">TODAY · PHILIPPINES</div><div class="tdb-time" id="dashboardLiveTime">--:--:--</div><div class="tdb-date" id="dashboardLiveDate">Loading date…</div></div>
+      <div class="analog-clock" aria-hidden="true"><span class="clock-number n12">12</span><span class="clock-number n3">3</span><span class="clock-number n6">6</span><span class="clock-number n9">9</span><i class="clock-hand hour"></i><i class="clock-hand minute"></i><i class="clock-hand second"></i><b class="clock-pin"></b></div>
+    </article>
   </div>
-  <div class="dashboard-timezone-controls"><select id="dashboardTimezoneSelect" aria-label="Add a time zone"><option value="">Add a time zone…</option><option value="Asia/Bangkok">Thailand</option><option value="Asia/Shanghai">China</option><option value="Asia/Ho_Chi_Minh">Vietnam</option><option value="Asia/Tokyo">Japan</option><option value="Asia/Singapore">Singapore</option><option value="Asia/Seoul">South Korea</option><option value="Asia/Kuala_Lumpur">Malaysia</option><option value="Asia/Dubai">UAE</option><option value="Europe/London">United Kingdom</option><option value="America/New_York">USA – New York</option><option value="America/Los_Angeles">USA – Los Angeles</option></select><button type="button" id="dashboardTimezoneAdd">＋ Add</button><span id="dashboardTimezoneCount">1 / 4 time zones</span></div>
-</div>
+  <div class="dashboard-timezone-controls"><select id="dashboardTimezoneSelect" aria-label="Add a time zone"><option value="">Add a time zone…</option><option value="Asia/Bangkok">Thailand</option><option value="Asia/Shanghai">China</option><option value="Asia/Ho_Chi_Minh">Vietnam</option><option value="Asia/Tokyo">Japan</option><option value="Asia/Singapore">Singapore</option><option value="Asia/Seoul">South Korea</option><option value="Asia/Dubai">UAE</option><option value="Europe/London">United Kingdom</option><option value="America/Los_Angeles">USA · Pacific</option><option value="America/New_York">USA · Eastern</option><option value="Australia/Sydney">Australia</option></select><button type="button" id="dashboardTimezoneAdd">+ Add</button><span id="dashboardTimezoneCount">1 / 4 time zones</span></div>
+</section>
 </div>
 </div>
 
@@ -21031,22 +21001,19 @@ function apptShowMessage(message){
 function closeAppointmentSuccess(){const overlay=document.getElementById('appointmentSuccessOverlay');if(overlay)overlay.classList.remove('show');}
 </script>
 
-<script>
+<script id="dashboard-world-clock-script">
 (function(){
- const key='teacherDashboardTimeZones_v1';
- const names={'Asia/Manila':'PHILIPPINES','Asia/Bangkok':'THAILAND','Asia/Shanghai':'CHINA','Asia/Ho_Chi_Minh':'VIETNAM','Asia/Tokyo':'JAPAN','Asia/Singapore':'SINGAPORE','Asia/Seoul':'SOUTH KOREA','Asia/Kuala_Lumpur':'MALAYSIA','Asia/Dubai':'UAE','Europe/London':'UNITED KINGDOM','America/New_York':'USA – NEW YORK','America/Los_Angeles':'USA – LOS ANGELES'};
- let zones=['Asia/Manila'];
- try{const saved=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(saved))zones=['Asia/Manila',...saved.filter(z=>z!=='Asia/Manila'&&names[z])].slice(0,4)}catch(e){}
- const root=document.getElementById('dashboardTimezoneCards');
- const select=document.getElementById('dashboardTimezoneSelect');
- const add=document.getElementById('dashboardTimezoneAdd');
- const count=document.getElementById('dashboardTimezoneCount');
- function fmt(now,zone,opts){return new Intl.DateTimeFormat('en-PH',{timeZone:zone,...opts}).format(now)}
- function render(){if(!root)return;root.innerHTML='';zones.forEach((zone,index)=>{const item=document.createElement('div');item.className='dashboard-timezone-item';const info=document.createElement('div');info.className='dashboard-timezone-info';const label=document.createElement('div');label.className='tdb-label';label.textContent='TODAY · '+names[zone];const time=document.createElement('div');time.className='tdb-time';const date=document.createElement('div');date.className='tdb-date';info.append(label,time,date);if(index>0){const remove=document.createElement('button');remove.type='button';remove.className='dashboard-timezone-remove';remove.textContent='Remove';remove.addEventListener('click',()=>{zones=zones.filter(z=>z!==zone);persist();render();update()});info.append(remove)}const clock=document.createElement('div');clock.className='dashboard-3d-clock';clock.setAttribute('aria-hidden','true');clock.innerHTML='<span class="clock-hand clock-hour"></span><span class="clock-hand clock-minute"></span><span class="clock-hand clock-second"></span><i></i>';item.append(info,clock);root.append(item);item.dataset.zone=zone;item._time=time;item._date=date;});if(count)count.textContent=zones.length+' / 4 time zones';if(select){[...select.options].forEach(o=>{if(o.value)o.disabled=zones.includes(o.value)});select.value='';}update()}
- function persist(){try{localStorage.setItem(key,JSON.stringify(zones.filter(z=>z!=='Asia/Manila')))}catch(e){}}
- function update(){if(!root)return;const now=new Date();root.querySelectorAll('.dashboard-timezone-item').forEach(item=>{const z=item.dataset.zone;item._time.textContent=fmt(now,z,{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});item._date.textContent=fmt(now,z,{weekday:'long',year:'numeric',month:'short',day:'numeric'});const sec=Number(fmt(now,z,{second:'2-digit'}));const min=Number(fmt(now,z,{minute:'2-digit'}));const hr=Number(fmt(now,z,{hour:'numeric',hour12:false}))%12;const h=item.querySelector('.clock-hour'),m=item.querySelector('.clock-minute'),ss=item.querySelector('.clock-second');if(h)h.style.transform=`translateX(-50%) rotate(${hr*30+min*.5}deg)`;if(m)m.style.transform=`translateX(-50%) rotate(${min*6+sec*.1}deg)`;if(ss)ss.style.transform=`translateX(-50%) rotate(${sec*6}deg)`;});}
- if(add)add.addEventListener('click',()=>{const z=select&&select.value;if(!z||zones.length>=4||zones.includes(z))return;zones.push(z);persist();render()});
- render();setInterval(update,1000);
+ const KEY='teacherDashboardTimeZonesV1';
+ const zones=[{id:'Asia/Manila',name:'PHILIPPINES',fixed:true}];
+ const choices={ 'Asia/Bangkok':'THAILAND','Asia/Shanghai':'CHINA','Asia/Ho_Chi_Minh':'VIETNAM','Asia/Tokyo':'JAPAN','Asia/Singapore':'SINGAPORE','Asia/Seoul':'SOUTH KOREA','Asia/Dubai':'UAE','Europe/London':'UNITED KINGDOM','America/Los_Angeles':'USA · PACIFIC','America/New_York':'USA · EASTERN','Australia/Sydney':'AUSTRALIA' };
+ try{const saved=JSON.parse(localStorage.getItem(KEY)||'[]');saved.forEach(id=>{if(choices[id]&&zones.length<4&&!zones.some(z=>z.id===id))zones.push({id,name:choices[id],fixed:false});});}catch(e){}
+ const pad=n=>String(n).padStart(2,'0');
+ function clockMarkup(){return '<div class="analog-clock" aria-hidden="true"><span class="clock-number n12">12</span><span class="clock-number n3">3</span><span class="clock-number n6">6</span><span class="clock-number n9">9</span><i class="clock-hand hour"></i><i class="clock-hand minute"></i><i class="clock-hand second"></i><b class="clock-pin"></b></div>';}
+ function render(){const host=document.getElementById('dashboardTimezoneCards');if(!host)return;host.innerHTML=zones.map((z,i)=>`<article class="dashboard-timezone-card" data-zone="${z.id}"><div class="dashboard-timezone-copy"><div class="tdb-label">TODAY · ${z.name}</div><div class="tdb-time" id="tz-time-${i}">--:--:--</div><div class="tdb-date" id="tz-date-${i}">Loading date…</div>${z.fixed?'':`<button type="button" class="dashboard-timezone-remove" data-remove-zone="${z.id}">Remove</button>`}</div>${clockMarkup()}</article>`).join('');const count=document.getElementById('dashboardTimezoneCount');if(count)count.textContent=zones.length+' / 4 time zones';const add=document.getElementById('dashboardTimezoneAdd');if(add)add.disabled=zones.length>=4;const select=document.getElementById('dashboardTimezoneSelect');if(select){Array.from(select.options).forEach(o=>{if(o.value)o.disabled=zones.some(z=>z.id===o.value);});}}
+ function update(){const now=new Date();zones.forEach((z,i)=>{const time=document.getElementById('tz-time-'+i),date=document.getElementById('tz-date-'+i);if(!time||!date)return;const parts=new Intl.DateTimeFormat('en-US',{timeZone:z.id,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true}).formatToParts(now);const get=t=>parts.find(p=>p.type===t)?.value;time.textContent=`${get('hour')}:${get('minute')}:${get('second')} ${get('dayPeriod')}`;date.textContent=new Intl.DateTimeFormat('en-US',{timeZone:z.id,weekday:'short',month:'short',day:'numeric',year:'numeric'}).format(now);const card=document.querySelector(`.dashboard-timezone-card[data-zone="${z.id}"]`);if(card){const sec=Number(get('second')),min=Number(get('minute')),hr=Number(get('hour'))%12;card.querySelector('.clock-hand.second').style.transform=`translateX(-50%) rotate(${sec*6}deg)`;card.querySelector('.clock-hand.minute').style.transform=`translateX(-50%) rotate(${min*6+sec*.1}deg)`;card.querySelector('.clock-hand.hour').style.transform=`translateX(-50%) rotate(${hr*30+min*.5}deg)`;}});}
+ const add=document.getElementById('dashboardTimezoneAdd');if(add)add.addEventListener('click',()=>{const select=document.getElementById('dashboardTimezoneSelect'),id=select&&select.value;if(!id||zones.length>=4||zones.some(z=>z.id===id))return;zones.push({id,name:choices[id],fixed:false});try{localStorage.setItem(KEY,JSON.stringify(zones.filter(z=>!z.fixed).map(z=>z.id)));}catch(e){}select.value='';render();update();});
+ document.addEventListener('click',e=>{const btn=e.target.closest('[data-remove-zone]');if(!btn)return;const id=btn.getAttribute('data-remove-zone');const at=zones.findIndex(z=>z.id===id&&!z.fixed);if(at>0){zones.splice(at,1);try{localStorage.setItem(KEY,JSON.stringify(zones.filter(z=>!z.fixed).map(z=>z.id)));}catch(e){}render();update();}});
+ render();update();setInterval(update,1000);
 })();
 </script>
 
@@ -21411,6 +21378,25 @@ body.portal-dark :is(button,.btn,[role="button"]){color:inherit;}
 body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-title,body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-label,
 body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-dark #dashboardWallpaperGroup .dashboard-summary-number,
 body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.75)!important;}
+</style>
+
+
+<style id="dashboard-timezone-refinement-v3">
+#dashboardWallpaperGroup .dashboard-summary-grid{display:grid!important;grid-template-columns:minmax(145px,.78fr) minmax(145px,.78fr) minmax(165px,.88fr) minmax(430px,2.15fr)!important;gap:10px!important;align-items:stretch!important}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-timezones-panel){min-height:178px!important;padding:14px!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;text-align:left!important}
+#dashboardWallpaperGroup .dashboard-summary-label{align-self:flex-start!important;text-align:left!important;font-size:13px!important;font-weight:900!important}
+#dashboardWallpaperGroup .dashboard-summary-number{margin:auto 0!important;text-align:center!important;font-size:clamp(42px,3.2vw,58px)!important;line-height:1!important;font-weight:950!important;width:100%!important}
+#dashboardWallpaperGroup .dashboard-timezones-panel{min-width:0!important;min-height:178px!important;padding:12px!important;display:flex!important;flex-direction:column!important;gap:9px!important;background:rgba(255,255,255,.88)!important}
+.dashboard-timezone-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;flex:1;min-height:0}
+.dashboard-timezone-card{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;border:1px solid #b9e9ed;border-radius:12px;background:rgba(255,255,255,.96);box-shadow:0 2px 7px rgba(0,0,0,.07);color:#111;overflow:hidden}
+.dashboard-timezone-copy{min-width:0;flex:1}.dashboard-timezone-card .tdb-label{font-size:10px;font-weight:900;line-height:1.2;letter-spacing:.35px;color:#111;white-space:normal}.dashboard-timezone-card .tdb-time{font-size:clamp(16px,1.45vw,22px);font-weight:950;line-height:1.18;white-space:nowrap;color:#111;font-variant-numeric:tabular-nums}.dashboard-timezone-card .tdb-date{font-size:9px;font-weight:700;line-height:1.25;color:#35424a;margin-top:2px}.dashboard-timezone-remove{border:0;background:transparent;color:#00aeb5;font-size:10px;font-weight:800;padding:3px 0 0;cursor:pointer}
+.analog-clock{position:relative;flex:0 0 clamp(62px,5vw,76px);width:clamp(62px,5vw,76px);height:clamp(62px,5vw,76px);border:3px solid #222;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px #ddd;}
+.analog-clock:before{content:"";position:absolute;inset:7px;border:1px solid #333;border-radius:50%;background:repeating-conic-gradient(from -1deg,#222 0deg 1deg,transparent 1deg 6deg);mask:radial-gradient(circle,transparent 0 72%,#000 73%)}
+.clock-number{position:absolute;font-family:Arial,sans-serif;font-size:9px;font-weight:900;color:#111;z-index:2}.clock-number.n12{top:3px;left:50%;transform:translateX(-50%)}.clock-number.n3{right:5px;top:50%;transform:translateY(-50%)}.clock-number.n6{bottom:3px;left:50%;transform:translateX(-50%)}.clock-number.n9{left:5px;top:50%;transform:translateY(-50%)}
+.clock-hand{position:absolute;left:50%;bottom:50%;display:block;transform-origin:50% 100%;border-radius:4px;z-index:3}.clock-hand.hour{width:3px;height:20%;background:#111}.clock-hand.minute{width:2px;height:31%;background:#111}.clock-hand.second{width:1px;height:36%;background:#d32626}.clock-pin{position:absolute;left:50%;top:50%;width:6px;height:6px;transform:translate(-50%,-50%);border-radius:50%;background:#111;z-index:4}
+.dashboard-timezone-controls{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.dashboard-timezone-controls select{max-width:190px;min-width:120px;padding:6px 8px;border:1px solid #9de4e8;border-radius:8px;font-size:11px}.dashboard-timezone-controls button{padding:6px 10px;border:0;border-radius:8px;background:#00cdd0;color:#fff;font-size:11px;font-weight:900;cursor:pointer}.dashboard-timezone-controls button:disabled{opacity:.45;cursor:not-allowed}.dashboard-timezone-controls span{font-size:10px;color:#008f96;font-weight:800}
+@media(max-width:1050px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-timezones-panel{grid-column:1/-1}.dashboard-timezone-card .tdb-time{font-size:21px}}
+@media(max-width:620px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-timezones-panel){min-height:125px!important}.dashboard-timezones-panel{grid-column:1/-1}.dashboard-timezone-grid{grid-template-columns:1fr 1fr}.dashboard-timezone-card{padding:8px}.analog-clock{flex-basis:54px;width:54px;height:54px}}
 </style>
 
 </body>
