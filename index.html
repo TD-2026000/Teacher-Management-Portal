@@ -5468,7 +5468,7 @@ Dashboard
 <div id="dashboardTodayClassCount" class="dashboard-summary-number">0</div>
 </div>
 <div class="dashboard-summary-card dashboard-summary-date-card dashboard-timezone-card" aria-live="off" data-timezone="Asia/Manila">
-<div class="tdb-label">TODAY · PHILIPPINES <span class="timezone-fixed-tag">FIXED</span></div>
+<div class="tdb-label">TODAY · PHILIPPINES</div>
 <div id="dashboardLiveTime" class="tdb-time">--:--:--</div>
 <div id="dashboardLiveDate" class="tdb-date">Loading date…</div>
 <div class="dashboard-timezone-inline-row">
@@ -21407,6 +21407,61 @@ body.portal-dark :is(button,.btn,[role="button"]){color:inherit;}
 body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-title,body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-label,
 body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-dark #dashboardWallpaperGroup .dashboard-summary-number,
 body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.75)!important;}
+</style>
+
+
+<style id="dashboard-timezone-2x2-final">
+/* One shared clock panel. Clock order follows the requested visual layout:
+   PH | third added
+   second added | fourth added */
+#dashboardWallpaperGroup .dashboard-summary-grid{
+ display:grid!important;
+ grid-template-columns:minmax(105px,.68fr) minmax(125px,.78fr) minmax(145px,.9fr) minmax(430px,2.7fr)!important;
+ gap:10px!important;align-items:stretch!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){
+ min-width:0!important;min-height:100px!important;padding:14px 15px!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{
+ min-width:0!important;min-height:100px!important;padding:12px 15px!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+ grid-template-rows:auto auto auto auto!important;column-gap:14px!important;row-gap:5px!important;align-content:center!important;
+}
+#dashboardWallpaperGroup .dashboard-timezone-card>.tdb-label{grid-column:1!important;grid-row:1!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveTime{grid-column:1!important;grid-row:2!important;font-size:clamp(19px,1.65vw,25px)!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-timezone-card>#dashboardLiveDate{grid-column:1!important;grid-row:3!important;font-size:10px!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-timezone-inline-row{display:contents!important}
+#dashboardWallpaperGroup #dashboardExtraTimezones{display:contents!important}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card{
+ min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;row-gap:2px!important;align-content:center!important;
+}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(1){grid-column:1!important;grid-row:4!important}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(2){grid-column:2!important;grid-row:1 / span 2!important}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card:nth-child(3){grid-column:2!important;grid-row:4!important}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-title{font-size:9px!important;line-height:1.15!important;color:#008f96!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-time{font-size:clamp(17px,1.35vw,22px)!important;line-height:1.1!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-date{font-size:9px!important;white-space:nowrap}
+#dashboardWallpaperGroup .dashboard-extra-timezone-card .tz-remove{justify-self:start!important;font-size:9px!important;padding:0!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls{
+ grid-column:1 / -1!important;grid-row:5!important;display:flex!important;justify-content:flex-end!important;
+ gap:6px!important;flex-wrap:nowrap!important;margin-top:3px!important;min-width:0!important;
+}
+#dashboardWallpaperGroup .dashboard-timezone-controls select{max-width:155px!important;width:155px!important;padding:5px 7px!important;font-size:10px!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls button{padding:5px 8px!important;font-size:10px!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls span{font-size:9px!important;white-space:nowrap!important}
+@media(max-width:1050px){
+ #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1!important;min-height:140px!important}
+}
+@media(max-width:650px){
+ #dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #dashboardWallpaperGroup .dashboard-summary-date-card.dashboard-timezone-card{grid-column:1/-1!important;min-height:160px!important}
+ #dashboardWallpaperGroup .dashboard-summary-card:not(.dashboard-summary-date-card){min-height:82px!important}
+ #dashboardWallpaperGroup .dashboard-timezone-controls{justify-content:flex-start!important;flex-wrap:wrap!important}
+ #dashboardWallpaperGroup .dashboard-timezone-controls select{flex:1!important;max-width:none!important}
+}
 </style>
 
 </body>
