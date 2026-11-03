@@ -11890,6 +11890,7 @@ async function syncAppointmentsToSupabase(appointments){
         .eq('student_id',row.student_id)
         .eq('class_date',row.class_date)
         .eq('class_time',row.class_time)
+        .limit(1)
         .maybeSingle();
 
       if(findError) throw findError;
@@ -12696,8 +12697,9 @@ function generatePreferredAppointments(student,startDate,type,maxAppointments=In
     }
     cursor.setDate(cursor.getDate()+1);
   }
-  // The caller must persist this mutated appointment list and await Supabase
-  // before reporting success. Do not fire-and-forget a remote sync here.
+  // Persist the generated list locally before returning it to the caller.
+  // The caller then syncs only the newly created records to Supabase.
+  localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
   return {created,remaining:Math.max(0,packageRemaining-packageCreated),first:createdSlots[0]||null,last:createdSlots[createdSlots.length-1]||null,reason:created<targetCount?'Some future slots could not be booked because of schedule conflicts.':''};
 }
 
@@ -13292,24 +13294,32 @@ async function generateStudentClassScheduleConfirmed(studentId,total){
   const existing=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase()));
   if(existing.length){alert('Class records already exist for this student. No new records were generated.');renderStudentAppointmentDashboard();return;}
   try{
+    // Keep a snapshot so only the newly generated records are sent to Supabase.
+    // Syncing all 111+ historical appointments here can fail on unrelated old
+    // rows and prevent a new schedule from being saved.
+    const beforeIds=new Set(getAppointments().map(a=>String(a.id)));
     const result=generatePreferredAppointments(student,getLocalDateString(new Date()),'Regular Class',total);
     if(!result.created){alert(result.reason||'No class records were generated. Please check the preferred schedule and existing appointments.');return;}
-    // Persist and wait for Supabase before showing success. This prevents the
-    // schedule appearing only in localStorage and disappearing after reload.
     const savedRecords=getAppointments();
-    const synced=await saveAppointments(savedRecords);
-    if(synced!==true){
-      throw new Error('Supabase did not confirm that all generated appointments were saved. The schedule may be partially saved; reload and verify before retrying.');
+    const newRecords=savedRecords.filter(a=>!beforeIds.has(String(a.id)) && String(a.studentId||a.student_id)===String(student.id));
+    if(newRecords.length!==result.created){
+      throw new Error(`Generated ${result.created} class(es), but could identify only ${newRecords.length} new record(s) for saving. No success was reported.`);
+    }
+    // Save the complete local list, but remotely sync only the new rows.
+    localStorage.setItem(appointmentStorageKey(),JSON.stringify(savedRecords));
+    if(currentUser && supabaseClient){
+      const synced=await syncAppointmentsToSupabase(newRecords);
+      if(synced!==true) throw new Error('Supabase rejected one or more newly generated appointment records.');
     }
     renderStudentAppointmentDashboard();
     renderAppointments();
     renderDashboard();
     await refreshDashboardSummaryCounts();
-    const note=result.created<total?`\n\n${result.created} of ${total} classes were created. Some slots may have conflicts; please review the schedule.`:`\n\nAll ${result.created} class records were generated and synced successfully.`;
+    const note=result.created<total?`\n\n${result.created} of ${total} classes were created. Some slots may have conflicts; please review the schedule.`:`\n\nAll ${result.created} class records were generated and saved.`;
     alert(`Class schedule generated for ${student.nickname||student.name}.${note}`);
   }catch(error){
     console.error('Generate class schedule failed:',error);
-    alert('The class schedule could not be fully saved. Please reload and check the appointment records before trying again.');
+    alert(`The class schedule could not be fully saved. ${error?.message||'Please check the appointment records before retrying.'}`);
   }
 }
 
