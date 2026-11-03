@@ -4885,6 +4885,54 @@ body.portal-dark .dashboard-timezone-controls span{color:#d1e0e4}
 @media(max-width:1050px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1;min-height:190px!important}}
 @media(max-width:600px){#dashboardWallpaperGroup .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card){min-height:125px!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1;min-height:200px!important}.dashboard-timezone-controls{justify-content:flex-start;flex-wrap:wrap}.dashboard-timezone-controls select{flex:1;max-width:none}}
 </style>
+
+<style id="dashboard-timezone-balanced-cards-final">
+/* Balanced dashboard: KPI cards gradually compact as the single timezone panel grows. */
+#dashboardWallpaperGroup .dashboard-summary-grid{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;align-items:stretch!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card){
+ min-width:0!important;min-height:150px!important;padding:14px 9px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card) .dashboard-summary-label{
+ width:100%;text-align:center!important;font-size:clamp(11px,1vw,15px)!important;font-weight:900!important;line-height:1.2!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card) .dashboard-summary-number{
+ width:100%;text-align:center!important;font-size:clamp(34px,3.1vw,50px)!important;line-height:1!important;font-weight:900!important;margin-top:9px!important;
+}
+#dashboardWallpaperGroup .dashboard-summary-date-card{
+ min-width:0!important;min-height:150px!important;padding:12px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;gap:8px!important;
+}
+#dashboardWallpaperGroup .dashboard-timezone-grid{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(64px,auto))!important;gap:8px!important;align-items:stretch!important;flex:1 1 auto!important;
+}
+#dashboardWallpaperGroup .dashboard-timezone-cell{
+ min-width:0!important;min-height:64px!important;position:relative!important;padding:8px 9px 19px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;
+ background:rgba(255,255,255,.76)!important;border:1px solid rgba(255,255,255,.92)!important;border-radius:10px!important;box-shadow:0 1px 5px rgba(0,0,0,.06)!important;overflow:hidden!important;
+}
+#dashboardWallpaperGroup .dashboard-timezone-cell .tdb-label{font-size:clamp(9px,.78vw,11px)!important;font-weight:900!important;letter-spacing:.35px!important;line-height:1.15!important;overflow-wrap:anywhere!important}
+#dashboardWallpaperGroup .dashboard-timezone-cell .tdb-time{font-size:clamp(15px,1.35vw,23px)!important;font-weight:900!important;line-height:1.08!important;margin-top:4px!important;white-space:nowrap!important;letter-spacing:-.4px!important}
+#dashboardWallpaperGroup .dashboard-timezone-cell .tdb-date{font-size:clamp(8px,.7vw,10px)!important;font-weight:700!important;line-height:1.2!important;margin-top:3px!important}
+#dashboardWallpaperGroup .dashboard-timezone-remove{right:6px!important;bottom:3px!important;font-size:9px!important}
+#dashboardWallpaperGroup .dashboard-timezone-empty{display:block!important;visibility:hidden!important;background:transparent!important;border:1px dashed rgba(255,255,255,.45)!important;box-shadow:none!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls{display:flex!important;align-items:center!important;gap:7px!important;justify-content:flex-end!important;flex-wrap:nowrap!important;margin-top:5px!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls select{max-width:190px!important;min-width:0!important;flex:1 1 140px!important;font-size:11px!important;padding:6px 8px!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls button{padding:7px 10px!important;font-size:11px!important;white-space:nowrap!important}
+#dashboardWallpaperGroup .dashboard-timezone-controls span{font-size:10px!important;white-space:nowrap!important}
+/* More selected zones = a wider clock panel and progressively narrower KPI cards. */
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-1{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-2{grid-template-columns:minmax(95px,.82fr) minmax(105px,.82fr) minmax(125px,.92fr) minmax(300px,1.55fr)!important}
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-3{grid-template-columns:minmax(85px,.68fr) minmax(95px,.72fr) minmax(110px,.78fr) minmax(390px,2fr)!important}
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-4{grid-template-columns:minmax(78px,.58fr) minmax(86px,.62fr) minmax(100px,.68fr) minmax(470px,2.35fr)!important}
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-2>.dashboard-summary-card:not(.dashboard-summary-date-card),
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-3>.dashboard-summary-card:not(.dashboard-summary-date-card),
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-4>.dashboard-summary-card:not(.dashboard-summary-date-card){min-height:150px!important;padding-left:5px!important;padding-right:5px!important}
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-3 .dashboard-summary-number,
+#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-4 .dashboard-summary-number{font-size:clamp(30px,2.7vw,43px)!important}
+body.portal-dark #dashboardWallpaperGroup .dashboard-timezone-cell{background:rgba(25,36,41,.88)!important;border-color:rgba(255,255,255,.18)!important}
+@media(max-width:1050px){#dashboardWallpaperGroup .dashboard-summary-grid,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-1,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-2,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-3,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-4{grid-template-columns:repeat(2,minmax(0,1fr))!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1!important;min-height:190px!important}#dashboardWallpaperGroup .dashboard-timezone-cell .tdb-time{font-size:clamp(17px,2.3vw,25px)!important}}
+@media(max-width:600px){#dashboardWallpaperGroup .dashboard-summary-grid,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-1,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-2,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-3,#dashboardWallpaperGroup .dashboard-summary-grid.tz-count-4{grid-template-columns:1fr!important}#dashboardWallpaperGroup .dashboard-summary-grid>.dashboard-summary-card:not(.dashboard-summary-date-card){min-height:105px!important}#dashboardWallpaperGroup .dashboard-summary-date-card{grid-column:1/-1!important;min-height:190px!important}#dashboardWallpaperGroup .dashboard-timezone-controls{flex-wrap:wrap!important;justify-content:flex-start!important}}
+</style>
 </head>
 
 <body>
@@ -21056,7 +21104,7 @@ function closeAppointmentSuccess(){const overlay=document.getElementById('appoin
  function update(){const now=new Date();const ph=formatted('Asia/Manila','en-PH',now);const t=document.getElementById('dashboardLiveTime'),d=document.getElementById('dashboardLiveDate');if(t)t.textContent=ph.time;if(d)d.textContent=ph.date;
   zones.forEach((z,i)=>{const v=formatted(z,ZONES[z][1],now),time=document.getElementById('dashboardTimezoneTime'+i),date=document.getElementById('dashboardTimezoneDate'+i);if(time)time.textContent=v.time;if(date)date.textContent=v.date;});}
  function save(){try{localStorage.setItem(KEY,JSON.stringify(zones))}catch(e){}}
- function render(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn'),count=document.getElementById('dashboardTimezoneCount');if(!select||!add||!count)return;
+ function render(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn'),count=document.getElementById('dashboardTimezoneCount');if(!select||!add||!count)return;const grid=document.querySelector('#dashboardWallpaperGroup .dashboard-summary-grid');if(grid){grid.classList.remove('tz-count-1','tz-count-2','tz-count-3','tz-count-4');grid.classList.add('tz-count-'+(zones.length+1));}
   for(let i=0;i<3;i++){const slot=document.getElementById('dashboardTimezoneSlot'+(i+1));slot.innerHTML='';slot.classList.toggle('dashboard-timezone-empty',!zones[i]);if(!zones[i])continue;const z=zones[i],meta=ZONES[z];const title=document.createElement('div');title.className='tdb-label';title.textContent='TODAY · '+meta[0];const time=document.createElement('div');time.className='tdb-time';time.id='dashboardTimezoneTime'+i;time.textContent='--:--:--';const date=document.createElement('div');date.className='tdb-date';date.id='dashboardTimezoneDate'+i;date.textContent='Loading date…';const remove=document.createElement('button');remove.type='button';remove.className='dashboard-timezone-remove';remove.textContent='Remove';remove.addEventListener('click',()=>{zones.splice(i,1);save();render();update()});slot.append(title,time,date,remove);}
   const used=new Set(zones);Array.from(select.options).forEach(o=>{if(o.value)o.disabled=used.has(o.value)});select.value='';select.disabled=zones.length>=3;add.disabled=zones.length>=3||!select.value;count.textContent=(zones.length+1)+' / 4 time zones';}
  function init(){const select=document.getElementById('dashboardTimezoneSelect'),add=document.getElementById('dashboardAddTimezoneBtn');if(!select||!add)return;select.addEventListener('change',()=>{add.disabled=zones.length>=3||!select.value});add.addEventListener('click',()=>{const z=select.value;if(!z||!ZONES[z]||zones.includes(z)||zones.length>=3)return;zones.push(z);save();render();update()});render();update();}
