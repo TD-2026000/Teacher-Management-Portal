@@ -12632,7 +12632,7 @@ function hasExactStudentAppointment(studentId,date,time){
 return getAppointments().some(a=>String(a.studentId)===String(studentId)&&String(a.date)===String(date)&&String(a.time)===String(time)&&!['cancelled','canceled','rescheduled','deleted','removed'].includes(String(a.status||'Scheduled').trim().toLowerCase()));
 }
 
-function generatePreferredAppointments(student,startDate,type,maxAppointments=Infinity){
+function generatePreferredAppointments(student,startDate,type,maxAppointments=Infinity,useSelectedStartDate=false){
   const packageLimit=getPackageClassCount(student.packageName);
   const preferredDays=SCHEDULE_DAYS.filter(day=>normalizeScheduleTimes(student.scheduleDetails?.[day]).length);
   if(!preferredDays.length)return {created:0,remaining:packageLimit,reason:'This student has no preferred class days/times saved.'};
@@ -12669,7 +12669,7 @@ function generatePreferredAppointments(student,startDate,type,maxAppointments=In
      non-cancelled appointment, even if the calendar picker is set to an earlier date.
      If there is no existing appointment, use the selected start date as the first date. */
   let cursor=new Date(`${startDate}T00:00:00`);
-  if(latest)cursor=new Date(`${latest.date}T00:00:00`);
+  if(latest&&!useSelectedStartDate)cursor=new Date(`${latest.date}T00:00:00`);
   let created=0;
   let packageCreated=0;
   const createdSlots=[];
@@ -13277,18 +13277,23 @@ function confirmGenerateStudentClassSchedule(studentId){
       <div style="padding:12px;border-radius:10px;background:rgba(0,190,195,.14)"><div style="font-size:12px;opacity:.8">Total class records</div><strong style="font-size:22px">${total}</strong></div>
     </div>
     <div style="padding:12px;border:1px solid rgba(0,190,195,.3);border-radius:10px;margin-bottom:14px"><strong style="display:block;margin-bottom:6px">Preferred schedule</strong><div style="white-space:pre-line;line-height:1.65">${saEscape(scheduleText)}</div></div>
-    <p style="font-size:12px;line-height:1.5;opacity:.8;margin:0 0 18px">The system will skip conflicting time slots. Please double-check the generated dates and times before continuing.</p>
+    <label for="generateClassStartDate" style="display:block;font-weight:800;margin:0 0 6px">First class start date</label>
+    <input id="generateClassStartDate" type="date" min="${getLocalDateString(new Date())}" value="${getLocalDateString(new Date())}" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #a7dfe1;border-radius:9px;background:#fff;color:#17343a;margin-bottom:10px">
+    <p style="font-size:12px;line-height:1.5;opacity:.8;margin:0 0 18px">Choose when the student wants to begin. If the selected date is one of the preferred class days, the first class will be scheduled on that date. Otherwise, generation starts on the next preferred day. Conflicting time slots will be skipped.</p>
     <div style="display:flex;gap:10px"><button type="button" id="cancelGenerateClassSchedule" style="flex:1;padding:12px;border:1px solid #a7dfe1;border-radius:10px;background:transparent;color:inherit;font-weight:800;cursor:pointer">Cancel</button><button type="button" id="confirmGenerateClassSchedule" style="flex:1;padding:12px;border:0;border-radius:10px;background:#00cfd2;color:#00383a;font-weight:900;cursor:pointer">Generate Classes</button></div>
   </div>`;
   document.body.appendChild(overlay);
   overlay.querySelector('#cancelGenerateClassSchedule').addEventListener('click',()=>overlay.remove());
   overlay.addEventListener('click',event=>{if(event.target===overlay)overlay.remove();});
   overlay.querySelector('#confirmGenerateClassSchedule').addEventListener('click',()=>{
+    const startDate=overlay.querySelector('#generateClassStartDate')?.value;
+    if(!startDate){alert('Please select the first class start date.');return;}
+    if(startDate<getLocalDateString(new Date())){alert('Please choose today or a future date.');return;}
     overlay.remove();
-    generateStudentClassScheduleConfirmed(String(student.id),total);
+    generateStudentClassScheduleConfirmed(String(student.id),total,startDate);
   });
 }
-async function generateStudentClassScheduleConfirmed(studentId,total){
+async function generateStudentClassScheduleConfirmed(studentId,total,startDate){
   const student=getStudents().find(st=>String(st.id)===String(studentId));
   if(!student){alert('Student record not found.');return;}
   const existing=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase()));
@@ -13298,7 +13303,7 @@ async function generateStudentClassScheduleConfirmed(studentId,total){
     // Syncing all 111+ historical appointments here can fail on unrelated old
     // rows and prevent a new schedule from being saved.
     const beforeIds=new Set(getAppointments().map(a=>String(a.id)));
-    const result=generatePreferredAppointments(student,getLocalDateString(new Date()),'Regular Class',total);
+    const result=generatePreferredAppointments(student,startDate||getLocalDateString(new Date()),'Regular Class',total,true);
     if(!result.created){alert(result.reason||'No class records were generated. Please check the preferred schedule and existing appointments.');return;}
     const savedRecords=getAppointments();
     const newRecords=savedRecords.filter(a=>!beforeIds.has(String(a.id)) && String(a.studentId||a.student_id)===String(student.id));
