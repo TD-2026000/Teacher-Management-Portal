@@ -11871,14 +11871,13 @@ async function deductPurchasedClassesForDeletedAppointments(items){
   if(changed)saveStudents(students);
 }
 async function saveAppointments(data){
-  // Supabase is the durable source of truth when signed in. A full browser
-  // storage quota must not prevent attendance/status updates from reaching it.
+  // Use the quota-safe cache writer; Supabase is the durable source of truth when signed in.
+  writeAppointmentCache(data);
+  // Persist remotely before returning so callers can await completion when needed.
   const synced=await syncAppointmentsToSupabase(data);
   if(synced!==true && currentUser && supabaseClient){
     throw new Error('Appointment sync to Supabase failed. Check the browser console and Supabase permissions before retrying.');
   }
-  try{localStorage.setItem(appointmentStorageKey(),JSON.stringify(data));}
-  catch(storageError){console.warn('Appointment local cache could not be updated (storage quota); Supabase save completed:',storageError);}
   return true;
 }
 
@@ -13744,27 +13743,40 @@ function editAppointmentTime(id){
 function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoardId=String(id);renderStudentAppointmentDashboard();if(document.getElementById('studentAppointmentCalendarModal'))renderStudentCalendarModal();}
 
 
-function autoCompleteFinishedAppointments(){
-const now=new Date();
-const appointments=getAppointments();
-let changed=false;
-const updated=appointments.map(item=>{
-if((item.status||'Scheduled')!=='Scheduled')return item;
-const start=getAppointmentDateTime(item);
-if(!start)return item;
-const end=new Date(start.getTime()+durationToMinutes(item.duration||'30 Minutes')*60000);
-if(now>=end){
-changed=true;
-return {...item,status:'Completed',completedAt:now.toISOString(),updatedAt:now.toISOString()};
-}
-return item;
-});
-if(changed){
-  saveAppointments(updated);
-  if(document.getElementById('appointmentCalendar')) renderAppointments();
-  else if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
-}
-return changed;
+async function autoCompleteFinishedAppointments(){
+  const now=Date.now();
+  const appointments=getAppointments();
+  let changed=false;
+  const updated=appointments.map(item=>{
+    const status=String(item.status||'Scheduled').trim().toLowerCase();
+    const attendance=String(item.attendance||'').trim().toLowerCase();
+    if(status!=='scheduled' || attendance==='present' || attendance==='absent') return item;
+    const start=getAppointmentDateTime(item);
+    if(!start || !Number.isFinite(start.getTime())) return item;
+    // The portal's class-completion rule: mark Completed 25 minutes after the scheduled start.
+    if(now >= start.getTime() + 25*60*1000){
+      changed=true;
+      const stamp=new Date().toISOString();
+      return {...item,status:'Completed',completedAt:stamp,updatedAt:stamp};
+    }
+    return item;
+  });
+  if(changed){
+    // Persist to Supabase before refreshing the page UI. If remote saving fails,
+    // keep the local state visible and report the failure instead of silently reverting.
+    try{
+      await saveAppointments(updated);
+      if(document.getElementById('appointmentCalendar')) renderAppointments();
+      if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
+      if(typeof renderDashboard==='function') renderDashboard();
+    }catch(error){
+      console.error('Automatic class completion could not be saved:',error);
+      writeAppointmentCache(updated);
+      if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
+      if(typeof renderDashboard==='function') renderDashboard();
+    }
+  }
+  return changed;
 }
 
 function toggleAppointmentMoreMenu(event,id){
@@ -13828,10 +13840,16 @@ async function markAppointmentPresent(id){
   const appointments=getAppointments();
   const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0)return;
-  const now=new Date().toISOString();
-  appointments[index]={...appointments[index],status:'Completed',attendance:'Present',presentAt:now,updatedAt:now};
-  try{await saveAppointments(appointments);refreshLiveUI({students:false,records:false,contracts:false});}
-  catch(error){console.error('Could not save Present attendance:',error);alert('Present was not saved. Please check your internet connection and try again.');}
+  const item=appointments[index];
+  const stamp=new Date().toISOString();
+  appointments[index]={...item,status:'Completed',attendance:'Present',presentAt:stamp,updatedAt:stamp};
+  try{
+    await saveAppointments(appointments);
+    refreshLiveUI({students:false,records:false,contracts:false});
+  }catch(error){
+    console.error('Present attendance save failed:',error);
+    alert('Present was not confirmed by the server. Please check your internet connection and try again.');
+  }
 }
 
 async function markAppointmentAbsent(id){
@@ -13839,11 +13857,16 @@ async function markAppointmentAbsent(id){
   const index=appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0)return;
   const item=appointments[index];
-  if(String(item.status||'').toLowerCase()!=='completed' || item.attendance)return;
-  const now=new Date().toISOString();
-  appointments[index]={...item,status:'Completed',attendance:'Absent',absentAt:now,updatedAt:now};
-  try{await saveAppointments(appointments);refreshLiveUI({students:false,records:false,contracts:false});}
-  catch(error){console.error('Could not save Absent attendance:',error);alert('Absent was not saved. Please check your internet connection and try again.');}
+  if((item.status||'')!=='Completed' || item.attendance)return;
+  const stamp=new Date().toISOString();
+  appointments[index]={...item,status:'Completed',attendance:'Absent',absentAt:stamp,updatedAt:stamp};
+  try{
+    await saveAppointments(appointments);
+    refreshLiveUI({students:false,records:false,contracts:false});
+  }catch(error){
+    console.error('Absent attendance save failed:',error);
+    alert('Absent was not confirmed by the server. Please check your internet connection and try again.');
+  }
 }
 
 function openAppointmentEvaluation(id){
@@ -14089,27 +14112,8 @@ photoEl.textContent='👤';
 const studentCountDash=document.getElementById('dashboardStudentCount');
 if(studentCountDash) studentCountDash.textContent=students.length;
 
-let appointments=getAppointments();
+const appointments=getAppointments();
 const now=new Date();
-// Automatically mark a scheduled class Completed 25 minutes after its
-// scheduled end. Attendance remains blank so the teacher can still choose
-// Present or Absent later; this is the original To-Do completion rule.
-let autoCompleted=false;
-apointments=appointments.map(item=>{
-  const status=String(item.status||'Scheduled').trim().toLowerCase();
-  const attendance=String(item.attendance||'').trim().toLowerCase();
-  if(['cancelled','canceled','rescheduled','deleted','removed','completed','complete'].includes(status)||attendance)return item;
-  const start=getAppointmentDateTime(item);
-  if(!start||isNaN(start.getTime()))return item;
-  const duration=durationToMinutes(item.duration||'30 Minutes');
-  const completionTime=start.getTime()+(duration+25)*60000;
-  if(now.getTime()>=completionTime){autoCompleted=true;return {...item,status:'Completed',completedAt:item.completedAt||now.toISOString(),updatedAt:now.toISOString()};}
-  return item;
-});
-if(autoCompleted){
-  // Avoid blocking the dashboard render; the async save writes to Supabase.
-  saveAppointments(appointments).catch(error=>console.error('Automatic class completion could not be saved:',error));
-}
 const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
 .filter(x=>x.date && !isNaN(x.date.getTime()));
@@ -17722,12 +17726,9 @@ initAuth();
 
 
 /* Automatically mark scheduled classes as Completed once their class end time has passed. */
+autoCompleteFinishedAppointments();
 setInterval(()=>{
-  const changed=autoCompleteFinishedAppointments();
-  if(changed){
-    renderAppointments();
-    renderDashboard();
-  }
+  autoCompleteFinishedAppointments();
 },30000);
 /* =========================================================
    STUDENT CONTRACT
