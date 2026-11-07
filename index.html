@@ -13744,36 +13744,33 @@ function selectStudentAppointmentBoard(id){window.currentStudentAppointmentBoard
 
 
 async function autoCompleteFinishedAppointments(){
-  const now=Date.now();
+  const now=new Date();
   const appointments=getAppointments();
   let changed=false;
   const updated=appointments.map(item=>{
-    const status=String(item.status||'Scheduled').trim().toLowerCase();
-    const attendance=String(item.attendance||'').trim().toLowerCase();
-    if(status!=='scheduled' || attendance==='present' || attendance==='absent') return item;
+    // Preserve the original rule: a Scheduled class becomes Completed
+    // 25 minutes after its scheduled start. Attendance is stored separately.
+    if(String(item.status||'Scheduled').trim().toLowerCase()!=='scheduled')return item;
     const start=getAppointmentDateTime(item);
-    if(!start || !Number.isFinite(start.getTime())) return item;
-    // The portal's class-completion rule: mark Completed 25 minutes after the scheduled start.
-    if(now >= start.getTime() + 25*60*1000){
+    if(!start || !Number.isFinite(start.getTime()))return item;
+    if(now.getTime()>=start.getTime()+25*60*1000){
       changed=true;
-      const stamp=new Date().toISOString();
+      const stamp=now.toISOString();
       return {...item,status:'Completed',completedAt:stamp,updatedAt:stamp};
     }
     return item;
   });
   if(changed){
-    // Persist to Supabase before refreshing the page UI. If remote saving fails,
-    // keep the local state visible and report the failure instead of silently reverting.
     try{
       await saveAppointments(updated);
-      if(document.getElementById('appointmentCalendar')) renderAppointments();
-      if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
-      if(typeof renderDashboard==='function') renderDashboard();
+      if(document.getElementById('appointmentCalendar'))renderAppointments();
+      if(typeof renderStudentAppointmentDashboard==='function')renderStudentAppointmentDashboard();
+      if(typeof renderDashboard==='function')renderDashboard();
     }catch(error){
       console.error('Automatic class completion could not be saved:',error);
       writeAppointmentCache(updated);
-      if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
-      if(typeof renderDashboard==='function') renderDashboard();
+      if(typeof renderStudentAppointmentDashboard==='function')renderStudentAppointmentDashboard();
+      if(typeof renderDashboard==='function')renderDashboard();
     }
   }
   return changed;
@@ -13836,36 +13833,70 @@ function confirmAppointmentAttendance(id, attendance){
   document.addEventListener('keydown',closeOnEscape);
 }
 
-async function markAppointmentPresent(id){
+async function persistAppointmentAttendance(id, attendance){
   const appointments=getAppointments();
   const index=appointments.findIndex(a=>String(a.id)===String(id));
-  if(index<0)return;
+  if(index<0)throw new Error('Appointment not found in the current schedule.');
+
   const item=appointments[index];
   const stamp=new Date().toISOString();
-  appointments[index]={...item,status:'Completed',attendance:'Present',presentAt:stamp,updatedAt:stamp};
+  const updatedItem={
+    ...item,
+    status:'Completed',
+    attendance,
+    ...(attendance==='Present'?{presentAt:stamp}:{absentAt:stamp}),
+    updatedAt:stamp
+  };
+
+  // Persist only this existing appointment, then verify Supabase returned an updated row.
+  if(currentUser && supabaseClient){
+    const studentId=String(item.studentId||item.student_id||'');
+    const date=String(item.date||item.class_date||'');
+    const rawTime=String(item.time||item.class_time||'');
+    const dbTime=rawTime.length===5?`${rawTime}:00`:rawTime;
+    const result=await supabaseClient.from('appointments').update({
+      status:'Completed',
+      attendance,
+      updated_at:stamp
+    }).eq('user_id',currentUser.id)
+      .eq('student_id',studentId)
+      .eq('class_date',date)
+      .eq('class_time',dbTime)
+      .select('id,status,attendance');
+
+    if(result.error)throw result.error;
+    if(!Array.isArray(result.data)||result.data.length===0){
+      throw new Error('Supabase did not confirm an updated appointment. Local attendance was not changed.');
+    }
+  }
+
+  appointments[index]=updatedItem;
+  writeAppointmentCache(appointments);
+  refreshLiveUI({students:false,records:false,contracts:false});
+  if(typeof renderStudentAppointmentDashboard==='function')renderStudentAppointmentDashboard();
+  if(typeof renderAppointments==='function')renderAppointments();
+  if(typeof renderDashboard==='function')renderDashboard();
+  return true;
+}
+
+async function markAppointmentPresent(id){
   try{
-    await saveAppointments(appointments);
-    refreshLiveUI({students:false,records:false,contracts:false});
+    await persistAppointmentAttendance(id,'Present');
   }catch(error){
     console.error('Present attendance save failed:',error);
-    alert('Present was not confirmed by the server. Please check your internet connection and try again.');
+    alert('Present status was not saved. Check your connection and Supabase permissions, then try again.\\n\\n'+(error?.message||'Unknown error'));
   }
 }
 
 async function markAppointmentAbsent(id){
-  const appointments=getAppointments();
-  const index=appointments.findIndex(a=>String(a.id)===String(id));
-  if(index<0)return;
-  const item=appointments[index];
-  if((item.status||'')!=='Completed' || item.attendance)return;
-  const stamp=new Date().toISOString();
-  appointments[index]={...item,status:'Completed',attendance:'Absent',absentAt:stamp,updatedAt:stamp};
+  const item=getAppointments().find(a=>String(a.id)===String(id));
+  if(!item)return;
+  if(String(item.status||'').toLowerCase()!=='completed' || item.attendance)return;
   try{
-    await saveAppointments(appointments);
-    refreshLiveUI({students:false,records:false,contracts:false});
+    await persistAppointmentAttendance(id,'Absent');
   }catch(error){
     console.error('Absent attendance save failed:',error);
-    alert('Absent was not confirmed by the server. Please check your internet connection and try again.');
+    alert('Absent status was not saved. Check your connection and Supabase permissions, then try again.\\n\\n'+(error?.message||'Unknown error'));
   }
 }
 
