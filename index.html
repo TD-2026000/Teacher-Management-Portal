@@ -13822,36 +13822,94 @@ function confirmAppointmentAttendance(id, attendance){
   document.addEventListener('keydown',closeOnEscape);
 }
 
-async function markAppointmentPresent(id){
+async function persistAppointmentAttendance(id, attendance){
   const appointments=getAppointments();
   const index=appointments.findIndex(a=>String(a.id)===String(id));
-  if(index<0)return;
+  if(index<0) throw new Error('Appointment record was not found.');
   const item=appointments[index];
   const now=new Date().toISOString();
-  appointments[index]={...item,status:'Completed',attendance:'Present',presentAt:now,updatedAt:now};
+  const patch={status:'Completed',attendance,updated_at:now};
+
+  // Attendance must be confirmed by Supabase before changing the local cache.
+  if(!currentUser || !supabaseClient){
+    throw new Error('Supabase session is not available. Please sign in again and retry.');
+  }
+
+  let savedRow=null;
+  let updateError=null;
   try{
-    await saveAppointments(appointments);
+    let result=await supabaseClient
+      .from('appointments')
+      .update({status:'Completed',attendance})
+      .eq('id',item.id)
+      .eq('user_id',currentUser.id)
+      .select('id,attendance,status')
+      .maybeSingle();
+    savedRow=result.data;
+    updateError=result.error;
+
+    // Older locally-created appointment IDs may not be the Supabase UUID.
+    // In that case, locate the matching server row using its natural key.
+    if(!updateError && !savedRow){
+      const serverTime=item.time ? `${String(item.time).slice(0,5)}:00` : null;
+      const lookup=await supabaseClient.from('appointments')
+        .select('id')
+        .eq('user_id',currentUser.id)
+        .eq('student_id',String(item.studentId||item.student_id||''))
+        .eq('class_date',item.date||null)
+        .eq('class_time',serverTime)
+        .limit(1)
+        .maybeSingle();
+      if(lookup.error) throw lookup.error;
+      if(lookup.data?.id){
+        const retry=await supabaseClient.from('appointments')
+          .update({status:'Completed',attendance})
+          .eq('id',lookup.data.id)
+          .eq('user_id',currentUser.id)
+          .select('id,attendance,status')
+          .maybeSingle();
+        if(retry.error) throw retry.error;
+        savedRow=retry.data;
+      }
+    }
+    if(updateError) throw updateError;
+    if(!savedRow || String(savedRow.attendance||'').toLowerCase()!==attendance.toLowerCase()){
+      throw new Error('Supabase did not confirm the attendance update. Check the appointments table permissions and attendance column.');
+    }
+  }catch(error){
+    console.error('Supabase attendance update failed:',error);
+    throw error;
+  }
+
+  // Update local cache only after Supabase confirms the change.
+  const updated={...item,status:'Completed',attendance,updatedAt:now};
+  if(attendance==='Present') updated.presentAt=now;
+  if(attendance==='Absent') updated.absentAt=now;
+  appointments[index]=updated;
+  localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+  return updated;
+}
+
+async function markAppointmentPresent(id){
+  try{
+    await persistAppointmentAttendance(id,'Present');
     refreshLiveUI({students:false,records:false,contracts:false});
   }catch(error){
     console.error('Could not save Present attendance:',error);
-    alert('Present was not saved to the server. Please check your internet connection and try again.');
+    alert('Present was NOT saved. '+(error?.message||'Please check your internet connection and Supabase permissions.'));
   }
 }
 
 async function markAppointmentAbsent(id){
-  const appointments=getAppointments();
-  const index=appointments.findIndex(a=>String(a.id)===String(id));
-  if(index<0)return;
-  const item=appointments[index];
+  const item=getAppointments().find(a=>String(a.id)===String(id));
+  if(!item)return;
   if((item.status||'')!=='Completed' || item.attendance)return;
-  const now=new Date().toISOString();
-  appointments[index]={...item,status:'Completed',attendance:'Absent',absentAt:now,updatedAt:now};
   try{
-    await saveAppointments(appointments);
+    await persistAppointmentAttendance(id,'Absent');
     refreshLiveUI({students:false,records:false,contracts:false});
   }catch(error){
     console.error('Could not save Absent attendance:',error);
-    alert('Absent was not saved to the server. Please check your internet connection and try again.');
+    alert('Absent was NOT saved. '+(error?.message||'Please check your internet connection and Supabase permissions.'));
   }
 }
 
