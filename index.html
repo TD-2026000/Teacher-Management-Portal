@@ -13886,7 +13886,15 @@ async function persistAppointmentAttendance(id, attendance){
   if(attendance==='Present') updated.presentAt=now;
   if(attendance==='Absent') updated.absentAt=now;
   appointments[index]=updated;
-  localStorage.setItem(appointmentStorageKey(),JSON.stringify(appointments));
+  // Cache is optional: browser localStorage may be full. Supabase has
+  // already confirmed the durable attendance update above, so a cache
+  // quota error must never be reported as an attendance-save failure.
+  try{
+    writeAppointmentCache(appointments);
+  }catch(cacheError){
+    console.warn('Attendance is saved in Supabase; local appointment cache could not be updated:',cacheError);
+    appointmentMemoryFallback=appointments;
+  }
   return updated;
 }
 
