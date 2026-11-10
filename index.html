@@ -5484,7 +5484,7 @@ Dashboard
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('payment')">
 <svg class="dashboard-menu-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg>
-<span class="dashboard-menu-label">PAYMENT RECEIPT</span>
+<span class="dashboard-menu-label">PAYMENT RECEIPT &amp; INVOICE</span>
 </button>
 
 <button type="button" class="dashboard-menu-btn" onclick="showPage('lessonMaterials')">
@@ -5920,7 +5920,7 @@ onclick="if(event.target===this) closeAddStudent()"
 
 <div id="paymentPage" class="page">
 
-  <h2 style="margin-top:0">Payment Receipt</h2>
+  <h2 style="margin-top:0">Payment Receipt &amp; Invoice</h2>
 
   <div class="page-back-wrap">
     <button type="button" class="page-back-btn" onclick="backToDashboard()">← Back to Dashboard</button>
@@ -5935,6 +5935,7 @@ onclick="if(event.target===this) closeAddStudent()"
           <p>Create a receipt for a student's payment and send it to the parent.</p>
         </div>
         <button type="button" class="payment-add-btn" onclick="openPaymentStudentPicker()">＋ Add Student</button>
+        <button type="button" class="payment-add-btn" onclick="openInvoiceMaker()">＋ Invoice Maker</button>
       </div>
 
       <div class="panel-body">
@@ -6008,6 +6009,31 @@ onclick="if(event.target===this) closeAddStudent()"
           <input id="paymentStudentSearch" type="search" placeholder="Search Student ID or Student Name..." oninput="filterPaymentStudentPicker()" autocomplete="off">
         </div>
         <div id="paymentStudentPickerList" class="payment-student-picker-list"></div>
+      </div>
+    </div>
+  </div>
+  <div id="invoiceMakerModal" class="modal-overlay" style="display:none;z-index:100500">
+    <div class="modal" style="width:min(1100px,96vw);max-height:94vh;overflow:auto">
+      <div class="modal-header"><h3>INVOICE MAKER</h3><button type="button" onclick="closeInvoiceMaker()">×</button></div>
+      <div class="modal-body">
+        <p class="small">Create a landscape invoice with the invoice details on the left and your uploaded payment QR code on the right.</p>
+        <div class="invoice-maker-grid">
+          <div>
+            <label>Invoice Number</label><input id="imNumber" placeholder="e.g. INV-2026-001">
+            <label>Invoice Date</label><input id="imDate" type="date">
+            <label>Student Name</label><input id="imStudent" placeholder="Student name">
+            <label>Country</label><input id="imCountry" placeholder="e.g. Vietnam">
+            <label>Class / Package</label><input id="imPackage" placeholder="e.g. 20 English Classes">
+            <label>Payment Description</label><textarea id="imDescription" rows="2" placeholder="Payment for English lessons..."></textarea>
+            <div class="invoice-maker-two"><div><label>Amount</label><input id="imAmount" type="number" min="0" step="0.01" placeholder="0.00"></div><div><label>Currency</label><select id="imCurrency"><option>PHP</option><option>VND</option><option>RMB</option><option>THB</option><option>USD</option><option>EUR</option><option>SGD</option><option>MYR</option><option>JPY</option><option>KRW</option></select></div></div>
+            <label>Payment Method</label><input id="imMethod" placeholder="GCash / PayPal / Bank / Alipay...">
+            <label>Payment Instructions</label><textarea id="imInstructions" rows="2" placeholder="Scan the QR code and send your payment."></textarea>
+            <label>Upload Payment QR Code</label><input id="imQrUpload" type="file" accept="image/*" onchange="loadInvoiceQr(event)">
+            <div class="small">Upload the QR code for the student's country or selected payment method. It will appear on the right side of the invoice.</div>
+          </div>
+          <div class="invoice-maker-preview"><canvas id="invoiceMakerCanvas" width="1600" height="900"></canvas><div class="small">Landscape preview · Download as PNG image</div></div>
+        </div>
+        <div class="invoice-maker-actions"><button type="button" class="modal-cancel" onclick="closeInvoiceMaker()">Close</button><button type="button" class="primary-action" onclick="renderInvoiceMaker()">Update Preview</button><button type="button" class="modal-save" onclick="downloadInvoiceMaker()">Download Invoice Image</button></div>
       </div>
     </div>
   </div>
@@ -21470,6 +21496,50 @@ body.portal-dark #dashboardWallpaperGroup .teacher-dashboard-title,body.portal-d
 body.portal-dark #dashboardWallpaperGroup .dashboard-summary-label,body.portal-dark #dashboardWallpaperGroup .dashboard-summary-number,
 body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboardWallpaperGroup .tdb-time,body.portal-dark #dashboardWallpaperGroup .tdb-date{color:#fff!important;text-shadow:0 1px 4px rgba(0,0,0,.75)!important;}
 </style>
+
+
+<style id="invoice-maker-addition">
+.invoice-maker-grid{display:grid;grid-template-columns:minmax(280px, .85fr) minmax(420px,1.4fr);gap:18px;align-items:start}
+.invoice-maker-grid label{display:block;font-weight:700;margin:10px 0 5px}.invoice-maker-grid input,.invoice-maker-grid select,.invoice-maker-grid textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#111}
+.invoice-maker-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.invoice-maker-preview{min-width:0}.invoice-maker-preview canvas{display:block;width:100%;height:auto;border:1px solid #d1d5db;border-radius:10px;background:#fff}.invoice-maker-actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px}
+@media(max-width:850px){.invoice-maker-grid{grid-template-columns:1fr}.invoice-maker-preview{overflow:auto}.invoice-maker-preview canvas{min-width:560px}}
+</style>
+<script id="invoice-maker-addition-js">
+(function(){
+ let invoiceQrImage=null;
+ const $=id=>document.getElementById(id);
+ window.openInvoiceMaker=function(){
+   const date=$('imDate'); if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
+   const receiptStudentId=$('paymentReceiptStudentId')?.value;
+   if(receiptStudentId && typeof getStudents==='function'){
+     const st=getStudents().find(x=>String(x.id)===String(receiptStudentId));
+     if(st){$('imStudent').value=st.nickname||st.name||st.fullName||'';$('imCountry').value=st.country||'';}
+   }
+   if(!$('imNumber').value)$('imNumber').value='INV-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-001';
+   $('invoiceMakerModal').style.display='flex';renderInvoiceMaker();
+ };
+ window.closeInvoiceMaker=function(){$('invoiceMakerModal').style.display='none';};
+ window.loadInvoiceQr=function(event){const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{invoiceQrImage=img;renderInvoiceMaker();};img.src=reader.result;};reader.readAsDataURL(file);};
+ window.renderInvoiceMaker=function(){
+   const canvas=$('invoiceMakerCanvas');if(!canvas)return;const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+   c.clearRect(0,0,w,h);c.fillStyle='#ffffff';c.fillRect(0,0,w,h);
+   c.fillStyle='#00cfd0';c.fillRect(0,0,w,105);c.fillStyle='#fff';c.font='bold 42px Arial';c.fillText('TEACHER DANYEAL',55,68);c.font='bold 28px Arial';c.fillText('INVOICE',w-280,68);
+   c.strokeStyle='#00cfd0';c.lineWidth=4;c.beginPath();c.moveTo(1020,135);c.lineTo(1020,830);c.stroke();
+   const val=id=>$(id)?.value?.trim()||'—';
+   c.fillStyle='#111827';c.font='bold 30px Arial';c.fillText('BILL TO',60,175);c.font='26px Arial';
+   const rows=[['Student',val('imStudent')],['Country',val('imCountry')],['Invoice No.',val('imNumber')],['Invoice Date',val('imDate')],['Class / Package',val('imPackage')],['Description',val('imDescription')],['Payment Method',val('imMethod')]];
+   let y=230;rows.forEach(([k,v])=>{c.fillStyle='#64748b';c.font='bold 21px Arial';c.fillText(k.toUpperCase(),60,y);c.fillStyle='#111827';c.font='26px Arial';c.fillText(String(v).slice(0,58),300,y);y+=73;});
+   c.fillStyle='#e8fbfb';c.fillRect(55,735,900,95);c.fillStyle='#075b62';c.font='bold 25px Arial';c.fillText('TOTAL AMOUNT DUE',85,775);c.font='bold 42px Arial';c.fillText(val('imCurrency')+' '+(val('imAmount')==='—'?'0.00':Number(val('imAmount')).toLocaleString()),85,817);
+   c.fillStyle='#111827';c.font='bold 30px Arial';c.fillText('PAYMENT QR CODE',1070,175);c.fillStyle='#64748b';c.font='22px Arial';c.fillText('Scan to send your payment',1070,215);
+   c.fillStyle='#f8fafc';c.fillRect(1120,255,390,390);c.strokeStyle='#cbd5e1';c.lineWidth=3;c.strokeRect(1120,255,390,390);
+   if(invoiceQrImage){const scale=Math.min(350/invoiceQrImage.width,350/invoiceQrImage.height);const qw=invoiceQrImage.width*scale,qh=invoiceQrImage.height*scale;c.drawImage(invoiceQrImage,1120+(390-qw)/2,255+(390-qh)/2,qw,qh);}else{c.fillStyle='#64748b';c.font='bold 25px Arial';c.textAlign='center';c.fillText('UPLOAD YOUR QR CODE',1315,450);c.textAlign='left';}
+   c.fillStyle='#111827';c.font='bold 23px Arial';c.fillText('PAYMENT INSTRUCTIONS',1070,705);c.font='22px Arial';const instr=val('imInstructions');wrapInvoiceText(c,instr,1070,745,450,32,3);
+   c.fillStyle='#64748b';c.font='18px Arial';c.fillText('Thank you for learning with Teacher Danyeal!',60,875);
+ };
+ function wrapInvoiceText(c,text,x,y,maxWidth,lineHeight,maxLines){let line='',lines=0;for(const word of String(text).split(/\s+/)){const test=line?line+' '+word:word;if(c.measureText(test).width>maxWidth&&line){c.fillText(line,x,y);y+=lineHeight;line=word;lines++;if(lines>=maxLines-1)break;}else line=test;}if(line)c.fillText(line,x,y);}
+ window.downloadInvoiceMaker=function(){renderInvoiceMaker();const a=document.createElement('a');a.download=(($('imNumber').value||'Teacher-Danyeal-Invoice').replace(/[^a-z0-9_-]/gi,'_'))+'.png';a.href=$('invoiceMakerCanvas').toDataURL('image/png');a.click();};
+})();
+</script>
 
 </body>
 </html>
