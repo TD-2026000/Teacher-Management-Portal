@@ -10725,10 +10725,25 @@ function collectAndStoreCustomStudentFields(prefix){
    ADD STUDENT
 ========================================================= */
 
+function getNextBaseStudentId(){
+  const year=String(new Date().getFullYear());
+  const students=getStudents();
+  let highest=0;
+  students.forEach(student=>{
+    const raw=String(student.id||'').trim();
+    // Count only original IDs (TD-YYYYNNN); renewal IDs such as TD-YYYYNNN-1 are ignored.
+    const match=raw.match(/^TD-(\d{4})(\d+)$/i);
+    if(match && match[1]===year) highest=Math.max(highest,Number(match[2])||0);
+  });
+  return `TD-${year}${String(highest+1).padStart(3,'0')}`;
+}
+
 function openAddStudent(){
   const modal=document.getElementById('addStudentModal');
   if(!modal)return;
 
+  const idInput=document.getElementById('newStudentId');
+  if(idInput){idInput.readOnly=true;idInput.value=getNextBaseStudentId();idInput.placeholder='Automatically generated Student ID';}
   window.newStudentCustomFields={};
   renderCustomStudentFieldsForm('new',window.newStudentCustomFields);
 
@@ -10755,7 +10770,7 @@ function closeAddStudent(){
   const saveBtn=document.getElementById('addStudentBtn');
   if(saveBtn)saveBtn.textContent='+ Add Student';
   const idInput=document.getElementById('newStudentId');
-  if(idInput)idInput.placeholder='Student ID';
+  if(idInput){idInput.placeholder='Automatically generated Student ID';idInput.readOnly=true;idInput.value='';}
 }
 
 
@@ -11095,7 +11110,9 @@ const nickname=document.getElementById('newStudentNickname').value.trim();
 const birthday=document.getElementById('newStudentBirthday').value;
 const country=document.getElementById('newStudentCountry').value.trim();
 const email=document.getElementById('newStudentEmail').value.trim();
-const id=document.getElementById('newStudentId').value.trim();
+const idInput=document.getElementById('newStudentId');
+if(idInput && !pendingRenewalSourceStudentId) idInput.value=getNextBaseStudentId();
+const id=String(idInput?.value||'').trim();
 const age=document.getElementById('newStudentAge').value.trim();
 const parentName=document.getElementById('newStudentParentName').value.trim();
 const level=document.getElementById('newStudentLevel').value;
@@ -11111,7 +11128,7 @@ const scheduleDetails=scheduleData.details;
 if(!name)return showStudentStatus('Please enter the student full name.',false);
 if(!nickname)return showStudentStatus('Please enter the student nickname.',false);
 if(!email)return showStudentStatus("Please enter the parent's email.",false);
-if(!id)return showStudentStatus('Please enter the student ID.',false);
+if(!id)return showStudentStatus('Student ID could not be generated. Please close and reopen the form.',false);
 
 if(!schedule.length)
 return showStudentStatus('Please select at least one class day.',false);
@@ -11174,6 +11191,7 @@ students.push({
   currentPackageId:initialPackageId,
   packageHistory:initialClassesCount?[initialClasses]:[],
   customFields:collectAndStoreCustomStudentFields('new'),
+  ...(pendingRenewalSourceStudentId?{renewalBaseId:(students.find(s=>String(s.id)===String(pendingRenewalSourceStudentId))?.renewalBaseId||students.find(s=>String(s.id)===String(pendingRenewalSourceStudentId))?.id||id.replace(/-\d+$/,'')),renewalNumber:Number(id.match(/-(\d+)$/)?.[1]||1)}:{}),
   createdAt:new Date().toISOString()
 });
 
@@ -14762,8 +14780,13 @@ function startCopyStudentForRenewal(id){
   if(level)level.value=source.level||'';
   const duration=document.getElementById('newStudentDuration');
   if(duration)duration.value=source.duration||'30 Minutes';
+  const baseId=String(source.renewalBaseId||source.id).trim();
+  const related=students.filter(s=>String(s.renewalBaseId||s.id||'').trim().toLowerCase()===baseId.toLowerCase());
+  const highestRenewal=related.reduce((max,s)=>Math.max(max,Number(s.renewalNumber||0)),0);
+  const nextRenewal=highestRenewal+1;
+  const generatedId=`${baseId}-${nextRenewal}`;
   const idInput=document.getElementById('newStudentId');
-  if(idInput){idInput.value='';idInput.placeholder='Enter a NEW Student ID';}
+  if(idInput){idInput.value=generatedId;idInput.placeholder='Automatically generated Student ID';idInput.readOnly=true;}
   const packageInput=document.getElementById('newStudentClasses');
   if(packageInput){packageInput.value='';packageInput.placeholder='Enter new package (e.g. 20 Classes)';}
   const bonus=document.getElementById('newStudentBonusFreeLessons');if(bonus)bonus.value='0';
@@ -14772,7 +14795,7 @@ function startCopyStudentForRenewal(id){
   const title=document.querySelector('#addStudentModal .student-add-modal-header h3');
   if(title)title.textContent='Renew Student — Copy Information';
   const saveBtn=document.getElementById('addStudentBtn');if(saveBtn)saveBtn.textContent='CREATE RENEWED STUDENT';
-  const status=document.getElementById('studentStatus');if(status){status.textContent='Student information copied. Enter a new Student ID, new package, and preferred class schedule.';status.className='status show success';}
+  const status=document.getElementById('studentStatus');if(status){status.textContent=`Student information copied. New Student ID generated automatically: ${generatedId}. Enter the new package and preferred class schedule.`;status.className='status show success';}
 }
 
 function toggleInactiveStudents(){
@@ -14853,7 +14876,6 @@ content.innerHTML=`
    <div style="margin-top:10px"><span class="student-status-badge ${escapeAttr((student.status||'Active').toLowerCase())}">${escapeHtml(student.status||'Active')}</span></div>
    <div class="student-card-actions" style="margin-top:14px">
     <button type="button" class="primary-action" onclick="closeStudentProfile();openEditStudent('${escapeAttr(student.id)}')">Edit Student</button>
-    <button type="button" class="primary-action" onclick="closeStudentProfile();openRenewPackage('${escapeAttr(student.id)}')">Renew Classes</button>
     <button type="button" class="primary-action" onclick="openStudentContractPDFViewerForStudent('${escapeAttr(student.id)}')">Student Contract</button>
     <button type="button" class="primary-action" onclick="openStudentAllRecord('${escapeAttr(student.id)}')">Student All Record</button>
     <button type="button" class="danger-action" onclick="closeStudentProfile();openDeleteStudent('${escapeAttr(student.id)}')">Delete Student</button>
@@ -14963,7 +14985,7 @@ content.innerHTML=`
    </div>
    ${p.totalAvailable>0 && p.completed>=p.totalAvailable?`<div style="margin-top:14px;padding-top:12px;border-top:1px dashed #b8dfe0">
     <button type="button" class="primary-action" style="width:100%;white-space:normal" onclick="startCopyStudentForRenewal('${escapeAttr(student.id)}')">COPY STUDENT INFORMATION TO RENEW ANOTHER CLASS</button>
-    <div class="small" style="margin-top:6px">The student's basic information will be copied. You can enter a new Student ID, package, and preferred class schedule.</div>
+    <div class="small" style="margin-top:6px">The student's basic information will be copied. A new Student ID will be generated automatically. Enter the new package and preferred class schedule.</div>
    </div>`:''}
   </div>
  </div>
