@@ -18010,19 +18010,20 @@ function(){
 
 try{
 
-addStudent();
+const result=addStudent();
+if(result && typeof result.then==='function'){
+  result.catch(error=>{
+    console.error('Add Student async error:',error);
+    const detail=String(error?.message||error||'Unknown error').slice(0,240);
+    showStudentStatus(`Unable to add the student: ${detail}`,false);
+  });
+}
 
 }catch(error){
 
-console.error(
-'Add Student error:',
-error
-);
-
-showStudentStatus(
-'Unable to add the student. Please try again.',
-false
-);
+console.error('Add Student error:',error);
+const detail=String(error?.message||error||'Unknown error').slice(0,240);
+showStudentStatus(`Unable to add the student: ${detail}`,false);
 
 }
 
