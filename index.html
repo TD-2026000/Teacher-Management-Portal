@@ -10739,6 +10739,7 @@ function getNextBaseStudentId(){
 }
 
 function openAddStudent(){
+  if(!pendingRenewalSourceStudentId) pendingRenewalSourceStudentId='';
   const modal=document.getElementById('addStudentModal');
   if(!modal)return;
 
@@ -11105,6 +11106,7 @@ function scheduleDataToText(scheduleDetails,preferredSchedule,duration){
 
 function addStudent(){
 
+const wasRenewal=!!pendingRenewalSourceStudentId;
 const name=document.getElementById('newStudentName').value.trim();
 const nickname=document.getElementById('newStudentNickname').value.trim();
 const birthday=document.getElementById('newStudentBirthday').value;
@@ -11196,7 +11198,14 @@ students.push({
 });
 
 saveStudents(students);
-syncStudentToSupabase(students[students.length - 1]);
+/* Keep a Supabase sync failure from blocking the locally saved student or
+   triggering the generic 'Unable to add' message after the record is created. */
+try{
+  Promise.resolve(syncStudentToSupabase(students[students.length - 1]))
+    .catch(error=>console.error('New student Supabase sync failed:',error));
+}catch(syncError){
+  console.error('New student Supabase sync failed:',syncError);
+}
 
 if(pendingRenewalSourceStudentId){
   const oldStudent=students.find(s=>String(s.id)===String(pendingRenewalSourceStudentId));
@@ -11205,7 +11214,12 @@ if(pendingRenewalSourceStudentId){
     oldStudent.archivedAt=new Date().toISOString();
     oldStudent.renewedToStudentId=id;
     saveStudents(students);
-    syncStudentToSupabase(oldStudent);
+    try{
+      Promise.resolve(syncStudentToSupabase(oldStudent))
+        .catch(error=>console.error('Old student status sync failed:',error));
+    }catch(syncError){
+      console.error('Old student status sync failed:',syncError);
+    }
   }
   pendingRenewalSourceStudentId='';
 }
@@ -11231,11 +11245,16 @@ document.getElementById('newStudentDuration').value='30 Minutes';
 
 setSchedulePicker('new',{},[]);
 
-showStudentStatus('Student added successfully.',true);
+showStudentStatus(wasRenewal?'Renewed student created successfully.':'Student added successfully.',true);
 closeAddStudent();
-/* Saving is already complete. Refresh visible modules safely so a UI redraw
-   cannot turn a successful student save into a false error message. */
-refreshLiveUI({appointments:false,contracts:true});
+/* Saving is already complete. A UI refresh failure must never be reported as
+   an add failure after the student has already been saved. */
+try{
+  refreshLiveUI({appointments:false,contracts:true});
+}catch(refreshError){
+  console.error('Student saved, but live UI refresh failed:',refreshError);
+  try{renderStudents();}catch(renderError){console.error('Student list refresh failed:',renderError);}
+}
 }
 
 
