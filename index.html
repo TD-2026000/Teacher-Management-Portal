@@ -5633,6 +5633,14 @@ onclick="if(event.target===this) closeAddStudent()"
 <div class="student-section-heading">ALL STUDENTS</div>
 <div id="activeStudentList" class="student-card-list" style="margin-top:10px"></div>
 
+<div style="display:flex;justify-content:flex-end;margin-top:18px">
+  <button type="button" class="view-record-btn" id="inactiveStudentsToggle" onclick="toggleInactiveStudents()">INACTIVE STUDENTS</button>
+</div>
+<div id="inactiveStudentsPanel" style="display:none;margin-top:12px;border:1px solid #b8dfe0;border-radius:10px;padding:12px">
+  <div style="font-weight:800;color:#008f95;margin-bottom:10px">INACTIVE STUDENTS — COMPLETED PACKAGES</div>
+  <div id="inactiveStudentList" class="student-card-list"></div>
+</div>
+
 <div id="studentList" style="display:none"></div>
 
 </div>
@@ -7619,23 +7627,100 @@ async function deleteStudentFromSupabase(studentId){
   return {ok:true};
 }
   
+/* Evaluation storage: keep the existing localStorage key for compatibility,
+   and mirror the complete evaluation list to IndexedDB so a full localStorage
+   quota cannot leave the Save button stuck or prevent the report download. */
+let evaluationMemoryCache=null;
+const EVALUATION_DB_NAME='teacherDanyealEvaluationBackup';
+const EVALUATION_DB_STORE='evaluationLists';
+
+function getEvaluationStorageKey(){
+  return userStorageKey(EVALUATIONS_BASE_KEY);
+}
+
+function openEvaluationBackupDB(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window)) return reject(new Error('IndexedDB is not supported in this browser.'));
+    const request=indexedDB.open(EVALUATION_DB_NAME,1);
+    request.onupgradeneeded=()=>{
+      const db=request.result;
+      if(!db.objectStoreNames.contains(EVALUATION_DB_STORE)) db.createObjectStore(EVALUATION_DB_STORE,{keyPath:'key'});
+    };
+    request.onsuccess=()=>resolve(request.result);
+    request.onerror=()=>reject(request.error||new Error('Could not open evaluation backup storage.'));
+  });
+}
+
+async function readEvaluationBackup(){
+  const db=await openEvaluationBackupDB();
+  try{
+    return await new Promise((resolve,reject)=>{
+      const tx=db.transaction(EVALUATION_DB_STORE,'readonly');
+      const request=tx.objectStore(EVALUATION_DB_STORE).get(getEvaluationStorageKey());
+      request.onsuccess=()=>resolve(request.result&&Array.isArray(request.result.data)?request.result.data:null);
+      request.onerror=()=>reject(request.error||new Error('Could not read evaluation backup.'));
+    });
+  }finally{db.close();}
+}
+
+async function writeEvaluationBackup(data){
+  const db=await openEvaluationBackupDB();
+  try{
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(EVALUATION_DB_STORE,'readwrite');
+      tx.objectStore(EVALUATION_DB_STORE).put({key:getEvaluationStorageKey(),data,updatedAt:new Date().toISOString()});
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error||new Error('Could not save evaluation backup.'));
+      tx.onabort=()=>reject(tx.error||new Error('Evaluation backup was interrupted.'));
+    });
+  }finally{db.close();}
+}
+
+async function loadEvaluationBackup(){
+  const storageKey=getEvaluationStorageKey();
+  let localData=[];
+  try{localData=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(localData))localData=[];}catch(error){console.warn('Could not read local evaluation records:',error);}
+  try{
+    const backup=await readEvaluationBackup();
+    evaluationMemoryCache=Array.isArray(backup)?backup:localData;
+    if(!Array.isArray(backup)){
+      try{localStorage.setItem(storageKey,JSON.stringify(evaluationMemoryCache));}catch(_error){}
+    }
+  }catch(error){
+    evaluationMemoryCache=localData;
+    console.warn('Evaluation backup unavailable; using local records:',error);
+  }
+  return evaluationMemoryCache;
+}
+
 function getEvaluations(){
-
-return JSON.parse(
-localStorage.getItem(
-userStorageKey(EVALUATIONS_BASE_KEY)
-)||'[]'
-);
-
+  if(Array.isArray(evaluationMemoryCache)) return evaluationMemoryCache;
+  try{
+    const data=JSON.parse(localStorage.getItem(getEvaluationStorageKey())||'[]');
+    evaluationMemoryCache=Array.isArray(data)?data:[];
+  }catch(error){
+    console.warn('Could not read evaluation records:',error);
+    evaluationMemoryCache=[];
+  }
+  return evaluationMemoryCache;
 }
 
 function saveEvaluations(data){
-
-localStorage.setItem(
-userStorageKey(EVALUATIONS_BASE_KEY),
-JSON.stringify(data)
-);
-
+  const safeData=Array.isArray(data)?data:[];
+  evaluationMemoryCache=safeData;
+  let localSaved=false;
+  try{
+    localStorage.setItem(getEvaluationStorageKey(),JSON.stringify(safeData));
+    localSaved=true;
+  }catch(error){
+    console.warn('Local evaluation storage is full; using IndexedDB backup:',error);
+  }
+  return writeEvaluationBackup(safeData).then(()=>true).catch(error=>{
+    console.error('Could not write IndexedDB evaluation backup:',error);
+    if(localSaved) return true;
+    showStatus('The evaluation could not be saved because browser storage is unavailable. Please free some browser storage and try again.',false);
+    return false;
+  });
 }
 
 
@@ -9122,6 +9207,8 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
 
 async function handleSignedIn(user){
   currentUser=user;
+  evaluationMemoryCache=null;
+  await loadEvaluationBackup();
   const savedProfile=getTeacherProfile();
   const fullName=savedProfile.fullName || savedProfile.full_name || user.user_metadata?.full_name || user.email || 'Teacher';
   document.getElementById('currentTeacher').textContent=fullName;
@@ -10660,8 +10747,15 @@ function openAddStudent(){
 }
 
 function closeAddStudent(){
+  pendingRenewalSourceStudentId='';
   const modal=document.getElementById('addStudentModal');
   if(modal)modal.classList.remove('show');
+  const title=document.querySelector('#addStudentModal .student-add-modal-header h3');
+  if(title)title.textContent='Add New Student';
+  const saveBtn=document.getElementById('addStudentBtn');
+  if(saveBtn)saveBtn.textContent='+ Add Student';
+  const idInput=document.getElementById('newStudentId');
+  if(idInput)idInput.placeholder='Student ID';
 }
 
 
@@ -11086,8 +11180,19 @@ students.push({
 saveStudents(students);
 syncStudentToSupabase(students[students.length - 1]);
 
-[
-'newStudentName',
+if(pendingRenewalSourceStudentId){
+  const oldStudent=students.find(s=>String(s.id)===String(pendingRenewalSourceStudentId));
+  if(oldStudent){
+    oldStudent.status='Completed';
+    oldStudent.archivedAt=new Date().toISOString();
+    oldStudent.renewedToStudentId=id;
+    saveStudents(students);
+    syncStudentToSupabase(oldStudent);
+  }
+  pendingRenewalSourceStudentId='';
+}
+
+['newStudentName',
 'newStudentNickname',
 'newStudentBirthday',
 'newStudentCountry',
@@ -13256,11 +13361,7 @@ function renderStudentAppointmentDashboard(){
  const query=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
  const visibleStudents=students.filter(st=>!query||`${st.nickname||''} ${st.name||''} ${st.id||''}`.toLowerCase().includes(query));
  const student=students.find(st=>String(st.id)===String(window.currentStudentAppointmentBoardId))||students[0];
- const allAppointments=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['cancelled','canceled','deleted','removed'].includes(String(a.status||'Scheduled').trim().toLowerCase())).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
- const packageHistory=ensureStudentPackageState(student);
- const currentPackage=getCurrentStudentPackage(student);
- const all=getAppointmentsForPackage(student.id,currentPackage?.id||student.currentPackageId||'',true);
- const packageCards=packageHistory.map((pkg,idx)=>{const rows=getAppointmentsForPackage(student.id,pkg.id,String(pkg.id)===String(student.currentPackageId||''));const isCurrent=String(pkg.id)===String(student.currentPackageId||'');const completed=rows.filter(a=>String(a.status||'').toLowerCase()==='completed'||String(a.attendance||'').toLowerCase()==='present').length;return `<div class="sa-package-card"><div><b>Package ${idx+1} · ${saEscape(pkg.packageName||`${Number(pkg.classCount||0)} Classes`)}</b><small>${isCurrent?'CURRENT PACKAGE':saEscape(pkg.status||'PREVIOUS PACKAGE')} · ${saEscape(pkg.startDate||pkg.renewalDate||'')}</small></div><div class="sa-package-meta"><span>${Number(pkg.classCount||getPackageClassCount(pkg.packageName)||0)} purchased</span><span>${completed} completed</span><span>${rows.length} records</span></div><button type="button" class="sa-btn view" onclick="viewStudentPackageClasses('${String(student.id).replace(/'/,"\\'")}','${String(pkg.id).replace(/'/,"\\'")}')">View Classes</button></div>`;}).join('');
+ const all=getAppointments().filter(a=>String(a.studentId||a.student_id)===String(student.id)&&!['cancelled','canceled','deleted','removed'].includes(String(a.status||'Scheduled').trim().toLowerCase())).slice().sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
  const now=Date.now();
  const finished=all.filter(a=>{const dt=getAppointmentDateTime(a);const status=String(a.status||'Scheduled').toLowerCase();return !['rescheduled'].includes(status)&&(status==='completed'||(dt&&dt.getTime()+durationToMinutes(a.duration||student.duration||'30 Minutes')*60000<=now));});
  const upcoming=all.filter(a=>!finished.some(f=>String(f.id)===String(a.id))&&!['cancelled','rescheduled'].includes(String(a.status||'Scheduled').toLowerCase()));
@@ -13297,7 +13398,7 @@ function renderStudentAppointmentDashboard(){
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
  <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Action</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="5" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?`<button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button>`:`<button type="button" class="sa-btn lesson" style="min-width:220px;padding:12px 20px;font-size:14px" onclick="confirmGenerateStudentClassSchedule('${saEscape(String(student.id))}')">＋ Generate Class Schedule</button>`}</div><p class="sa-muted">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?'Use Add Individual Class to add an extra class one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.':'Generate the purchased and free/bonus class records from the student’s saved preferred days and times. After the schedule is generated, use Add Individual Class only when you need an extra class.'}</p></div></section>
- <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section><section class="sa-card sa-section"><div class="sa-card-head">📦 PURCHASED PACKAGES <span>${packageHistory.length} packages</span></div><div class="sa-card-body"><div class="sa-package-grid">${packageCards||'<div class="sa-empty">No purchased package history yet.</div>'}</div></div></section></div>
+ <section class="sa-card sa-section"><div class="sa-card-head">🔗 STUDENT LESSON FLOW <button class="sa-btn lesson" onclick="openStudentLessonFlow('${String(student.id).replace(/'/g,"\'")}')">Manage Lesson Links</button></div><div class="sa-card-body"><div class="sa-muted">Add or paste lesson URLs here. Saved links appear directly in the matching class row above as an Open Lesson button.</div></div></section></div>
  <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age:</b> ${saEscape(student.age||'—')}</li><li><b>Country:</b> ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${total}</b><span>Total Lesson</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Free/Bonus</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn lesson" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}');setTimeout(()=>openRenewPackage('${String(student.id).replace(/'/g,"\'")}'),80)">Renew Classes</button><button type="button" class="sa-btn view" style="width:100%;margin:8px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
 function confirmGenerateStudentClassSchedule(studentId){
@@ -14343,41 +14444,6 @@ if(!history.length)return null;
 return history.find(p=>p.id===student.currentPackageId)||history[history.length-1];
 }
 
-function getAppointmentsForPackage(studentId, packageId, isCurrent=false){
-  return getAppointments().filter(a=>{
-    if(String(a.studentId||a.student_id||'')!==String(studentId||''))return false;
-    const pid=String(a.packageId||a.package_id||'');
-    if(pid)return pid===String(packageId||'');
-    // Legacy rows without package IDs are assigned by their class date to the
-    // most recent package start date that is not later than that appointment.
-    const owner=getStudents().find(s=>String(s.id)===String(studentId));
-    const history=owner?ensureStudentPackageState(owner):[];
-    if(!history.length)return !!isCurrent;
-    const apptDate=String(a.date||a.appointmentDate||a.classDate||'').slice(0,10);
-    if(!apptDate)return !!isCurrent && history.length===1;
-    const dated=history.map((pkg,index)=>({pkg,index,date:String(pkg.startDate||pkg.renewalDate||'').slice(0,10)}))
-      .filter(x=>x.date && x.date<=apptDate).sort((x,y)=>x.date.localeCompare(y.date));
-    const ownerPackage=dated.length?dated[dated.length-1].pkg:history[0];
-    return String(ownerPackage.id)===String(packageId||'');
-  }).filter(a=>!['cancelled','canceled','deleted','removed'].includes(String(a.status||'').toLowerCase()))
-   .sort((a,b)=>{const da=getAppointmentDateTime(a),db=getAppointmentDateTime(b);return (da?.getTime()||0)-(db?.getTime()||0);});
-}
-function viewStudentPackageClasses(studentId, packageId){
-  const student=getStudents().find(s=>String(s.id)===String(studentId));
-  if(!student)return;
-  const history=ensureStudentPackageState(student);
-  const pkg=history.find(x=>String(x.id)===String(packageId));
-  if(!pkg)return;
-  const isCurrent=String(student.currentPackageId||'')===String(packageId);
-  const rows=getAppointmentsForPackage(studentId,packageId,isCurrent);
-  const overlay=document.createElement('div');
-  overlay.id='studentPackageClassesView';
-  overlay.style.cssText='position:fixed;inset:0;z-index:100700;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:18px;';
-  const body=rows.map((a,i)=>{const dt=getAppointmentDateTime(a);const date=a.date||(dt?getLocalDateString(dt):'—');const time=a.time||(dt?dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'—');return `<tr><td>${i+1}</td><td>${saEscape(saDateLabel(date,time))}</td><td>${saEscape(dt?dt.toLocaleDateString([],{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(formatAppointmentTime(time)||time)}</td><td>${saEscape(a.attendance||a.status||'Scheduled')}</td></tr>`;}).join('');
-  overlay.innerHTML=`<section role="dialog" aria-modal="true" style="width:min(900px,96vw);max-height:86vh;overflow:auto;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 70px #0004"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px"><div><h3 style="margin:0;color:#008d93">${saEscape(pkg.packageName||'Purchased Package')}</h3><small>${isCurrent?'Current package':'Previous package'} · ${rows.length} class records</small></div><button type="button" class="sa-btn view" onclick="document.getElementById('studentPackageClassesView')?.remove()">Close</button></div><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Attendance / Status</th></tr></thead><tbody>${body||'<tr><td colspan="5" class="sa-empty">No class records are linked to this package yet.</td></tr>'}</tbody></table></div></section>`;
-  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});document.body.appendChild(overlay);
-}
-
 function getRemainingScheduledClassCount(studentId){
   const now=Date.now();
   return getAppointments().filter(a=>{
@@ -14462,19 +14528,6 @@ function buildStudentAllRecordInfoPage(student){
   const preferredRow=`<tr class="student-all-record-preferred-schedule-row"><th>Preferred Class Schedule</th><td><div class="student-all-record-schedule-bullets">${preferredScheduleHtml}</div></td></tr>`;
 
   return studentAllRecordPageShell('STUDENT INFORMATION',student,`<div class="student-all-record-info-card"><table class="student-all-record-pdf-table student-all-record-info-table"><tbody>${rows}${preferredRow}</tbody></table></div>`);
-}
-
-function buildStudentAllRecordPackagesPage(student){
-  const history=ensureStudentPackageState(student);
-  const rows=history.map((pkg,i)=>{
-    const isCurrent=String(pkg.id)===String(student.currentPackageId||'');
-    const classes=getAppointmentsForPackage(student.id,pkg.id,isCurrent);
-    const completed=classes.filter(a=>String(a.status||'').toLowerCase()==='completed'||String(a.attendance||'').toLowerCase()==='present').length;
-    const count=Number(pkg.classCount||getPackageClassCount(pkg.packageName)||0);
-    return `<tr><td>${i+1}</td><td>${escapeHtml(pkg.packageName||`${count} Classes`)}</td><td>${count}</td><td>${completed}</td><td>${escapeHtml(pkg.startDate||pkg.renewalDate||'—')}</td><td>${escapeHtml(isCurrent?'Current':pkg.status||'Previous')}</td></tr>`;
-  }).join('');
-  const body=history.length?`<table class="student-all-record-pdf-table"><thead><tr><th>Package</th><th>Package Name</th><th>Purchased</th><th>Completed</th><th>Start / Renewal Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="student-all-record-empty">No purchased package history recorded.</div>';
-  return studentAllRecordPageShell('PURCHASED PACKAGE HISTORY',student,body);
 }
 
 function buildStudentAllRecordSchedulePage(student){
@@ -14611,7 +14664,7 @@ async function buildStudentAllRecordPages(student){
   const pages=[buildStudentAllRecordInfoPage(student)];
   const contractPages=await buildStudentAllRecordContractPages(student);
   pages.push(...contractPages);
-  pages.push(buildStudentAllRecordPackagesPage(student),buildStudentAllRecordPaymentPage(student),buildStudentAllRecordSchedulePage(student));
+  pages.push(buildStudentAllRecordPaymentPage(student),buildStudentAllRecordSchedulePage(student));
   const evaluations=getStudentEvaluations(student.id);
   evaluations.forEach((ev,i)=>pages.push(studentAllRecordEvaluationPage(student,ev,i)));
   return pages;
@@ -14627,7 +14680,7 @@ async function openStudentAllRecord(id){
   if(!content)return;
   content.innerHTML='<div class="student-all-record-preview-note">Preparing Student All Record preview...</div>';
   const pages=await buildStudentAllRecordPages(student);
-  content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Information, Student Contract, Purchased Package History, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
+  content.innerHTML=`<div class="student-all-record-preview-note">This preview contains ${pages.length} PDF page${pages.length===1?'':'s'}: Student Information, Student Contract, Payment Receipt, Class Schedule, and each saved Evaluation Record.</div><div class="student-all-record-preview-pages">${pages.join('')}</div>`;
   const modal=document.getElementById('studentAllRecordModal');
   if(modal)modal.classList.add('show');
 }
@@ -14681,7 +14734,82 @@ async function downloadStudentAllRecordPDF(){
   finally{holder.remove();if(btn){btn.disabled=false;btn.textContent=oldText||'DOWNLOAD PDF';}}
 }
 
+let pendingRenewalSourceStudentId='';
+
+function startCopyStudentForRenewal(id){
+  const students=getStudents();
+  const source=students.find(s=>String(s.id)===String(id));
+  if(!source)return alert('Student record could not be found.');
+  const progress=getStudentProgress(source);
+  if(!progress.totalAvailable || progress.completed<progress.totalAvailable){
+    return alert(`This student can only be renewed after all classes are completed. Progress: ${progress.completed} / ${progress.totalAvailable}.`);
+  }
+  pendingRenewalSourceStudentId=String(source.id);
+  closeStudentProfile();
+  openAddStudent();
+
+  const fields={
+    newStudentName:source.name||'',
+    newStudentNickname:source.nickname||'',
+    newStudentBirthday:source.birthday||'',
+    newStudentCountry:source.country||'',
+    newStudentEmail:source.email||'',
+    newStudentAge:source.age||'',
+    newStudentParentName:source.parentName||''
+  };
+  Object.entries(fields).forEach(([field,value])=>{const el=document.getElementById(field);if(el)el.value=value;});
+  const level=document.getElementById('newStudentLevel');
+  if(level)level.value=source.level||'';
+  const duration=document.getElementById('newStudentDuration');
+  if(duration)duration.value=source.duration||'30 Minutes';
+  const idInput=document.getElementById('newStudentId');
+  if(idInput){idInput.value='';idInput.placeholder='Enter a NEW Student ID';}
+  const packageInput=document.getElementById('newStudentClasses');
+  if(packageInput){packageInput.value='';packageInput.placeholder='Enter new package (e.g. 20 Classes)';}
+  const bonus=document.getElementById('newStudentBonusFreeLessons');if(bonus)bonus.value='0';
+  const additional=document.getElementById('newStudentAdditionalLessons');if(additional)additional.value='0';
+  setSchedulePicker('new',{},[]);
+  const title=document.querySelector('#addStudentModal .student-add-modal-header h3');
+  if(title)title.textContent='Renew Student — Copy Information';
+  const saveBtn=document.getElementById('addStudentBtn');if(saveBtn)saveBtn.textContent='CREATE RENEWED STUDENT';
+  const status=document.getElementById('studentStatus');if(status){status.textContent='Student information copied. Enter a new Student ID, new package, and preferred class schedule.';status.className='status show success';}
+}
+
+function toggleInactiveStudents(){
+  const panel=document.getElementById('inactiveStudentsPanel');
+  const button=document.getElementById('inactiveStudentsToggle');
+  if(!panel)return;
+  const opening=panel.style.display==='none'||!panel.style.display;
+  panel.style.display=opening?'block':'none';
+  if(button)button.textContent=opening?'HIDE INACTIVE STUDENTS':'INACTIVE STUDENTS';
+  if(opening)renderInactiveStudents();
+}
+
+function renderInactiveStudents(){
+  const target=document.getElementById('inactiveStudentList');
+  if(!target)return;
+  const inactive=getStudents().filter(s=>String(s.status||'').toLowerCase()==='completed'||String(s.status||'').toLowerCase()==='inactive');
+  target.innerHTML=inactive.length?sortStudentsForDisplay(inactive).map(renderStudentCard).join(''):'<div class="empty" style="grid-column:1/-1">No inactive students yet.</div>';
+}
+
+function updateCompletedStudentStatuses(){
+  const students=getStudents();
+  let changed=false;
+  students.forEach(student=>{
+    if(['inactive','completed'].includes(String(student.status||'').toLowerCase()))return;
+    const progress=getStudentProgress(student);
+    if(progress.totalAvailable>0 && progress.completed>=progress.totalAvailable){
+      student.status='Completed';
+      student.archivedAt=new Date().toISOString();
+      changed=true;
+      Promise.resolve(syncStudentToSupabase(student)).catch(err=>console.error('Completed student status sync failed:',err));
+    }
+  });
+  if(changed)saveStudents(students);
+}
+
 function openStudentProfile(id){
+updateCompletedStudentStatuses();
 window.currentStudentProfileId=id;
 window.studentProfileShowAllAppointments=false;
 window.studentProfileShowAllEvaluations=false;
@@ -14833,6 +14961,10 @@ content.innerHTML=`
    <div class="small" style="margin-top:6px">${evaluations.length?`This student has ${evaluations.length} saved evaluation record${evaluations.length===1?'':'s'}.`:'No evaluation records yet.'}</div>
    ${evaluations.length?`<div id="studentProfileEvaluationsList" style="display:grid;gap:8px;margin-top:10px">${evaluationRows}</div>`:''}
    </div>
+   ${p.totalAvailable>0 && p.completed>=p.totalAvailable?`<div style="margin-top:14px;padding-top:12px;border-top:1px dashed #b8dfe0">
+    <button type="button" class="primary-action" style="width:100%;white-space:normal" onclick="startCopyStudentForRenewal('${escapeAttr(student.id)}')">COPY STUDENT INFORMATION TO RENEW ANOTHER CLASS</button>
+    <div class="small" style="margin-top:6px">The student's basic information will be copied. You can enter a new Student ID, package, and preferred class schedule.</div>
+   </div>`:''}
   </div>
  </div>
 </div>`;
@@ -15345,6 +15477,7 @@ function renderStudentCard(s){
 }
 
 function renderStudents(){
+  updateCompletedStudentStatuses();
   const students=getStudents();
   const activeList=document.getElementById('activeStudentList');
   const legacyList=document.getElementById('studentList');
@@ -15352,6 +15485,7 @@ function renderStudents(){
 
   const search=(document.getElementById('studentSearch')?.value||'').trim().toLowerCase();
   const filtered=students.filter(s=>{
+    if(['inactive','completed'].includes(String(s.status||'').toLowerCase()))return false;
     const text=`${s.nickname||''} ${s.name||''} ${s.id||''}`.toLowerCase();
     return !search||text.includes(search);
   });
@@ -15363,6 +15497,7 @@ function renderStudents(){
     :`<div class="empty" style="grid-column:1/-1">${search?'No students match your search.':'No students yet.'}</div>`;
 
   if(legacyList)legacyList.innerHTML='';
+  if(document.getElementById('inactiveStudentsPanel')?.style.display==='block')renderInactiveStudents();
 }
 
 
@@ -16134,7 +16269,7 @@ s.className=
    SEND EVALUATION
 ========================================================= */
 
-function sendEvaluation(){
+async function sendEvaluation(){
 
 const name=
 document.getElementById(
@@ -16280,36 +16415,39 @@ submitBtn.textContent='Saving...';
 const downloadBtnBeforeSave=document.getElementById('downloadEvaluationBtn');
 if(downloadBtnBeforeSave) downloadBtnBeforeSave.disabled=true;
 
-let evals=getEvaluations();
+try{
+  // Refresh the durable backup before editing, so older saved evaluations are preserved.
+  await loadEvaluationBackup();
+  let evals=getEvaluations().slice();
 
-/* One evaluation record per completed appointment.
-   Re-saving the same appointment updates the existing record
-   instead of creating a duplicate. */
-if(currentEvaluationAppointmentId){
-  evals=evals.filter(item=>String(item.appointmentId||'')!==String(currentEvaluationAppointmentId));
-}else{
-  evals=evals.filter(item=>!(String(item.student_id||'')===String(record.student_id||'') && String(item.dateTime||'')===String(record.dateTime||'')));
+  /* One evaluation record per completed appointment.
+     Re-saving the same appointment updates the existing record
+     instead of creating a duplicate. */
+  if(currentEvaluationAppointmentId){
+    evals=evals.filter(item=>String(item.appointmentId||'')!==String(currentEvaluationAppointmentId));
+  }else{
+    evals=evals.filter(item=>!(String(item.student_id||'')===String(record.student_id||'') && String(item.dateTime||'')===String(record.dateTime||'')));
+  }
+
+  evals.push(record);
+  const saved=await saveEvaluations(evals);
+  if(!saved) throw new Error('Evaluation storage failed.');
+
+  const downloadBtn=document.getElementById('downloadEvaluationBtn');
+  if(downloadBtn) downloadBtn.disabled=false;
+
+  showStatus(`Evaluation for ${name} saved successfully. You can now use Print / Save PDF.`,true);
+  renderDashboard();
+  renderRecords();
+  renderEvaluationQueue();
+}catch(error){
+  console.error('Evaluation save failed:',error);
+  if(downloadBtnBeforeSave) downloadBtnBeforeSave.disabled=true;
+  showStatus('Unable to save this evaluation. Your existing saved evaluations were not deleted. Please try again.',false);
+}finally{
+  submitBtn.disabled=false;
+  submitBtn.textContent='Save Evaluation';
 }
-
-evals.push(record);
-saveEvaluations(evals);
-
-const downloadBtn=document.getElementById('downloadEvaluationBtn');
-if(downloadBtn) downloadBtn.disabled=false;
-
-showStatus(
-`Evaluation for ${name} saved successfully. You can now use Print / Save PDF.`,
-true
-);
-
-renderDashboard();
-renderRecords();
-renderEvaluationQueue();
-
-setTimeout(()=>{
-submitBtn.disabled=false;
-submitBtn.textContent='Save Evaluation';
-},500);
 
 }
 
@@ -21621,6 +21759,4 @@ body.portal-dark .teacher-dashboard-card.wallpaper-selected .teacher-dashboard-w
   content:attr(data-fallback) !important; background:linear-gradient(135deg,#dbeafe,#fef3c7) !important;
   color:#111827 !important; font-size:12px !important; font-weight:800 !important;
 }
-
-.sa-package-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.sa-package-card{border:1px solid #9debed;border-radius:11px;padding:12px;background:#fbffff;display:grid;gap:9px}.sa-package-card b{display:block;color:#007f87;font-size:13px}.sa-package-card small{display:block;color:#64748b;font-size:10px;margin-top:4px}.sa-package-meta{display:flex;flex-wrap:wrap;gap:6px}.sa-package-meta span{font-size:10px;background:#e8fbfb;border-radius:20px;padding:4px 7px;color:#087e83}
 </style>
