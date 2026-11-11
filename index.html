@@ -12347,9 +12347,9 @@ return getStudentBookedCountForCurrentClasses(student) < packageCount;
 function populateAppointmentStudentSelect(selectedId=''){
 const select=document.getElementById('appointmentStudent');
 if(!select)return;
-const students=getStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+const students=getActiveUniqueStudents().slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
 const editingStudentId=editingAppointmentId ? (getAppointments().find(a=>a.id===editingAppointmentId)?.studentId||'') : '';
-/* Show ALL students, including those whose package balance is zero or whose classes are already booked. */
+/* Show active students only, including active students whose package balance is zero. */
 select.innerHTML='<option value="">Select student</option>'+students.map(s=>
 `<option value="${escapeAttr(s.id)}">${escapeHtml(s.name)} — ${escapeHtml(s.id)}</option>`
 ).join('');
@@ -13155,10 +13155,41 @@ refreshLiveUI({students:false,records:false,contracts:false,studentId:student.id
 }
 }
 
+function getStudentIdentityKey(student){
+  if(!student)return '';
+  const explicit=String(student.renewalBaseId||'').trim();
+  if(explicit)return explicit.toLowerCase();
+  const id=String(student.id||'').trim();
+  // Only treat a suffixed ID as a renewal when the record carries renewal metadata.
+  if(student.renewalNumber || student.renewedFromStudentId){
+    return id.replace(/-\d+$/,'').toLowerCase();
+  }
+  return id.toLowerCase();
+}
+
+function getActiveUniqueStudents(){
+  const active=getStudents().filter(student=>!['inactive','completed'].includes(String(student.status||'Active').trim().toLowerCase()));
+  const unique=new Map();
+  active.forEach(student=>{
+    const key=getStudentIdentityKey(student)||String(student.id||'');
+    if(!unique.has(key))unique.set(key,student);
+  });
+  return Array.from(unique.values());
+}
+
+function isAppointmentStudentActive(studentId){
+  const student=getStudents().find(item=>String(item.id)===String(studentId));
+  // Preserve legacy appointments that do not have a matching student record.
+  if(!student)return true;
+  return !['inactive','completed'].includes(String(student.status||'Active').trim().toLowerCase());
+}
+
 function aptFilterMatch(item){
-/* Cancelled bookings are kept in storage for history and do NOT reduce the
-   student's class balance, but they are hidden from the calendar. */
+/* Cancelled bookings and appointments belonging to archived/completed student
+   packages remain stored for history, but are hidden from the active calendar. */
 if(String(item.status||'Scheduled').toLowerCase()==='cancelled')return false;
+const appointmentStudentId=item.studentId||item.student_id||'';
+if(appointmentStudentId&&!isAppointmentStudentActive(appointmentStudentId))return false;
 const search=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
 const status=document.getElementById('appointmentStatusFilter')?.value||'all';
 const text=`${item.studentName||''} ${item.studentId||''}`.toLowerCase();
@@ -13502,7 +13533,7 @@ async function commitAddedLessons(studentId,qty,kind,autoBook=true){
 
 function renderStudentAppointmentDashboard(){
  const root=document.getElementById('studentAppointmentDashboard'); if(!root)return;
- const students=getStudents().slice().sort((a,b)=>String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||'')));
+ const students=getActiveUniqueStudents().slice().sort((a,b)=>String(a.nickname||a.name||'').localeCompare(String(b.nickname||b.name||'')));
  if(!students.length){root.innerHTML='<div class="sa-card sa-empty">No students found. Add a student to get started.</div>';return;}
  if(!students.some(s=>String(s.id)===String(window.currentStudentAppointmentBoardId))) window.currentStudentAppointmentBoardId=String(students[0].id);
  const query=(document.getElementById('appointmentSearch')?.value||'').trim().toLowerCase();
@@ -14360,46 +14391,17 @@ function toggleDashboardAllCompleted(){
 }
 
 async function refreshDashboardSummaryCounts(){
-  if(!currentUser || !supabaseClient) return;
-
-  try{
-    const today = getLocalDateString(new Date());
-
-    const {count:studentCount,error:studentError} =
-      await supabaseClient
-        .from('students')
-        .select('id',{count:'exact',head:true})
-        .eq('user_id',currentUser.id);
-
-    if(studentError) throw studentError;
-
-    const {count:appointmentCount,error:appointmentError} =
-          await supabaseClient
-            .from('appointments')
-            .select('id',{count:'exact',head:true})
-            .eq('user_id',currentUser.id)
-            .neq('status','Completed');
-
-    if(appointmentError) throw appointmentError;
-
-    const studentEl=document.getElementById('dashboardStudentCount');
-    const appointmentEl=document.getElementById('dashboardAppointmentCount');
-
-    if(studentEl) studentEl.textContent=studentCount || 0;
-    if(appointmentEl) appointmentEl.textContent=appointmentCount || 0;
-
-    /*
-      IMPORTANT:
-      Do not calculate "CLASSES FOR TODAY" from a separate Supabase
-      class_date count here. The dashboard To-Do List uses getAppointments()
-      and getAppointmentDateTime(), which applies the portal's local date/time
-      logic and excludes cancelled appointments. renderDashboard() below
-      updates the class count from that same list so the two totals agree.
-    */
-
-  }catch(error){
-    console.error('Dashboard summary count failed:',error);
-  }
+  // Count current active students by their original identity, not by renewal
+  // package records. Completed/inactive package records remain in history.
+  const studentEl=document.getElementById('dashboardStudentCount');
+  const appointmentEl=document.getElementById('dashboardAppointmentCount');
+  const activeUnique=getActiveUniqueStudents();
+  if(studentEl)studentEl.textContent=activeUnique.length;
+  const activeAppointmentCount=getAppointments().filter(item=>
+    !['cancelled','canceled','deleted','removed','completed'].includes(String(item.status||'Scheduled').trim().toLowerCase()) &&
+    isAppointmentStudentActive(item.studentId||item.student_id||'')
+  ).length;
+  if(appointmentEl)appointmentEl.textContent=activeAppointmentCount;
 }
 
 function renderDashboard(){
@@ -14413,7 +14415,7 @@ const studentCountEl=document.getElementById('studentCount');
 const evaluationCountEl=document.getElementById('evaluationCount');
 const lastEvaluationEl=document.getElementById('lastEvaluation');
 
-if(studentCountEl) studentCountEl.textContent=students.length;
+if(studentCountEl) studentCountEl.textContent=getActiveUniqueStudents().length;
 if(evaluationCountEl) evaluationCountEl.textContent=evals.length;
 
 const latestEvaluation=evals.length
@@ -14443,7 +14445,7 @@ photoEl.textContent='👤';
 }
 
 const studentCountDash=document.getElementById('dashboardStudentCount');
-if(studentCountDash) studentCountDash.textContent=students.length;
+if(studentCountDash) studentCountDash.textContent=getActiveUniqueStudents().length;
 
 let appointments=getAppointments();
 const now=new Date();
@@ -14467,7 +14469,7 @@ if(autoCompletedChanged){
 }
 const validAppointments=appointments
 .map(item=>({item,date:getAppointmentDateTime(item)}))
-.filter(x=>x.date && !isNaN(x.date.getTime()));
+.filter(x=>x.date && !isNaN(x.date.getTime()) && isAppointmentStudentActive(x.item.studentId||x.item.student_id||''));
 
 /*
   Use one shared set of today's appointments for both the summary card
