@@ -11589,170 +11589,125 @@ async function cleanupOldSupabaseStudentAppointments(oldStudentId, oldAppointmen
 ========================================================= */
 async function syncStudentScheduleToAppointments(studentId, oldStudent, newStudent){
   try{
-    let appointments=getAppointments();
-    if(!Array.isArray(appointments)) return false;
+    const appointments=getAppointments();
+    if(!Array.isArray(appointments))return false;
 
     const oldStudentId=String(studentId||oldStudent?.id||'');
     const newStudentId=String(newStudent?.id||oldStudentId);
-    const newDetails=newStudent?.scheduleDetails||{};
-    const newDuration=String(newStudent?.duration||'30 Minutes');
+    const details=newStudent?.scheduleDetails||{};
+    const duration=String(newStudent?.duration||'30 Minutes');
+    const durationMinutes=durationToMinutes(duration);
     const now=new Date();
 
-    /*
-      IMPORTANT:
-      When a student changes the preferred schedule, every FUTURE Scheduled
-      Regular Class belonging to that student is an enrollment appointment.
-      Do not depend on scheduleMode here because Supabase-loaded appointments
-      are intentionally restored as "manual" in older records.
-    */
-    const targets=appointments
-      .filter(a=>{
-        if(String(a.studentId||'')!==oldStudentId) return false;
-        if(String(a.status||'Scheduled').toLowerCase()!=='scheduled') return false;
-        if(String(a.type||'Regular Class')!=='Regular Class') return false;
-        const dt=getAppointmentDateTime(a);
-        return !!dt && dt>=now;
-      })
-      .sort((a,b)=>(getAppointmentDateTime(a)?.getTime()||0)-(getAppointmentDateTime(b)?.getTime()||0));
+    const statusOf=a=>String(a.status||'Scheduled').trim().toLowerCase();
+    const isInactiveStatus=a=>['completed','cancelled','canceled','rescheduled','deleted','removed','absent','present'].includes(statusOf(a));
+    const belongsToStudent=a=>String(a.studentId??a.student_id??'')===oldStudentId;
+    const isFutureUnattended=a=>{
+      if(!belongsToStudent(a)||isInactiveStatus(a))return false;
+      if(a.attendance)return false;
+      const dt=getAppointmentDateTime(a);
+      return !!dt&&!Number.isNaN(dt.getTime())&&dt>=now;
+    };
 
-    if(!targets.length) return false;
+    // Move every future, unattended appointment for this student, including
+    // older Supabase-loaded rows whose status/type fields use legacy formats.
+    const targets=appointments.filter(isFutureUnattended)
+      .sort((a,b)=>(getAppointmentDateTime(a)?.getTime()||0)-(getAppointmentDateTime(b)?.getTime()||0));
+    if(!targets.length)return true;
 
     const targetIds=new Set(targets.map(a=>String(a.id)));
-    const occupiedByOthers=appointments.filter(a=>{
-      if(targetIds.has(String(a.id))) return false;
-      if(String(a.status||'Scheduled').toLowerCase()==='cancelled') return false;
+    const occupied=appointments.filter(a=>{
+      if(targetIds.has(String(a.id)))return false;
+      if(['cancelled','canceled','rescheduled','deleted','removed','completed'].includes(statusOf(a)))return false;
       const dt=getAppointmentDateTime(a);
-      return !!dt && dt>=now;
+      return !!dt&&!Number.isNaN(dt.getTime())&&dt>=now;
     });
-
-    const isConflict=(date,time,durationMinutes)=>{
+    const overlaps=(date,time,mins)=>{
       const start=parseAppointmentDate(date,time);
-      if(!start) return true;
-      const end=new Date(start.getTime()+durationMinutes*60000);
-      return occupiedByOthers.some(a=>{
-        const otherStart=getAppointmentDateTime(a);
-        if(!otherStart) return false;
-        const otherEnd=new Date(otherStart.getTime()+durationToMinutes(a.duration||'30 Minutes')*60000);
-        return start<otherEnd && end>otherStart;
+      if(!start)return true;
+      const finish=new Date(start.getTime()+Math.max(1,mins)*60000);
+      return occupied.some(a=>{
+        const other=getAppointmentDateTime(a);
+        if(!other)return false;
+        const otherEnd=new Date(other.getTime()+durationToMinutes(a.duration||'30 Minutes')*60000);
+        return start<otherEnd&&finish>other;
       });
     };
 
-    /* Rebuild exactly the same number of future class slots using the new
-       preferred schedule, starting from the earliest existing appointment. */
-    const firstDate=targets[0]?.date || getLocalDateString(now);
-    const cursor=new Date(`${firstDate}T00:00:00`);
-    if(isNaN(cursor.getTime())) cursor.setTime(now.getTime()),cursor.setHours(0,0,0,0);
-
-    const newSlots=[];
-    const durationMinutes=durationToMinutes(newDuration);
-
-    for(let i=0;i<1095 && newSlots.length<targets.length;i++){
+    const firstDate=String(targets[0].date||getLocalDateString(now)).slice(0,10);
+    const cursor=new Date(`${firstDate}T12:00:00`);
+    if(Number.isNaN(cursor.getTime()))cursor.setTime(now.getTime());
+    const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    const slots=[];
+    for(let offset=0;offset<1095&&slots.length<targets.length;offset++){
       const date=getLocalDateString(cursor);
-      const day=appointmentDateDayName(date);
-      const times=normalizeScheduleTimes(newDetails[day]);
-
-      for(const mins of times){
-        if(newSlots.length>=targets.length) break;
-        const n=parseInt(mins,10);
-        if(!Number.isFinite(n)) continue;
-        const time=`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
+      const day=days[cursor.getDay()===0?6:cursor.getDay()-1];
+      const dayKey=Object.keys(details).find(k=>String(k).toLowerCase()===day.toLowerCase());
+      const times=normalizeScheduleTimes(dayKey?details[dayKey]:[]).slice().sort((a,b)=>Number(a)-Number(b));
+      for(const raw of times){
+        if(slots.length>=targets.length)break;
+        const mins=Number(raw);
+        if(!Number.isFinite(mins)||mins<0||mins>=1440)continue;
+        const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
         const dt=parseAppointmentDate(date,time);
-        if(!dt || dt<now) continue;
-        if(isConflict(date,time,durationMinutes)) continue;
-        newSlots.push({date,time});
+        if(!dt||dt<now||overlaps(date,time,durationMinutes))continue;
+        if(slots.some(s=>s.date===date&&s.time===time))continue;
+        slots.push({date,time});
       }
       cursor.setDate(cursor.getDate()+1);
     }
+    if(slots.length!==targets.length){
+      throw new Error(`Only ${slots.length} of ${targets.length} upcoming classes could be placed on the new preferred schedule. Check for schedule conflicts.`);
+    }
 
-    if(!newSlots.length) return false;
+    const updates=new Map();
+    targets.forEach((a,i)=>updates.set(String(a.id),{
+      ...a,
+      studentId:newStudentId,
+      studentName:newStudent.name||a.studentName||a.student_name||'',
+      date:slots[i].date,
+      time:slots[i].time,
+      duration,
+      scheduleMode:'preferred',
+      updatedAt:new Date().toISOString()
+    }));
+    const updated=appointments.map(a=>updates.get(String(a.id))||a);
 
-    const updatedTargets=[];
-    const updatedById=new Map();
+    // Update the local cache first so the appointment table refreshes at once.
+    if(typeof writeAppointmentCache==='function')writeAppointmentCache(updated);
+    else localStorage.setItem(appointmentStorageKey(),JSON.stringify(updated));
 
-    targets.forEach((appointment,index)=>{
-      const slot=newSlots[index] || newSlots[newSlots.length-1];
-      const updated={
-        ...appointment,
-        studentId:newStudentId,
-        studentName:newStudent.name,
-        date:slot.date,
-        time:slot.time,
-        duration:newDuration,
-        scheduleMode:'preferred',
-        updatedAt:new Date().toISOString()
-      };
-      updatedTargets.push(updated);
-      updatedById.set(String(appointment.id),updated);
-    });
-
-    /* Update local data FIRST so Classes / Appointments and the calendar
-       immediately show the new schedule. */
-    const updated=appointments.map(a=>updatedById.get(String(a.id))||a);
-    localStorage.setItem(appointmentStorageKey(),JSON.stringify(updated));
-
-    /* Render immediately. */
-    try{ if(typeof renderAppointments==='function') renderAppointments(); }catch(e){ console.warn('Appointment render warning:',e); }
-    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
-
-    /* Update Supabase directly by the OLD date/time. This is important:
-       saveAppointments() can only upsert by the NEW date/time, which could
-       leave the old Supabase appointment behind. */
-    if(currentUser && supabaseClient){
+    if(currentUser&&supabaseClient){
       for(let i=0;i<targets.length;i++){
-        const oldA=targets[i];
-        const newA=updatedTargets[i];
-        const oldDate=oldA.date||'';
-        const oldTime=oldA.time||'';
-        const newTime=newA.time ? `${newA.time}:00` : null;
-
-        let query=supabaseClient
-          .from('appointments')
-          .update({
-            student_id:String(newA.studentId||''),
-            class_date:newA.date||null,
-            class_time:newTime,
-            duration:durationMinutes,
-            class_type:String(newA.type||'Regular Class'),
-            status:String(newA.status||'Scheduled'),
-            attendance:newA.attendance||null,
-            cancel_reason:newA.cancelReason||null,
-            notes:newA.notes||null
-          })
-          .eq('user_id',currentUser.id);
-
-        /* Prefer the Supabase row ID when the local appointment ID is a real
-           UUID/numeric database ID. Otherwise locate it by old student/date/time. */
-        if(oldA.id && !String(oldA.id).startsWith('appt_')){
-          query=query.eq('id',oldA.id);
-        }else{
-          query=query
-            .eq('student_id',oldStudentId)
-            .eq('class_date',oldDate)
-            .eq('class_time',oldTime ? `${oldTime}:00` : null);
-        }
-
-        const {error}=await query;
-        if(error) console.warn('Supabase appointment update warning:',error);
+        const oldA=targets[i],newA=updates.get(String(oldA.id));
+        let query=supabaseClient.from('appointments').update({
+          student_id:newStudentId,
+          class_date:newA.date,
+          class_time:`${newA.time}:00`,
+          duration:durationMinutes,
+          class_type:String(newA.type||newA.classType||'Regular Class'),
+          status:String(newA.status||'Scheduled'),
+          attendance:newA.attendance||null,
+          cancel_reason:newA.cancelReason||newA.cancel_reason||null,
+          notes:newA.notes||null
+        }).eq('user_id',currentUser.id);
+        if(oldA.id&&!String(oldA.id).startsWith('appt_'))query=query.eq('id',oldA.id);
+        else query=query.eq('student_id',oldStudentId).eq('class_date',String(oldA.date||'').slice(0,10)).eq('class_time',oldA.time?`${String(oldA.time).slice(0,5)}:00`:null);
+        const result=await query;
+        if(result.error)throw result.error;
       }
     }
 
-    /* If the student ID changed, remove any old-ID duplicate rows that may
-       still exist under the old schedule. */
-    if(oldStudentId!==newStudentId){
-      await cleanupOldSupabaseStudentAppointments(oldStudentId,targets,updatedTargets);
-    }
-
-    /* Keep the local copy authoritative after the direct database updates. */
-    localStorage.setItem(appointmentStorageKey(),JSON.stringify(updated));
-    try{ if(typeof renderAppointments==='function') renderAppointments(); }catch(e){}
-    try{ if(typeof renderDashboard==='function') renderDashboard(); }catch(e){}
-
+    try{if(typeof renderStudentAppointmentDashboard==='function')renderStudentAppointmentDashboard();}catch(e){console.warn('Appointment board refresh warning:',e);}
+    try{if(typeof renderAppointments==='function')renderAppointments();}catch(e){console.warn('Appointment list refresh warning:',e);}
+    try{if(typeof renderDashboard==='function')renderDashboard();}catch(e){}
     return true;
   }catch(error){
     console.error('Student schedule sync error:',error);
-    return false;
+    throw error;
   }
 }
+
 async function saveEditedStudent(){
 const originalId=document.getElementById('editOriginalId').value;
 const name=document.getElementById('editStudentName').value.trim();
@@ -11846,11 +11801,18 @@ const newDuration=String(editedStudent.duration||'30 Minutes');
 const scheduleChanged=oldScheduleJSON!==newScheduleJSON || oldDuration!==newDuration;
 const studentNameChanged=String(originalStudentSnapshot?.name||'')!==String(editedStudent.name||'');
 
+let scheduleAppointmentsSynced=true;
 if(scheduleChanged || studentNameChanged){
   /* Use the original ID to find the already-booked appointments. If the
      Student ID itself was edited, the appointments are updated to the new ID
      automatically as part of the same sync. */
-  await syncStudentScheduleToAppointments(originalId,originalStudentSnapshot,editedStudent);
+  try{
+    await syncStudentScheduleToAppointments(originalId,originalStudentSnapshot,editedStudent);
+  }catch(scheduleSyncError){
+    scheduleAppointmentsSynced=false;
+    console.error('Preferred schedule appointment update failed:',scheduleSyncError);
+    showStudentStatus(`Student details were saved, but upcoming appointments could not all be updated: ${scheduleSyncError.message||'Please check the appointment database.'}`,false);
+  }
 }
 
 /* Lesson credits are now managed only through the Add Lesson workflow.
@@ -11864,8 +11826,10 @@ renderRecords();
 renderStudents();
 renderAppointments();
 
-if(scheduleChanged){
+if(scheduleChanged && scheduleAppointmentsSynced){
   showStudentStatus(`Schedule updated successfully. All future appointments and calendar entries have been automatically moved to the new preferred schedule. No rebooking is required.${addedLessonAppointments?` ${addedLessonAppointments} additional class appointment(s) were added to the student record.`:''}`,true);
+}else if(scheduleChanged && !scheduleAppointmentsSynced){
+  showStudentStatus('Student details were saved, but appointment schedule synchronization needs attention. Check the appointment list and browser console before making further changes.',false);
 }else if(addedLessonAppointments){
   showStudentStatus(`Student record updated successfully. ${addedLessonAppointments} additional class appointment(s) were added to PREFERRED CLASS SCHEDULE AND CLASS RECORD.`,true);
   showLessonAddedSuccessModal(addedLessonAppointments,'lesson');
