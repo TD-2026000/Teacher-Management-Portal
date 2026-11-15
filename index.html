@@ -9408,7 +9408,27 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
    SIGNED IN
 ========================================================= */
 
-async function handleSignedIn(user){
+function handleSignedIn(user){
+  const appShell=document.getElementById('appShell');
+  const sameUser=currentUser && user && currentUser.id===user.id;
+
+  // Returning to the already-open portal (or a repeated Supabase SIGNED_IN
+  // event) must not rebuild the app, hide the screen, or force Dashboard.
+  // Keep the currently selected page, open evaluation, and scroll position.
+  if(sameUser && appShell && !appShell.classList.contains('hidden')){
+    currentUser=user;
+    return Promise.resolve();
+  }
+
+  // Supabase can emit SIGNED_IN while getSession() is also restoring the same
+  // session. Share one initialization instead of running two page resets.
+  if(window.__teacherPortalSignInPromise && window.__teacherPortalSignInUserId===user.id){
+    return window.__teacherPortalSignInPromise;
+  }
+
+  window.__teacherPortalSignInUserId=user.id;
+  const task=(async()=>{
+
   currentUser=user;
   evaluationMemoryCache=null;
   await loadEvaluationBackup();
@@ -9436,6 +9456,16 @@ async function handleSignedIn(user){
   const message=document.getElementById('subscriptionSubmitMessage');
   if(message && !portalSubscriptionUnlocked){message.textContent=portalSubscriptionGateMessage;message.style.display='block';message.style.color='#007f83';}
   updateSubscriptionLockedNavigation();
+
+  })();
+
+  window.__teacherPortalSignInPromise=task;
+  return task.finally(()=>{
+    if(window.__teacherPortalSignInPromise===task){
+      window.__teacherPortalSignInPromise=null;
+      window.__teacherPortalSignInUserId=null;
+    }
+  });
 }
 
 /* =========================================================
