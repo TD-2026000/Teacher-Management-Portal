@@ -7408,10 +7408,113 @@ const SUPABASE_PUBLISHABLE_KEY=
 const SUPABASE_REDIRECT_URL=
 'https://td-2026000.github.io/Teacher-Management-Portal/';
 
+/* Keep Supabase authentication sessions outside localStorage.
+   Student/evaluation records can fill the browser's localStorage quota.
+   IndexedDB has its own storage area, so a full localStorage must not
+   cause the teacher to be signed out after a page reload. */
+const teacherAuthStorage = (() => {
+  const DB_NAME = 'teacherPortalAuthStorage';
+  const STORE_NAME = 'auth';
+  let dbPromise = null;
+
+  function openAuthDB(){
+    if(!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable.'));
+    if(!dbPromise){
+      dbPromise = new Promise((resolve,reject)=>{
+        const request=indexedDB.open(DB_NAME,1);
+        request.onupgradeneeded=()=>{
+          const db=request.result;
+          if(!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME);
+        };
+        request.onsuccess=()=>resolve(request.result);
+        request.onerror=()=>reject(request.error||new Error('Could not open authentication storage.'));
+        request.onblocked=()=>reject(new Error('Authentication storage is blocked by another tab.'));
+      });
+    }
+    return dbPromise;
+  }
+
+  async function readFromIDB(key){
+    const db=await openAuthDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE_NAME,'readonly');
+      const request=tx.objectStore(STORE_NAME).get(key);
+      request.onsuccess=()=>resolve(request.result ?? null);
+      request.onerror=()=>reject(request.error||new Error('Could not read authentication session.'));
+    });
+  }
+
+  async function writeToIDB(key,value){
+    const db=await openAuthDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE_NAME,'readwrite');
+      tx.objectStore(STORE_NAME).put(value,key);
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error||new Error('Could not save authentication session.'));
+      tx.onabort=()=>reject(tx.error||new Error('Authentication session save was interrupted.'));
+    });
+  }
+
+  async function removeFromIDB(key){
+    const db=await openAuthDB();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(STORE_NAME,'readwrite');
+      tx.objectStore(STORE_NAME).delete(key);
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error||new Error('Could not remove authentication session.'));
+      tx.onabort=()=>reject(tx.error||new Error('Authentication session removal was interrupted.'));
+    });
+  }
+
+  return {
+    async getItem(key){
+      try{
+        const stored=await readFromIDB(key);
+        if(stored!==null && stored!==undefined) return stored;
+      }catch(error){
+        console.warn('IndexedDB auth read unavailable; checking existing browser session:',error);
+      }
+      try{
+        const legacy=window.localStorage.getItem(key);
+        if(legacy!==null){
+          try{await writeToIDB(key,legacy);}catch(error){console.warn('Could not migrate existing auth session to IndexedDB:',error);}
+          return legacy;
+        }
+      }catch(error){
+        console.warn('Could not read legacy browser auth session:',error);
+      }
+      return null;
+    },
+    async setItem(key,value){
+      // IndexedDB is the primary auth store. Do not let a full localStorage
+      // prevent the Supabase session from being persisted.
+      await writeToIDB(key,value);
+      try{window.localStorage.setItem(key,value);}catch(error){
+        console.warn('Auth session saved in IndexedDB; localStorage backup skipped because storage is unavailable/full:',error);
+      }
+    },
+    async removeItem(key){
+      let idbError=null;
+      try{await removeFromIDB(key);}catch(error){idbError=error;}
+      try{window.localStorage.removeItem(key);}catch(error){console.warn('Could not remove legacy auth storage key:',error);}
+      if(idbError) throw idbError;
+    }
+  };
+})();
+
 const supabaseClient=
 window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_PUBLISHABLE_KEY
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY,
+  {
+    auth:{
+      storage:teacherAuthStorage,
+      storageKey:'sb-ifaptabszmvxgaltmrnh-auth-token',
+      persistSession:true,
+      autoRefreshToken:true,
+      detectSessionInUrl:true
+    }
+  }
 );
 
 let currentUser=null;
@@ -9375,60 +9478,49 @@ showAuthPanel('login');
 
 async function initAuth(){
 
-const recovery=
-await checkPasswordRecovery();
+  const recovery=await checkPasswordRecovery();
+  if(recovery) return;
 
-if(recovery){
+  // Register the auth listener before reading the saved session. This avoids
+  // missing sign-in/sign-out events during page startup or token refresh.
+  if(!window.__teacherPortalAuthListenerRegistered){
+    window.__teacherPortalAuthListenerRegistered=true;
+    supabaseClient.auth.onAuthStateChange((event,session)=>{
+      if(event==='PASSWORD_RECOVERY'){
+        document.getElementById('appShell').classList.add('hidden');
+        document.getElementById('authScreen').classList.remove('hidden');
+        showAuthPanel('reset');
+        return;
+      }
 
-return;
+      // INITIAL_SESSION is handled by getSession() below. TOKEN_REFRESHED
+      // must not rebuild the app or reset the current page.
+      if(event==='INITIAL_SESSION' || event==='TOKEN_REFRESHED' || event==='USER_UPDATED') return;
 
+      if(event==='SIGNED_IN' && session){
+        handleSignedIn(session.user);
+      }else if(event==='SIGNED_OUT'){
+        handleSignedOut();
+      }
+    });
+  }
+
+  try{
+    const {data:{session},error}=await supabaseClient.auth.getSession();
+    if(error) throw error;
+    if(session){
+      await handleSignedIn(session.user);
+    }else{
+      handleSignedOut();
+    }
+  }catch(error){
+    console.error('Could not restore teacher login session:',error);
+    // Do not silently erase a possibly saved session. Show a useful message
+    // while keeping the login screen available for an explicit retry.
+    handleSignedOut();
+    showAuthMessage('Unable to restore your saved login session. Please try logging in again. Your account and portal records have not been deleted.');
+  }
 }
-
-const {
-  data:{session}
-} = await supabaseClient.auth.getSession();
-
-if(session){
-  await handleSignedIn(session.user);
-  return;
-}
-
-handleSignedOut();
-
-supabaseClient.auth.onAuthStateChange(
-(event,session)=>{
-
-if(event==='PASSWORD_RECOVERY'){
-
-document.getElementById(
-'appShell'
-).classList.add('hidden');
-
-document.getElementById(
-'authScreen'
-).classList.remove('hidden');
-
-showAuthPanel('reset');
-
-return;
-
-}
-
-if(session){
-
-handleSignedIn(session.user);
-
-}else{
-
-handleSignedOut();
-
-}
-
-}
-);
-
-}
-
 
 /* =========================================================
    AUTH EVENT LISTENERS
