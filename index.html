@@ -5741,11 +5741,12 @@ onclick="if(event.target===this) closeAddStudent()"
 <div class="panel-body">
 
 <div class="appointment-toolbar">
-  <div class="appointment-toolbar-left">
+  <div class="appointment-toolbar-left" style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
     <div>
       <label for="appointmentSearch">Search Student</label>
       <input id="appointmentSearch" class="appointment-search" type="search" placeholder="Search student name or ID..." oninput="renderAppointments()">
     </div>
+    <button type="button" class="primary" style="height:42px;white-space:nowrap" onclick="openAvailableSchedulePreview()">▦ Available Schedule</button>
   </div>
   <div class="appointment-toolbar-right">
     <button type="button" class="primary appointment-calendar-open" onclick="openStudentAppointmentCalendar()" aria-label="Open calendar">📅 Calendar</button>
@@ -7103,7 +7104,16 @@ onclick="if(event.target===this) closeEvaluationView()"
 id="evaluationViewContent"
 ></div>
 
-<div class="modal-actions">
+<div class="modal-actions" style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap">
+
+<button
+type="button"
+class="primary"
+id="downloadViewedEvaluationBtn"
+onclick="downloadViewedEvaluationImage()"
+>
+Download Image
+</button>
 
 <button
 type="button"
@@ -18160,6 +18170,72 @@ document.getElementById(
 }
 
 
+async function downloadViewedEvaluationImage(){
+  const ctx=window.currentViewedEvaluation;
+  if(!ctx){
+    alert('Please open a saved evaluation first.');
+    return;
+  }
+
+  const student=getStudents().find(s=>String(s.id)===String(ctx.studentId));
+  const evaluation=student ? getStudentEvaluations(student.id)[Number(ctx.index)] : null;
+  const content=document.getElementById('evaluationViewContent');
+  const button=document.getElementById('downloadViewedEvaluationBtn');
+
+  if(!student || !evaluation || !content){
+    alert('The saved evaluation could not be found. Please close and open it again.');
+    return;
+  }
+  if(typeof html2canvas==='undefined'){
+    alert('Image download library is still loading. Please try again in a moment.');
+    return;
+  }
+
+  const oldText=button?.textContent;
+  if(button){
+    button.disabled=true;
+    button.textContent='Preparing Image...';
+  }
+
+  try{
+    const canvas=await html2canvas(content,{
+      backgroundColor:'#ffffff',
+      scale:2,
+      useCORS:true,
+      logging:false,
+      windowWidth:Math.max(document.documentElement.clientWidth,content.scrollWidth)
+    });
+
+    const blob=await new Promise((resolve,reject)=>{
+      canvas.toBlob(result=>result?resolve(result):reject(new Error('Could not create the evaluation image.')),'image/png');
+    });
+
+    const nickname=String(student.nickname||student.name||'Student').trim();
+    const topic=String(evaluation.lesson_topic||'Evaluation').trim();
+    const date=String(evaluation.dateTime||evaluation.createdAt||new Date().toISOString())
+      .replace(/[^0-9T]/g,'-').slice(0,19);
+    const safe=value=>value.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,70);
+    const filename=`${safe(nickname)}-${safe(topic)}-${date||'evaluation'}.png`;
+
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=url;
+    link.download=filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }catch(error){
+    console.error('Unable to download saved evaluation image:',error);
+    alert('Unable to download the evaluation image. '+(error?.message||'Please try again.'));
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent=oldText||'Download Image';
+    }
+  }
+}
+
 /* =========================================================
    CLOSE INDIVIDUAL EVALUATION
 ========================================================= */
@@ -22032,6 +22108,83 @@ body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboard
  document.addEventListener('input',e=>{if(e.target&&e.target.closest&&e.target.closest('#invoiceMakerInline')&&e.target.id!=='imQrUpload')renderInvoiceMaker();});document.addEventListener('change',e=>{if(e.target&&e.target.closest&&e.target.closest('#invoiceMakerInline')&&e.target.id!=='imQrUpload'&&e.target.id!=='imStudentSelect')renderInvoiceMaker();});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{populateInvoiceStudentOptions();openInvoiceMaker();});else{populateInvoiceStudentOptions();openInvoiceMaker();}
 })();
+</script>
+
+
+
+<!-- AVAILABLE SCHEDULE IMAGE PREVIEW -->
+<div id="availableScheduleModal" class="modal-backdrop" style="display:none;z-index:100500" onclick="if(event.target===this)closeAvailableSchedulePreview()">
+ <div class="modal" role="dialog" aria-modal="true" aria-label="Available schedule" style="width:min(980px,96vw);max-height:92vh;overflow:auto">
+  <div class="modal-header"><h3>AVAILABLE TIME SLOTS</h3><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close ✕</button></div>
+  <div style="padding:16px">
+   <p style="margin:0 0 12px;color:var(--muted-color,#64748b)">Available 30-minute slots for the next 7 days. Booked time slots are excluded.</p>
+   <div style="overflow:auto;border:1px solid #dbe5ec;border-radius:12px;background:#fff"><canvas id="availableScheduleCanvas" style="display:block;width:100%;height:auto"></canvas></div>
+   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px"><button type="button" class="primary" onclick="downloadAvailableScheduleImage()">↓ Download Image</button><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close</button></div>
+  </div>
+ </div>
+</div>
+<script>
+function availableScheduleDurationMinutes(item){
+ const raw=String(item.duration||'30 Minutes');
+ const match=raw.match(/(\d+(?:\.\d+)?)/);
+ return Math.max(30,match?Number(match[1]):30);
+}
+function availableScheduleBookedIntervals(){
+ return getAppointments().filter(a=>{
+  const status=String(a.status||'Scheduled').toLowerCase();
+  return !['cancelled','canceled','deleted','removed','rescheduled'].includes(status);
+ }).map(a=>{
+  const time=String(a.time||a.class_time||'').slice(0,5);
+  const m=time.match(/^(\d{1,2}):(\d{2})$/);
+  return {date:String(a.date||a.class_date||''),start:m?Number(m[1])*60+Number(m[2]):-1,end:m?Number(m[1])*60+Number(m[2])+availableScheduleDurationMinutes(a):-1};
+ }).filter(x=>x.date&&x.start>=0);
+}
+function buildAvailableScheduleData(){
+ const booked=availableScheduleBookedIntervals(),days=[];
+ const start=new Date();start.setHours(0,0,0,0);
+ for(let offset=0;offset<7;offset++){
+  const date=new Date(start);date.setDate(start.getDate()+offset);
+  const dateKey=getLocalDateString(date),slots=[];
+  for(let mins=360;mins<24*60;mins+=30){
+   const occupied=booked.some(b=>b.date===dateKey&&mins<b.end&&mins+30>b.start);
+   if(!occupied)slots.push({start:mins,label:new Date(2000,0,1,Math.floor(mins/60),mins%60).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})});
+  }
+  days.push({date:dateKey,label:date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),slots});
+ }
+ return days;
+}
+function drawAvailableScheduleImage(){
+ const canvas=document.getElementById('availableScheduleCanvas');if(!canvas)return;
+ const days=buildAvailableScheduleData(),ctx=canvas.getContext('2d');
+ const width=1200,pad=42,colGap=16,colW=(width-pad*2-colGap*6)/7,headH=112,rowH=34,rows=36,height=pad+headH+rows*rowH+pad;
+ canvas.width=width;canvas.height=height;
+ ctx.fillStyle='#f5fbfc';ctx.fillRect(0,0,width,height);
+ ctx.fillStyle='#073b4c';ctx.font='bold 32px Arial';ctx.fillText('AVAILABLE CLASS SCHEDULE',pad,pad+32);
+ ctx.fillStyle='#52717b';ctx.font='16px Arial';ctx.fillText('Available 30-minute time slots · Next 7 days',pad,pad+61);
+ days.forEach((day,i)=>{
+  const x=pad+i*(colW+colGap),y=pad+headH;
+  ctx.fillStyle='#0b7285';ctx.fillRect(x,pad+82,colW,42);
+  ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText(day.label,x+colW/2,pad+109);
+  ctx.fillStyle='#fff';ctx.fillRect(x,y,colW,rows*rowH);
+  ctx.strokeStyle='#d7e5e8';ctx.strokeRect(x,y,colW,rows*rowH);
+  ctx.textAlign='center';ctx.font='13px Arial';
+  for(let r=0;r<rows;r++){
+   const mins=360+r*30,slot=day.slots.find(z=>z.start===mins),yy=y+r*rowH;
+   if(slot){ctx.fillStyle='#e4f7ed';ctx.fillRect(x+4,yy+2,colW-8,rowH-4);ctx.fillStyle='#17633b';ctx.fillText(slot.label,x+colW/2,yy+22);}
+   else{ctx.fillStyle='#eef1f4';ctx.fillRect(x+4,yy+2,colW-8,rowH-4);ctx.fillStyle='#9aa6b2';ctx.fillText('Booked',x+colW/2,yy+22);}
+  }
+ });
+ ctx.textAlign='left';ctx.fillStyle='#52616b';ctx.font='13px Arial';ctx.fillText('Green = Available  |  Gray = Booked',pad,height-18);
+}
+function openAvailableSchedulePreview(){
+ const modal=document.getElementById('availableScheduleModal');if(!modal)return;
+ modal.style.display='flex';drawAvailableScheduleImage();
+}
+function closeAvailableSchedulePreview(){const modal=document.getElementById('availableScheduleModal');if(modal)modal.style.display='none';}
+function downloadAvailableScheduleImage(){
+ const canvas=document.getElementById('availableScheduleCanvas');if(!canvas)return;
+ const link=document.createElement('a');link.download='Available-Class-Schedule-'+getLocalDateString(new Date())+'.png';link.href=canvas.toDataURL('image/png');document.body.appendChild(link);link.click();link.remove();
+}
 </script>
 
 </body>
