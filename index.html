@@ -13691,7 +13691,7 @@ function renderStudentAppointmentDashboard(){
      const rowMenu=`<span class="sa-row-more"><button type="button" class="sa-row-more-trigger" title="More actions" aria-label="More actions" onclick="toggleAppointmentRowMenu(this,event)">⋮</button><span class="sa-row-more-menu"><button type="button" class="reschedule-option" onclick="rescheduleStudentAppointment('${safeApptId}')">Reschedule</button><button type="button" class="delete-option" onclick="deleteStudentAppointmentRecord('${safeApptId}')">Delete</button></span></span>`;
      if(String(a.status||'').toLowerCase()==='rescheduled'){actions=`<div class="sa-row-actions"><span class="sa-status rescheduled">Rescheduled</span>${rowMenu}</div>`;}
      else if(ended&&!attendance){actions=`<div class="sa-row-actions"><button class="sa-btn present" onclick="confirmAppointmentAttendance('${safeApptId}','Present')">Present</button><button class="sa-btn absent" onclick="confirmAppointmentAttendance('${safeApptId}','Absent')">Absent</button>${rowMenu}</div>`;}
-     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")} ',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
+     else if(attendance==='present'){const evs=getStudentEvaluations(student.id);const evIndex=evs.findIndex(ev=>String(ev.appointmentId||ev.appointment_id||'')===String(a.id));actions=`<div class="sa-row-actions"><span class="sa-status done">Present</span> ${evIndex>=0?`<button class="sa-btn view" onclick="viewEvaluationRecord('${String(student.id).replace(/'/g,"\'")}',${evIndex})">View</button>`:`<button class="sa-btn evaluate" onclick="openAppointmentEvaluation('${safeApptId}')">Evaluate</button>`}${rowMenu}</div>`;}
      else if(attendance==='absent'){actions=`<div class="sa-row-actions"><span class="sa-status">Absent</span>${rowMenu}</div>`;}
      else if(!ended){actions=`<div class="sa-row-actions"><span class="sa-status wait">Upcoming</span>${rowMenu}</div>`;}
      else actions='<span class="sa-status done">Completed · Mark attendance</span>';
@@ -14257,9 +14257,20 @@ function confirmAppointmentAttendance(id, attendance){
   document.body.appendChild(overlay);
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
   overlay.querySelector('.sa-confirm-cancel').addEventListener('click',()=>overlay.remove());
-  overlay.querySelector('.sa-confirm-yes').addEventListener('click',()=>{
+  const confirmButton=overlay.querySelector('.sa-confirm-yes');
+  confirmButton.addEventListener('click',async()=>{
+    if(confirmButton.disabled) return;
+    confirmButton.disabled=true;
+    confirmButton.textContent='Saving...';
+    const saved=attendance==='Present'
+      ? await markAppointmentPresent(String(id))
+      : await markAppointmentAbsent(String(id));
+    if(!saved){
+      confirmButton.disabled=false;
+      confirmButton.textContent=`Yes, mark ${attendance}`;
+      return;
+    }
     overlay.remove();
-    if(attendance==='Present')markAppointmentPresent(String(id));else markAppointmentAbsent(String(id));
     renderStudentAppointmentDashboard();
   });
   const closeOnEscape=e=>{if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',closeOnEscape);}};
@@ -14272,67 +14283,72 @@ async function persistAppointmentAttendance(id, attendance){
   if(index<0) throw new Error('Appointment record was not found.');
   const item=appointments[index];
   const now=new Date().toISOString();
-  const patch={status:'Completed',attendance,updated_at:now};
 
-  // Attendance must be confirmed by Supabase before changing the local cache.
   if(!currentUser || !supabaseClient){
     throw new Error('Supabase session is not available. Please sign in again and retry.');
   }
 
   let savedRow=null;
-  let updateError=null;
-  try{
-    let result=await supabaseClient
+  let directError=null;
+  const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(item.id||''));
+
+  // Use the primary key only when the local appointment ID is a UUID.
+  if(isUuid){
+    const direct=await supabaseClient
       .from('appointments')
       .update({status:'Completed',attendance})
       .eq('id',item.id)
       .eq('user_id',currentUser.id)
       .select('id,attendance,status')
       .maybeSingle();
-    savedRow=result.data;
-    updateError=result.error;
-
-    // Older locally-created appointment IDs may not be the Supabase UUID.
-    // In that case, locate the matching server row using its natural key.
-    if(!updateError && !savedRow){
-      const serverTime=item.time ? `${String(item.time).slice(0,5)}:00` : null;
-      const lookup=await supabaseClient.from('appointments')
-        .select('id')
-        .eq('user_id',currentUser.id)
-        .eq('student_id',String(item.studentId||item.student_id||''))
-        .eq('class_date',item.date||null)
-        .eq('class_time',serverTime)
-        .limit(1)
-        .maybeSingle();
-      if(lookup.error) throw lookup.error;
-      if(lookup.data?.id){
-        const retry=await supabaseClient.from('appointments')
-          .update({status:'Completed',attendance})
-          .eq('id',lookup.data.id)
-          .eq('user_id',currentUser.id)
-          .select('id,attendance,status')
-          .maybeSingle();
-        if(retry.error) throw retry.error;
-        savedRow=retry.data;
-      }
-    }
-    if(updateError) throw updateError;
-    if(!savedRow || String(savedRow.attendance||'').toLowerCase()!==attendance.toLowerCase()){
-      throw new Error('Supabase did not confirm the attendance update. Check the appointments table permissions and attendance column.');
-    }
-  }catch(error){
-    console.error('Supabase attendance update failed:',error);
-    throw error;
+    savedRow=direct.data;
+    directError=direct.error;
   }
 
-  // Update local cache only after Supabase confirms the change.
+  // Retry by natural key for locally-generated IDs or when the direct update
+  // does not find a server row.
+  if(!savedRow){
+    const studentId=String(item.studentId||item.student_id||'');
+    const date=String(item.date||item.class_date||'').slice(0,10);
+    const rawTime=String(item.time||item.class_time||'').slice(0,5);
+    if(!studentId||!date||!rawTime){
+      throw directError||new Error('This appointment is missing the student, date, or time needed to save attendance.');
+    }
+
+    const lookup=await supabaseClient.from('appointments')
+      .select('id')
+      .eq('user_id',currentUser.id)
+      .eq('student_id',studentId)
+      .eq('class_date',date)
+      .eq('class_time',`${rawTime}:00`)
+      .limit(1)
+      .maybeSingle();
+
+    if(lookup.error) throw lookup.error;
+    if(!lookup.data?.id){
+      throw directError||new Error('Could not find the matching appointment in Supabase. Check that this appointment has synced.');
+    }
+
+    const retry=await supabaseClient.from('appointments')
+      .update({status:'Completed',attendance})
+      .eq('id',lookup.data.id)
+      .eq('user_id',currentUser.id)
+      .select('id,attendance,status')
+      .maybeSingle();
+
+    if(retry.error) throw retry.error;
+    savedRow=retry.data;
+  }
+
+  if(!savedRow || String(savedRow.attendance||'').toLowerCase()!==attendance.toLowerCase()){
+    throw new Error('Supabase did not confirm the attendance update. Check the appointments table permissions and attendance column.');
+  }
+
   const updated={...item,status:'Completed',attendance,updatedAt:now};
   if(attendance==='Present') updated.presentAt=now;
   if(attendance==='Absent') updated.absentAt=now;
   appointments[index]=updated;
-  // Cache is optional: browser localStorage may be full. Supabase has
-  // already confirmed the durable attendance update above, so a cache
-  // quota error must never be reported as an attendance-save failure.
+
   try{
     writeAppointmentCache(appointments);
   }catch(cacheError){
@@ -14346,22 +14362,26 @@ async function markAppointmentPresent(id){
   try{
     await persistAppointmentAttendance(id,'Present');
     refreshLiveUI({students:false,records:false,contracts:false});
+    return true;
   }catch(error){
     console.error('Could not save Present attendance:',error);
     alert('Present was NOT saved. '+(error?.message||'Please check your internet connection and Supabase permissions.'));
+    return false;
   }
 }
 
 async function markAppointmentAbsent(id){
   const item=getAppointments().find(a=>String(a.id)===String(id));
-  if(!item)return;
-  if((item.status||'')!=='Completed' || item.attendance)return;
+  if(!item)return false;
+  if((item.status||'')!=='Completed' || item.attendance)return false;
   try{
     await persistAppointmentAttendance(id,'Absent');
     refreshLiveUI({students:false,records:false,contracts:false});
+    return true;
   }catch(error){
     console.error('Could not save Absent attendance:',error);
     alert('Absent was NOT saved. '+(error?.message||'Please check your internet connection and Supabase permissions.'));
+    return false;
   }
 }
 
