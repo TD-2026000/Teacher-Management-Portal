@@ -22113,20 +22113,36 @@ body.portal-dark #dashboardWallpaperGroup .tdb-label,body.portal-dark #dashboard
 
 
 <!-- AVAILABLE SCHEDULE IMAGE PREVIEW -->
-<div id="availableScheduleModal" class="modal-backdrop" style="display:none;z-index:100500" onclick="if(event.target===this)closeAvailableSchedulePreview()">
- <div class="modal" role="dialog" aria-modal="true" aria-label="Available schedule" style="width:min(980px,96vw);max-height:92vh;overflow:auto">
-  <div class="modal-header"><h3>AVAILABLE TIME SLOTS</h3><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close ✕</button></div>
-  <div style="padding:16px">
-   <p style="margin:0 0 12px;color:var(--muted-color,#64748b)">Available 30-minute slots for the next 7 days. Booked time slots are excluded.</p>
-   <div style="overflow:auto;border:1px solid #dbe5ec;border-radius:12px;background:#fff"><canvas id="availableScheduleCanvas" style="display:block;width:100%;height:auto"></canvas></div>
-   <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px"><button type="button" class="primary" onclick="downloadAvailableScheduleImage()">↓ Download Image</button><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close</button></div>
+<div id="availableScheduleModal" class="modal-backdrop" style="display:none;z-index:100500;padding:2vh 2vw;align-items:center;justify-content:center" onclick="if(event.target===this)closeAvailableSchedulePreview()">
+ <div class="modal available-schedule-modal" role="dialog" aria-modal="true" aria-label="Available schedule">
+  <div class="available-schedule-header"><h3>AVAILABLE TIME SLOTS</h3><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close ✕</button></div>
+  <div class="available-schedule-controls">
+   <label style="display:flex;align-items:center;gap:8px;margin:0"><input type="radio" name="availableScheduleRangeMode" value="all" checked onchange="toggleAvailableScheduleRange()"> Show All Times</label>
+   <label style="display:flex;align-items:center;gap:8px;margin:0"><input type="radio" name="availableScheduleRangeMode" value="custom" onchange="toggleAvailableScheduleRange()"> Select Time Range</label>
+   <div id="availableScheduleRangeFields" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+    <label style="margin:0">FROM <select id="availableScheduleFrom" onchange="drawAvailableScheduleImage()"></select></label>
+    <label style="margin:0">TO <select id="availableScheduleTo" onchange="drawAvailableScheduleImage()"></select></label>
+   </div>
   </div>
+  <div class="available-schedule-canvas-wrap"><canvas id="availableScheduleCanvas"></canvas></div>
+  <div class="available-schedule-actions"><button type="button" class="primary" onclick="downloadAvailableScheduleImage()">↓ Download Image</button><button type="button" class="secondary" onclick="closeAvailableSchedulePreview()">Close</button></div>
  </div>
 </div>
+<style>
+#availableScheduleModal .available-schedule-modal{width:96vw!important;max-width:1600px!important;height:90vh!important;max-height:90vh!important;padding:clamp(12px,1.5vw,24px)!important;display:flex;flex-direction:column;overflow:hidden;border-radius:14px}
+#availableScheduleModal .available-schedule-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto}
+#availableScheduleModal .available-schedule-header h3{font-size:clamp(20px,2vw,30px);margin:0}
+#availableScheduleModal .available-schedule-controls{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:14px 0;flex:0 0 auto}
+#availableScheduleModal .available-schedule-controls input[type=radio]{width:auto}
+#availableScheduleModal .available-schedule-controls select{width:auto;min-width:125px;margin-left:5px}
+#availableScheduleModal .available-schedule-canvas-wrap{flex:1;min-height:0;overflow:auto;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
+#availableScheduleModal #availableScheduleCanvas{display:block;width:100%;height:auto}
+#availableScheduleModal .available-schedule-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:12px;flex:0 0 auto}
+@media(max-width:700px){#availableScheduleModal .available-schedule-modal{width:96vw!important;height:94vh!important;max-height:94vh!important}#availableScheduleModal .available-schedule-controls{gap:10px}#availableScheduleModal .available-schedule-actions button{flex:1}}
+</style>
 <script>
 function availableScheduleDurationMinutes(item){
- const raw=String(item.duration||'30 Minutes');
- const match=raw.match(/(\d+(?:\.\d+)?)/);
+ const raw=String(item.duration||'30 Minutes'),match=raw.match(/(\d+(?:\.\d+)?)/);
  return Math.max(30,match?Number(match[1]):30);
 }
 function availableScheduleBookedIntervals(){
@@ -22134,51 +22150,89 @@ function availableScheduleBookedIntervals(){
   const status=String(a.status||'Scheduled').toLowerCase();
   return !['cancelled','canceled','deleted','removed','rescheduled'].includes(status);
  }).map(a=>{
-  const time=String(a.time||a.class_time||'').slice(0,5);
-  const m=time.match(/^(\d{1,2}):(\d{2})$/);
-  return {date:String(a.date||a.class_date||''),start:m?Number(m[1])*60+Number(m[2]):-1,end:m?Number(m[1])*60+Number(m[2])+availableScheduleDurationMinutes(a):-1};
+  const time=String(a.time||a.class_time||'').slice(0,5),m=time.match(/^(\d{1,2}):(\d{2})$/);
+  const start=m?Number(m[1])*60+Number(m[2]):-1;
+  return {date:String(a.date||a.class_date||''),start,end:start>=0?start+availableScheduleDurationMinutes(a):-1};
  }).filter(x=>x.date&&x.start>=0);
 }
+function availableScheduleTimeLabel(mins){
+ return new Date(2000,0,1,Math.floor(mins/60),mins%60).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+}
+function availableScheduleMondayStart(){
+ const d=new Date();d.setHours(0,0,0,0);
+ d.setDate(d.getDate()-((d.getDay()+6)%7));
+ return d;
+}
 function buildAvailableScheduleData(){
- const booked=availableScheduleBookedIntervals(),days=[];
- const start=new Date();start.setHours(0,0,0,0);
+ const booked=availableScheduleBookedIntervals(),days=[],weekStart=availableScheduleMondayStart();
  for(let offset=0;offset<7;offset++){
-  const date=new Date(start);date.setDate(start.getDate()+offset);
+  const date=new Date(weekStart);date.setDate(weekStart.getDate()+offset);
   const dateKey=getLocalDateString(date),slots=[];
   for(let mins=360;mins<24*60;mins+=30){
-   const occupied=booked.some(b=>b.date===dateKey&&mins<b.end&&mins+30>b.start);
-   if(!occupied)slots.push({start:mins,label:new Date(2000,0,1,Math.floor(mins/60),mins%60).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})});
+   const reservation=booked.find(b=>b.date===dateKey&&mins<b.end&&mins+30>b.start);
+   slots.push({start:mins,reserved:!!reservation,reserveLabel:reservation?'RESERVE - '+availableScheduleTimeLabel(reservation.start):'',label:availableScheduleTimeLabel(mins)});
   }
-  days.push({date:dateKey,label:date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),slots});
+  days.push({date:dateKey,label:['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'][offset],slots});
  }
  return days;
 }
+function availableScheduleOptions(){
+ const values=[];for(let m=360;m<=23*60+30;m+=30)values.push(m);return values;
+}
+function initAvailableScheduleRange(){
+ const from=document.getElementById('availableScheduleFrom'),to=document.getElementById('availableScheduleTo');
+ if(!from||!to||from.options.length)return;
+ const opts=availableScheduleOptions();
+ opts.forEach(m=>{const label=availableScheduleTimeLabel(m);from.add(new Option(label,String(m)));to.add(new Option(label,String(m)));});
+ from.value='480';to.value='1320';
+}
+function toggleAvailableScheduleRange(){
+ const custom=document.querySelector('input[name="availableScheduleRangeMode"]:checked')?.value==='custom';
+ const fields=document.getElementById('availableScheduleRangeFields');
+ if(fields)fields.style.display=custom?'flex':'none';
+ drawAvailableScheduleImage();
+}
+function getAvailableScheduleRange(){
+ const custom=document.querySelector('input[name="availableScheduleRangeMode"]:checked')?.value==='custom';
+ if(!custom)return {from:360,to:1410};
+ const from=Number(document.getElementById('availableScheduleFrom')?.value||480);
+ const to=Number(document.getElementById('availableScheduleTo')?.value||1320);
+ return {from,to:Math.max(from+30,to)};
+}
 function drawAvailableScheduleImage(){
  const canvas=document.getElementById('availableScheduleCanvas');if(!canvas)return;
- const days=buildAvailableScheduleData(),ctx=canvas.getContext('2d');
- const width=1200,pad=42,colGap=16,colW=(width-pad*2-colGap*6)/7,headH=112,rowH=34,rows=36,height=pad+headH+rows*rowH+pad;
+ const days=buildAvailableScheduleData(),ctx=canvas.getContext('2d'),range=getAvailableScheduleRange();
+ const visible=days.map(d=>({...d,slots:d.slots.filter(s=>s.start>=range.from&&s.start<range.to)}));
+ const rows=Math.max(1,...visible.map(d=>d.slots.length));
+ const width=2800,pad=64,colGap=20,colW=(width-pad*2-colGap*6)/7,headH=150,rowH=58,height=pad+headH+rows*rowH+pad;
  canvas.width=width;canvas.height=height;
- ctx.fillStyle='#f5fbfc';ctx.fillRect(0,0,width,height);
- ctx.fillStyle='#073b4c';ctx.font='bold 32px Arial';ctx.fillText('AVAILABLE CLASS SCHEDULE',pad,pad+32);
- ctx.fillStyle='#52717b';ctx.font='16px Arial';ctx.fillText('Available 30-minute time slots · Next 7 days',pad,pad+61);
- days.forEach((day,i)=>{
+ ctx.fillStyle='#f7fafc';ctx.fillRect(0,0,width,height);
+ ctx.fillStyle='#073b4c';ctx.font='bold 58px Arial';ctx.textAlign='left';ctx.fillText('AVAILABLE CLASS SCHEDULE',pad,pad+58);
+ ctx.fillStyle='#526575';ctx.font='30px Arial';ctx.fillText('MONDAY TO SUNDAY  •  '+availableScheduleTimeLabel(range.from)+' – '+availableScheduleTimeLabel(range.to),pad,pad+105);
+ visible.forEach((day,i)=>{
   const x=pad+i*(colW+colGap),y=pad+headH;
-  ctx.fillStyle='#0b7285';ctx.fillRect(x,pad+82,colW,42);
-  ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.textAlign='center';ctx.fillText(day.label,x+colW/2,pad+109);
+  ctx.fillStyle='#087e8b';ctx.fillRect(x,pad+128,colW,62);
+  ctx.fillStyle='#fff';ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.fillText(day.label,x+colW/2,pad+170);
   ctx.fillStyle='#fff';ctx.fillRect(x,y,colW,rows*rowH);
-  ctx.strokeStyle='#d7e5e8';ctx.strokeRect(x,y,colW,rows*rowH);
-  ctx.textAlign='center';ctx.font='13px Arial';
-  for(let r=0;r<rows;r++){
-   const mins=360+r*30,slot=day.slots.find(z=>z.start===mins),yy=y+r*rowH;
-   if(slot){ctx.fillStyle='#e4f7ed';ctx.fillRect(x+4,yy+2,colW-8,rowH-4);ctx.fillStyle='#17633b';ctx.fillText(slot.label,x+colW/2,yy+22);}
-   else{ctx.fillStyle='#eef1f4';ctx.fillRect(x+4,yy+2,colW-8,rowH-4);ctx.fillStyle='#9aa6b2';ctx.fillText('Booked',x+colW/2,yy+22);}
-  }
+  ctx.strokeStyle='#d7e5e8';ctx.lineWidth=2;ctx.strokeRect(x,y,colW,rows*rowH);
+  day.slots.forEach((slot,r)=>{
+   const yy=y+r*rowH;
+   if(slot.reserved){
+    ctx.fillStyle='#ef4444';ctx.fillRect(x+5,yy+3,colW-10,rowH-6);
+    ctx.fillStyle='#111';ctx.font='bold 23px Arial';ctx.fillText(slot.reserveLabel,x+colW/2,yy+38);
+   }else{
+    ctx.fillStyle='#d9f7e6';ctx.fillRect(x+5,yy+3,colW-10,rowH-6);
+    ctx.fillStyle='#166534';ctx.font='bold 24px Arial';ctx.fillText('AVAILABLE - '+slot.label,x+colW/2,yy+38);
+   }
+  });
  });
- ctx.textAlign='left';ctx.fillStyle='#52616b';ctx.font='13px Arial';ctx.fillText('Green = Available  |  Gray = Booked',pad,height-18);
+ ctx.textAlign='left';ctx.fillStyle='#166534';ctx.font='bold 24px Arial';ctx.fillText('GREEN = AVAILABLE',pad,height-22);
+ ctx.fillStyle='#b91c1c';ctx.fillText('RED = RESERVED',pad+440,height-22);
 }
 function openAvailableSchedulePreview(){
  const modal=document.getElementById('availableScheduleModal');if(!modal)return;
- modal.style.display='flex';drawAvailableScheduleImage();
+ initAvailableScheduleRange();
+ modal.style.display='flex';toggleAvailableScheduleRange();
 }
 function closeAvailableSchedulePreview(){const modal=document.getElementById('availableScheduleModal');if(modal)modal.style.display='none';}
 function downloadAvailableScheduleImage(){
