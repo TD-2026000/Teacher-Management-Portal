@@ -14566,6 +14566,12 @@ async function refreshDashboardSummaryCounts(){
   if(appointmentEl)appointmentEl.textContent=activeAppointmentCount;
 }
 
+// Safe fallback for teacher display names when a new account has no profile username yet.
+function defaultUsername(email){
+  const value=String(email||'').trim();
+  return value.includes('@') ? value.split('@')[0] : value;
+}
+
 function renderDashboard(){
 
 refreshDashboardSummaryCounts();
