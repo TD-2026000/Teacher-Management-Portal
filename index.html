@@ -22204,7 +22204,7 @@ function drawAvailableScheduleImage(){
  const days=buildAvailableScheduleData(),ctx=canvas.getContext('2d'),range=getAvailableScheduleRange();
  const visible=days.map(d=>({...d,slots:d.slots.filter(s=>s.start>=range.from&&s.start<range.to)}));
  const rows=Math.max(1,...visible.map(d=>d.slots.length));
- const width=2800,pad=64,colGap=20,colW=(width-pad*2-colGap*6)/7,headH=150,rowH=58,height=pad+headH+rows*rowH+pad;
+ const width=2800,pad=64,colGap=20,colW=(width-pad*2-colGap*6)/7,headH=220,rowH=58,height=pad+headH+rows*rowH+pad;
  canvas.width=width;canvas.height=height;
  ctx.fillStyle='#f7fafc';ctx.fillRect(0,0,width,height);
  ctx.fillStyle='#073b4c';ctx.font='bold 58px Arial';ctx.textAlign='left';ctx.fillText('AVAILABLE CLASS SCHEDULE',pad,pad+58);
