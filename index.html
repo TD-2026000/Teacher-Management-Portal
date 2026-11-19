@@ -7814,6 +7814,13 @@ async function deleteStudentFromSupabase(studentId){
     .eq('student_id',sid);
   if(classRecordError) throw classRecordError;
 
+  const {error:evaluationError}=await supabaseClient
+    .from('evaluations')
+    .delete()
+    .eq('user_id',currentUser.id)
+    .eq('student_id',sid);
+  if(evaluationError) throw evaluationError;
+
   const {error:studentError}=await supabaseClient
     .from('students')
     .delete()
@@ -7889,19 +7896,196 @@ async function writeEvaluationBackup(data){
   }finally{db.close();}
 }
 
-async function loadEvaluationBackup(){
+function getEvaluationIdentity(record){
+  const appointmentId=String(record?.appointmentId||record?.appointment_id||'').trim();
+  if(appointmentId) return `appointment:${appointmentId}`;
+  const studentId=String(record?.student_id||'').trim();
+  const dateTime=String(record?.dateTime||record?.date||'').trim();
+  return `student:${studentId}|${dateTime}`;
+}
+
+function getEvaluationRecordTime(record){
+  const value=record?.evaluationSavedAt||record?.createdAt||record?.created_at||record?.dateTime||'';
+  const parsed=new Date(value).getTime();
+  return Number.isFinite(parsed)?parsed:0;
+}
+
+function mergeEvaluationLists(...lists){
+  const merged=new Map();
+  for(const list of lists){
+    for(const item of (Array.isArray(list)?list:[])){
+      if(!item || typeof item!=='object') continue;
+      const key=getEvaluationIdentity(item);
+      if(!key || key==='student:|') continue;
+      const previous=merged.get(key);
+      if(!previous){merged.set(key,{...item});continue;}
+      const previousTime=getEvaluationRecordTime(previous);
+      const itemTime=getEvaluationRecordTime(item);
+      const winner=itemTime>=previousTime?item:previous;
+      const other=winner===item?previous:item;
+      merged.set(key,{...other,...winner,
+        __supabaseId:winner.__supabaseId||other.__supabaseId||''
+      });
+    }
+  }
+  return [...merged.values()];
+}
+
+function evaluationRowToRecord(row){
+  let stored={};
+  try{
+    const parsed=JSON.parse(String(row.evaluation_text||''));
+    if(parsed && typeof parsed==='object' && !Array.isArray(parsed)) stored=parsed;
+  }catch(_error){}
+  const classDate=String(row.class_date||stored.date||'').slice(0,10);
+  const classTime=String(row.class_time||'').slice(0,5);
+  const dateTime=stored.dateTime||((classDate&&classTime)?`${classDate}T${classTime}`:classDate);
+  const score=row.evaluation_score!=null?`${row.evaluation_score}/100`:'';
+  return {
+    ...stored,
+    student_id:String(row.student_id||stored.student_id||''),
+    student_name:String(row.student_name||stored.student_name||''),
+    parent_email:String(row.student_email||stored.parent_email||''),
+    dateTime,
+    date:stored.date||((classDate&&classTime)?`${classDate} ${classTime}`:classDate),
+    duration:stored.duration||(row.duration!=null?`${row.duration} Minutes`:''),
+    lesson_topic:String(row.lesson_topic||stored.lesson_topic||''),
+    vocabulary:String(row.strengths??stored.vocabulary??''),
+    improvement:String(row.needs_improvement??stored.improvement??''),
+    teacher_comment:String(row.teacher_comment??stored.teacher_comment??''),
+    score:stored.score||score,
+    createdAt:stored.createdAt||row.created_at||'',
+    evaluationSavedAt:stored.evaluationSavedAt||row.created_at||'',
+    __supabaseId:String(row.id||'')
+  };
+}
+
+function evaluationRecordToRow(record){
+  const dateTime=String(record.dateTime||record.date||'');
+  const classDate=dateTime.slice(0,10);
+  let classTime=dateTime.includes('T')?dateTime.slice(11,16):dateTime.slice(11,16);
+  if(!/^\d{2}:\d{2}$/.test(classTime)) classTime='00:00';
+  const durationMatch=String(record.duration||'').match(/\d+/);
+  const scoreMatch=String(record.score||'').match(/-?\d+(?:\.\d+)?/);
+  const strengths=String(record.vocabulary||[
+    record.learnedVocabulary?`Vocabulary:\n${record.learnedVocabulary}`:'',
+    record.learnedSentences?`Sentences:\n${record.learnedSentences}`:'',
+    record.learnedQuestionsAnswers?`Questions and Answers:\n${record.learnedQuestionsAnswers}`:''
+  ].filter(Boolean).join('\n\n'));
+  const needsImprovement=String(record.improvement||[
+    record.practiceVocabulary?`Vocabulary:\n${record.practiceVocabulary}`:'',
+    record.practiceSentences?`Sentences:\n${record.practiceSentences}`:'',
+    record.practiceQuestionsAnswers?`Questions and Answers:\n${record.practiceQuestionsAnswers}`:''
+  ].filter(Boolean).join('\n\n'));
+  return {
+    user_id:currentUser.id,
+    student_id:String(record.student_id||''),
+    student_name:String(record.student_name||''),
+    student_email:String(record.parent_email||record.student_email||''),
+    class_date:classDate,
+    class_time:classTime,
+    duration:durationMatch?Number(durationMatch[0]):null,
+    lesson_topic:String(record.lesson_topic||''),
+    strengths,
+    needs_improvement:needsImprovement,
+    teacher_comment:String(record.teacher_comment||''),
+    evaluation_score:scoreMatch?Number(scoreMatch[0]):null,
+    evaluation_text:JSON.stringify(record),
+    created_by:String(record.teacher||'Teacher Danyeal')
+  };
+}
+
+async function upsertEvaluationToSupabase(record){
+  if(!currentUser||!supabaseClient) throw new Error('No authenticated teacher session is available for evaluation sync.');
+  const payload=evaluationRecordToRow(record);
+  if(!payload.student_id||!/^\d{4}-\d{2}-\d{2}$/.test(payload.class_date)){
+    throw new Error('Evaluation is missing a valid student ID or class date.');
+  }
+  const {data:existingRows,error:findError}=await supabaseClient
+    .from('evaluations').select('id,evaluation_text,class_time')
+    .eq('user_id',currentUser.id)
+    .eq('student_id',payload.student_id)
+    .eq('class_date',payload.class_date);
+  if(findError) throw findError;
+  const appointmentId=String(record.appointmentId||'');
+  const existing=(Array.isArray(existingRows)?existingRows:[]).find(row=>{
+    let oldAppointmentId='';
+    try{oldAppointmentId=String(JSON.parse(row.evaluation_text||'{}').appointmentId||'');}catch(_error){}
+    if(appointmentId) return oldAppointmentId===appointmentId;
+    return String(row.class_time||'').slice(0,5)===payload.class_time;
+  });
+  if(existing?.id){
+    const {error}=await supabaseClient.from('evaluations').update(payload)
+      .eq('id',existing.id).eq('user_id',currentUser.id);
+    if(error) throw error;
+    return existing.id;
+  }
+  const {data,error}=await supabaseClient.from('evaluations').insert([payload]).select('id').single();
+  if(error) throw error;
+  return data?.id||'';
+}
+
+async function deleteEvaluationFromSupabase(record){
+  if(!currentUser||!supabaseClient||!record) return true;
+  const studentId=String(record.student_id||'');
+  if(!studentId) return true;
+  const {data:rows,error}=await supabaseClient.from('evaluations').select('id,evaluation_text,class_date,class_time')
+    .eq('user_id',currentUser.id).eq('student_id',studentId);
+  if(error) throw error;
+  const target=getEvaluationIdentity(record);
+  const ids=(Array.isArray(rows)?rows:[]).filter(row=>{
+    const mapped=evaluationRowToRecord(row);
+    return getEvaluationIdentity(mapped)===target;
+  }).map(row=>row.id).filter(Boolean);
+  if(ids.length){
+    const {error:deleteError}=await supabaseClient.from('evaluations').delete()
+      .eq('user_id',currentUser.id).in('id',ids);
+    if(deleteError) throw deleteError;
+  }
+  return true;
+}
+
+async function readLocalEvaluationLists(){
   const storageKey=getEvaluationStorageKey();
   let localData=[];
-  try{localData=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(localData))localData=[];}catch(error){console.warn('Could not read local evaluation records:',error);}
+  try{localData=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(localData))localData=[];}
+  catch(error){console.warn('Could not read local evaluation records:',error);}
+  let backup=[];
+  try{const stored=await readEvaluationBackup();if(Array.isArray(stored))backup=stored;}
+  catch(error){console.warn('Evaluation IndexedDB backup unavailable:',error);}
+  return mergeEvaluationLists(localData,backup);
+}
+
+async function loadEvaluationBackup(){
+  const localData=await readLocalEvaluationLists();
+  if(!currentUser||!supabaseClient){
+    evaluationMemoryCache=localData;
+    return evaluationMemoryCache;
+  }
   try{
-    const backup=await readEvaluationBackup();
-    evaluationMemoryCache=Array.isArray(backup)?backup:localData;
-    if(!Array.isArray(backup)){
-      try{localStorage.setItem(storageKey,JSON.stringify(evaluationMemoryCache));}catch(_error){}
+    const {data:rows,error}=await supabaseClient.from('evaluations').select('*')
+      .eq('user_id',currentUser.id).order('created_at',{ascending:true});
+    if(error) throw error;
+    let remoteRecords=(Array.isArray(rows)?rows:[]).map(evaluationRowToRecord);
+    // Preserve and migrate this browser's older local/IndexedDB evaluations.
+    // Only insert/update matching records; never delete remote rows during sync.
+    for(const localRecord of localData){
+      const identity=getEvaluationIdentity(localRecord);
+      const remoteMatch=remoteRecords.find(item=>getEvaluationIdentity(item)===identity);
+      if(!remoteMatch || getEvaluationRecordTime(localRecord)>=getEvaluationRecordTime(remoteMatch)){
+        await upsertEvaluationToSupabase(localRecord);
+      }
     }
+    const {data:refreshedRows,error:refreshError}=await supabaseClient.from('evaluations').select('*')
+      .eq('user_id',currentUser.id).order('created_at',{ascending:true});
+    if(refreshError) throw refreshError;
+    remoteRecords=(Array.isArray(refreshedRows)?refreshedRows:[]).map(evaluationRowToRecord);
+    evaluationMemoryCache=mergeEvaluationLists(remoteRecords,localData);
+    try{localStorage.setItem(getEvaluationStorageKey(),JSON.stringify(evaluationMemoryCache));}catch(_error){}
+    try{await writeEvaluationBackup(evaluationMemoryCache);}catch(error){console.warn('Could not refresh local evaluation backup:',error);}
   }catch(error){
     evaluationMemoryCache=localData;
-    console.warn('Evaluation backup unavailable; using local records:',error);
+    console.error('Supabase evaluation load/migration failed; local records were preserved:',error);
   }
   return evaluationMemoryCache;
 }
@@ -7918,24 +8102,42 @@ function getEvaluations(){
   return evaluationMemoryCache;
 }
 
-function saveEvaluations(data){
+async function saveEvaluations(data){
   const safeData=Array.isArray(data)?data:[];
   evaluationMemoryCache=safeData;
   let localSaved=false;
-  try{
-    localStorage.setItem(getEvaluationStorageKey(),JSON.stringify(safeData));
-    localSaved=true;
-  }catch(error){
-    console.warn('Local evaluation storage is full; using IndexedDB backup:',error);
+  try{localStorage.setItem(getEvaluationStorageKey(),JSON.stringify(safeData));localSaved=true;}
+  catch(error){console.warn('Local evaluation storage is full; using IndexedDB backup:',error);}
+  try{await writeEvaluationBackup(safeData);localSaved=true;}
+  catch(error){console.error('Could not write IndexedDB evaluation backup:',error);}
+  if(currentUser&&supabaseClient){
+    try{
+      for(const record of safeData) await upsertEvaluationToSupabase(record);
+    }catch(error){
+      console.error('Evaluation Supabase sync failed; local backup remains preserved:',error);
+      showStatus('Evaluation saved in this browser, but cloud sync failed. Please check your connection and try again before using another browser.',false);
+      return false;
+    }
   }
-  return writeEvaluationBackup(safeData).then(()=>true).catch(error=>{
-    console.error('Could not write IndexedDB evaluation backup:',error);
-    if(localSaved) return true;
-    showStatus('The evaluation could not be saved because browser storage is unavailable. Please free some browser storage and try again.',false);
+  if(!localSaved){
+    showStatus('The evaluation could not be saved because browser storage is unavailable.',false);
     return false;
-  });
+  }
+  return true;
 }
 
+async function deleteEvaluationBackup(){
+  const db=await openEvaluationBackupDB();
+  try{
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction(EVALUATION_DB_STORE,'readwrite');
+      tx.objectStore(EVALUATION_DB_STORE).delete(getEvaluationStorageKey());
+      tx.oncomplete=()=>resolve();
+      tx.onerror=()=>reject(tx.error||new Error('Could not clear evaluation backup.'));
+      tx.onabort=()=>reject(tx.error||new Error('Evaluation backup clearing was interrupted.'));
+    });
+  }finally{db.close();}
+}
 
 /* =========================================================
    PROFILE STORAGE
@@ -9950,6 +10152,13 @@ async function clearAllRecordsFromSupabase(){
     .eq('user_id',uid);
   if(classRecordsError) throw classRecordsError;
 
+  // Delete all evaluations belonging to this teacher as part of Clear All Records.
+  const {error:evaluationsError}=await supabaseClient
+    .from('evaluations')
+    .delete()
+    .eq('user_id',uid);
+  if(evaluationsError) throw evaluationsError;
+
   // Also remove class records linked to the students in case of older rows.
   if(studentIds.length){
     const {error:classRecordsByStudentError}=await supabaseClient
@@ -9981,6 +10190,11 @@ async function clearAllRecordsFromSupabase(){
     .from('class_records').select('id').eq('user_id',uid);
   if(classRecordsCheckError) throw classRecordsCheckError;
   if(Array.isArray(classRecordsLeft) && classRecordsLeft.length) throw new Error('Class Record records still exist in Supabase.');
+
+  const {data:evaluationsLeft,error:evaluationsCheckError}=await supabaseClient
+    .from('evaluations').select('id').eq('user_id',uid);
+  if(evaluationsCheckError) throw evaluationsCheckError;
+  if(Array.isArray(evaluationsLeft) && evaluationsLeft.length) throw new Error('Evaluation records still exist in Supabase.');
 
   return {ok:true};
 }
@@ -10070,6 +10284,8 @@ try{
   studentsMemoryCacheKey=userStorageKey(STUDENTS_BASE_KEY);
   studentsUseIndexedDB=false;
   await deleteStudentBackup(userStorageKey(STUDENTS_BASE_KEY));
+  try{await deleteEvaluationBackup();}catch(e){console.warn('Evaluation backup could not be cleared:',e);}
+  evaluationMemoryCache=[];
 
   // Remove every local package-based Class Record for this teacher.
   const packageRecordPrefix=`teacherDanyealPackageClassRecord_${uid}_`;
@@ -17802,40 +18018,36 @@ function toggleStudentProfileEvaluationMenu(studentId,index){
   menu.classList.toggle('show');
 }
 
-function deleteStudentProfileEvaluation(studentId,index){
+async function deleteStudentProfileEvaluation(studentId,index){
   const records=getStudentEvaluations(studentId);
   const evaluation=records[Number(index)];
   if(!evaluation) return;
-
   const ok=window.confirm(`Delete this evaluation record for ${evaluation.student_name||'this student'}?`);
   if(!ok) return;
-
-  const savedAt=evaluation.evaluationSavedAt || evaluation.createdAt || evaluation.dateTime || '';
-  const all=getEvaluations();
-  const remaining=all.filter(item=>!(String(item.student_id||'').trim()===String(studentId).trim() && (item.evaluationSavedAt||item.createdAt||item.dateTime||'')===savedAt));
-  saveEvaluations(remaining);
-
-  renderRecords();
-  renderDashboard();
-  openStudentProfile(studentId);
+  try{
+    await deleteEvaluationFromSupabase(evaluation);
+    const identity=getEvaluationIdentity(evaluation);
+    const remaining=getEvaluations().filter(item=>getEvaluationIdentity(item)!==identity);
+    evaluationMemoryCache=remaining;
+    await saveEvaluations(remaining);
+    renderRecords();renderDashboard();openStudentProfile(studentId);
+  }catch(error){console.error('Evaluation delete failed:',error);showStatus('Unable to delete this evaluation from the cloud. No local record was removed.',false);}
 }
 
-function deleteEvaluationRecord(studentId,index){
+async function deleteEvaluationRecord(studentId,index){
   const records=getStudentEvaluations(studentId);
   const evaluation=records[Number(index)];
   if(!evaluation) return;
-
   const ok=window.confirm(`Delete this evaluation record for ${evaluation.student_name||'this student'}?`);
   if(!ok) return;
-
-  const savedAt=evaluation.evaluationSavedAt || evaluation.createdAt || evaluation.dateTime || '';
-  const all=getEvaluations();
-  const remaining=all.filter(item=>!(String(item.student_id||'').trim()===String(studentId).trim() && (item.evaluationSavedAt||item.createdAt||item.dateTime||'')===savedAt));
-  saveEvaluations(remaining);
-
-  renderRecords();
-  renderDashboard();
-  openStudentClassRecord(studentId);
+  try{
+    await deleteEvaluationFromSupabase(evaluation);
+    const identity=getEvaluationIdentity(evaluation);
+    const remaining=getEvaluations().filter(item=>getEvaluationIdentity(item)!==identity);
+    evaluationMemoryCache=remaining;
+    await saveEvaluations(remaining);
+    renderRecords();renderDashboard();openStudentClassRecord(studentId);
+  }catch(error){console.error('Evaluation delete failed:',error);showStatus('Unable to delete this evaluation from the cloud. No local record was removed.',false);}
 }
 
 document.addEventListener('click',event=>{
