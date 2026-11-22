@@ -4986,6 +4986,29 @@ body.portal-dark.student-portal-mode .student-portal-empty{background:#1c2b31;bo
 body.portal-dark.student-portal-mode .student-portal-subnav button,body.portal-dark.student-portal-mode .student-portal-logout{background:#202c32;color:#edf4f6;border-color:#3a4a52}
 @media(max-width:800px){.student-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.student-portal-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){#studentPortalPage{padding:15px 10px}.student-portal-feature-grid{grid-template-columns:1fr}.student-portal-welcome{padding:18px}.student-portal-welcome h2{font-size:21px}}
+/* Student portal full-width layout and student-only navigation/profile */
+body.student-portal-mode #appShell{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+body.student-portal-mode #appShell .card,body.student-portal-mode #studentPortalPage{width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box}
+body.student-portal-mode #studentPortalPage{padding:20px clamp(14px,3vw,42px) 36px!important}
+body.student-portal-mode .userbar .profile-trigger,body.student-portal-mode .userbar #profilePanel,body.student-portal-mode .profile-panel{display:none!important}
+body.student-portal-mode .userbar{justify-content:flex-end}
+.student-portal-top{justify-content:space-between;align-items:center}
+.student-portal-top-left{display:flex;align-items:center;gap:14px;min-width:0}
+.student-portal-profile-btn{display:flex;align-items:center;gap:10px;border:1px solid var(--global-border,#cfe5e8);border-radius:12px;padding:9px 13px;background:var(--portal-surface,#fff);color:var(--portal-text,#17343a);cursor:pointer;text-align:left}
+.student-portal-profile-btn .avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--global-accent-soft,#e4fbfb);font-size:18px}
+.student-portal-profile-btn small{display:block;font-size:9px;font-weight:800;letter-spacing:.5px;color:var(--global-accent-dark,#008c92)}
+.student-portal-profile-btn strong{display:block;font-size:13px}
+.student-portal-layout{display:grid;grid-template-columns:245px minmax(0,1fr);gap:22px;align-items:start}
+.student-portal-sidebar{position:sticky;top:14px;border:1px solid var(--global-border,#dce8eb);border-radius:15px;padding:12px;background:var(--portal-surface,#fff)}
+.student-portal-sidebar-title{font-size:10px;font-weight:900;letter-spacing:.8px;color:#7b9298;padding:8px 10px 10px}
+.student-portal-subnav{display:flex;flex-direction:column;gap:6px;margin:0}
+.student-portal-subnav button{text-align:left;width:100%;padding:11px 12px;border-radius:9px;background:transparent;border:1px solid transparent;color:var(--portal-text,#29434b);font-size:13px}
+.student-portal-subnav button.active{background:var(--global-accent,#08bfc5);border-color:var(--global-accent,#08bfc5);color:#fff}
+.student-portal-main{min-width:0}
+.student-portal-content-card{min-width:0}
+body.portal-dark.student-portal-mode .student-portal-sidebar,body.portal-dark.student-portal-mode .student-portal-profile-btn{background:#202d31;border-color:#40565b;color:#f2fafa}
+@media(max-width:850px){.student-portal-layout{grid-template-columns:1fr}.student-portal-sidebar{position:static}.student-portal-subnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.student-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.student-portal-top-left{width:100%;flex-wrap:wrap}.student-portal-subnav{grid-template-columns:1fr}.student-portal-grid{grid-template-columns:1fr}.student-portal-top{align-items:flex-start}}
 </style>
 
 </head>
@@ -5015,6 +5038,20 @@ body.portal-dark.student-portal-mode .student-portal-subnav button,body.portal-d
 <div id="loginPanel">
 
 <h2>Login</h2>
+<p class="account-choice-subtitle">Choose which portal you want to access</p>
+<div class="account-choice-grid login-account-choice-grid" role="group" aria-label="Choose login account type">
+  <button type="button" class="account-choice-card" data-login-account-type="teacher" aria-pressed="false" onclick="selectLoginAccountType('teacher',this)">
+    <span class="account-choice-icon" aria-hidden="true">🎓</span>
+    <span class="account-choice-name">TEACHER LOGIN</span>
+    <span class="account-choice-description">Open the Teacher Portal</span>
+  </button>
+  <button type="button" class="account-choice-card" data-login-account-type="student" aria-pressed="false" onclick="selectLoginAccountType('student',this)">
+    <span class="account-choice-icon" aria-hidden="true">📚</span>
+    <span class="account-choice-name">STUDENT LOGIN</span>
+    <span class="account-choice-description">Open the Student Portal</span>
+  </button>
+</div>
+<div id="loginAccountTypeNotice" class="student-portal-empty" style="margin:0 0 12px;padding:9px 12px">Please choose Teacher Login or Student Login.</div>
 
 <label>Email</label>
 
@@ -5588,7 +5625,12 @@ Evaluation
 <!-- STUDENT PORTAL: separate student-only landing page -->
 <div id="studentPortalPage" class="page" style="display:none">
   <div class="student-portal-top">
-    <div class="student-portal-brand">Es-Kool · Student Portal</div>
+    <div class="student-portal-top-left">
+      <button type="button" class="student-portal-profile-btn" onclick="showStudentPortalSection('account')" aria-label="Open student profile">
+        <span class="avatar">👤</span><span><small>STUDENT PROFILE</small><strong id="studentPortalProfileName">Student</strong></span>
+      </button>
+      <div class="student-portal-brand">Es-Kool · Student Portal</div>
+    </div>
     <button type="button" class="student-portal-logout" onclick="studentPortalLogout()">Log Out</button>
   </div>
   <div class="student-portal-welcome">
@@ -5601,16 +5643,22 @@ Evaluation
     <div class="student-portal-stat"><small>UPCOMING CLASSES</small><strong id="studentPortalUpcoming">—</strong></div>
     <div class="student-portal-stat"><small>COMPLETED CLASSES</small><strong id="studentPortalCompleted">—</strong></div>
   </div>
-  <div class="student-portal-subnav" aria-label="Student portal sections">
-    <button type="button" class="active" data-student-section="overview" onclick="showStudentPortalSection('overview',this)">Overview</button>
-    <button type="button" data-student-section="schedule" onclick="showStudentPortalSection('schedule',this)">My Schedule</button>
-    <button type="button" data-student-section="lessons" onclick="showStudentPortalSection('lessons',this)">My Lessons</button>
-    <button type="button" data-student-section="evaluations" onclick="showStudentPortalSection('evaluations',this)">Evaluations</button>
-    <button type="button" data-student-section="records" onclick="showStudentPortalSection('records',this)">Class Records</button>
-    <button type="button" data-student-section="teacher" onclick="showStudentPortalSection('teacher',this)">My Teacher</button>
-    <button type="button" data-student-section="account" onclick="showStudentPortalSection('account',this)">My Account</button>
-  </div>
-  <div id="studentPortalSectionContent">
+  <div class="student-portal-layout">
+    <aside class="student-portal-sidebar">
+      <div class="student-portal-sidebar-title">STUDENT MENU</div>
+      <nav class="student-portal-subnav" aria-label="Student portal sections">
+        <button type="button" class="active" data-student-section="overview" onclick="showStudentPortalSection('overview',this)">⌂ &nbsp; Your Learning Overview</button>
+        <button type="button" data-student-section="invitation" onclick="showStudentPortalSection('invitation',this)">✉ &nbsp; Package Invitation</button>
+        <button type="button" data-student-section="schedule" onclick="showStudentPortalSection('schedule',this)">▦ &nbsp; My Class Schedule</button>
+        <button type="button" data-student-section="lessons" onclick="showStudentPortalSection('lessons',this)">▤ &nbsp; My Lessons</button>
+        <button type="button" data-student-section="evaluations" onclick="showStudentPortalSection('evaluations',this)">✎ &nbsp; My Evaluations</button>
+        <button type="button" data-student-section="records" onclick="showStudentPortalSection('records',this)">▥ &nbsp; My Class Records</button>
+        <button type="button" data-student-section="teacher" onclick="showStudentPortalSection('teacher',this)">♙ &nbsp; My Teacher</button>
+        <button type="button" data-student-section="account" onclick="showStudentPortalSection('account',this)">⚙ &nbsp; My Account</button>
+      </nav>
+    </aside>
+    <main class="student-portal-main">
+      <div id="studentPortalSectionContent" class="student-portal-content-card">
     <h3 class="student-portal-section-title">Your Learning Overview</h3>
     <div class="student-portal-feature-grid">
       <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button>
@@ -5624,9 +5672,10 @@ Evaluation
       <h3 class="student-portal-section-title">Package Invitation</h3>
       <div class="student-portal-empty" id="studentPortalInvitationNotice">You have not been assigned a learning package yet. Once your teacher sends you a package invitation and you accept it, your package, schedule, and lessons will appear here.</div>
     </div>
+      </div>
+    </main>
   </div>
 </div>
-
 
 <!-- DASHBOARD -->
 
@@ -8408,7 +8457,19 @@ JSON.stringify(data)
 ========================================================= */
 
 let selectedAccountType='';
-
+let selectedLoginAccountType='';
+function selectLoginAccountType(type,button){
+  selectedLoginAccountType=type;
+  document.querySelectorAll('[data-login-account-type]').forEach(card=>{
+    const active=card===button;
+    card.classList.toggle('selected',active);
+    card.setAttribute('aria-pressed',active?'true':'false');
+  });
+  const notice=document.getElementById('loginAccountTypeNotice');
+  if(notice) notice.textContent=type==='student'?'Student Portal selected.':'Teacher Portal selected.';
+  const loginButton=document.getElementById('loginBtn');
+  if(loginButton) loginButton.disabled=false;
+}
 function selectAccountType(type,button){
   selectedAccountType=type;
   document.querySelectorAll('.account-choice-card').forEach(card=>{
@@ -8427,7 +8488,12 @@ function continueAccountChoice(){
 }
 
 function showAuthPanel(panel){
-
+if(panel==='login'){
+  selectedLoginAccountType='';
+  document.querySelectorAll('[data-login-account-type]').forEach(card=>{card.classList.remove('selected');card.setAttribute('aria-pressed','false');});
+  const loginButton=document.getElementById('loginBtn'); if(loginButton) loginButton.disabled=true;
+  const notice=document.getElementById('loginAccountTypeNotice'); if(notice) notice.textContent='Please choose Teacher Login or Student Login.';
+}
 document.getElementById('loginPanel')
 .classList.toggle('hidden',panel!=='login');
 
@@ -8531,54 +8597,59 @@ button.setAttribute(
 ========================================================= */
 
 async function loginTeacher(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const password=document.getElementById('loginPassword').value;
+  if(!selectedLoginAccountType) return showAuthMessage('Please choose Teacher Login or Student Login first.');
+  if(!email) return showAuthMessage('Please enter your email.');
+  if(!password) return showAuthMessage('Please enter your password.');
 
-const email=
-document.getElementById('loginEmail')
-.value.trim();
+  setAuthBusy('loginBtn',true,'Login');
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error) throw error;
+    const user=data?.user;
+    if(!user) throw new Error('Login could not be completed. Please try again.');
 
-const password=
-document.getElementById('loginPassword')
-.value;
+    // This client-side check is an additional guard. Supabase Email Confirmations
+    // must ALSO be enabled in Authentication settings to enforce verification server-side.
+    if(!user.email_confirmed_at && !user.confirmed_at){
+      await supabaseClient.auth.signOut();
+      pendingVerificationEmail=email;
+      const verifyText=document.getElementById('verifyEmailText');
+      if(verifyText) verifyText.textContent=email;
+      showAuthPanel('verify');
+      showAuthMessage('Please confirm your email using the link sent to your Gmail before logging in. You can resend the confirmation email below.');
+      return;
+    }
 
-if(!email)
-return showAuthMessage(
-'Please enter your email.'
-);
-
-if(!password)
-return showAuthMessage(
-'Please enter your password.'
-);
-
-setAuthBusy(
-'loginBtn',
-true,
-'Login'
-);
-
-const {error}=
-await supabaseClient.auth.signInWithPassword({
-
-email,
-
-password
-
-});
-
-if(error){
-
-showAuthMessage(error.message);
-
+    const actualType=String(user.app_metadata?.account_type||user.user_metadata?.account_type||'').toLowerCase();
+    const isStudent=actualType==='student';
+    if(selectedLoginAccountType==='student' && !isStudent){
+      await supabaseClient.auth.signOut();
+      showAuthMessage('This email is not registered as a Student account. Please choose Teacher Login.');
+      return;
+    }
+    if(selectedLoginAccountType==='teacher' && isStudent){
+      await supabaseClient.auth.signOut();
+      showAuthMessage('This email is registered as a Student account. Please choose Student Login.');
+      return;
+    }
+    // Existing teacher accounts without account_type remain compatible.
+  }catch(error){
+    const msg=String(error?.message||'Login failed.');
+    if(/email not confirmed|email_not_confirmed/i.test(msg)){
+      pendingVerificationEmail=email;
+      const verifyText=document.getElementById('verifyEmailText');
+      if(verifyText) verifyText.textContent=email;
+      showAuthPanel('verify');
+      showAuthMessage('Your email is not confirmed yet. Open the confirmation link in Gmail before logging in.');
+    }else{
+      showAuthMessage(msg);
+    }
+  }finally{
+    setAuthBusy('loginBtn',false,'Login');
+  }
 }
-
-setAuthBusy(
-'loginBtn',
-false,
-'Login'
-);
-
-}
-
 
 /* =========================================================
    CREATE ACCOUNT
@@ -8638,7 +8709,8 @@ password,
 options:{
 
 data:{
-full_name:name
+full_name:name,
+account_type:'teacher'
 },
 
 emailRedirectTo:
@@ -8663,11 +8735,11 @@ return;
 }
 
 if(data.session){
-
-showAuthMessage(
-'Account created successfully. You are now logged in.',
-true
-);
+  await supabaseClient.auth.signOut();
+  pendingVerificationEmail=email;
+  document.getElementById('verifyEmailText').textContent=email;
+  showAuthPanel('verify');
+  showAuthMessage('Your account was created. Please confirm your email through the Gmail link before logging in.',true);
 
 }else{
 
@@ -9932,6 +10004,8 @@ function renderStudentPortal(user){
   const fullName=String(user?.user_metadata?.full_name||'').trim();
   const displayName=nickname||fullName||'Student';
   document.getElementById('studentPortalWelcomeName').textContent='Welcome, '+displayName+'!';
+  const profileName=document.getElementById('studentPortalProfileName');
+  if(profileName) profileName.textContent=displayName;
   document.getElementById('studentPortalPackage').textContent='Not assigned';
   document.getElementById('studentPortalRemaining').textContent='—';
   document.getElementById('studentPortalUpcoming').textContent='—';
@@ -9951,7 +10025,8 @@ function showStudentPortalSection(section,button){
   if(!content)return;
   document.querySelectorAll('#studentPortalPage .student-portal-subnav button').forEach(b=>b.classList.toggle('active',b.dataset.studentSection===section));
   const sections={
-    overview:`<h3 class="student-portal-section-title">Your Learning Overview</h3><div class="student-portal-feature-grid"><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('lessons')"><span class="student-portal-feature-icon">📚</span><span><strong>My Lessons</strong><span>Open lesson files shared by your teacher.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('evaluations')"><span class="student-portal-feature-icon">📝</span><span><strong>My Evaluations</strong><span>Review feedback from your classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('records')"><span class="student-portal-feature-icon">📊</span><span><strong>My Class Records</strong><span>Review attendance and completed classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('teacher')"><span class="student-portal-feature-icon">👩‍🏫</span><span><strong>My Teacher</strong><span>View your assigned teacher and package.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button></div><div class="student-portal-panel"><h3 class="student-portal-section-title">Package Invitation</h3><div class="student-portal-empty">You have not been assigned a learning package yet. Once your teacher sends you a package invitation and you accept it, your package, schedule, and lessons will appear here.</div></div>`,
+    overview:`<h3 class="student-portal-section-title">Your Learning Overview</h3><div class="student-portal-feature-grid"><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('lessons')"><span class="student-portal-feature-icon">📚</span><span><strong>My Lessons</strong><span>Open lesson files shared by your teacher.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('evaluations')"><span class="student-portal-feature-icon">📝</span><span><strong>My Evaluations</strong><span>Review feedback from your classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('records')"><span class="student-portal-feature-icon">📊</span><span><strong>My Class Records</strong><span>Review attendance and completed classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('teacher')"><span class="student-portal-feature-icon">👩‍🏫</span><span><strong>My Teacher</strong><span>View your assigned teacher and package.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button></div>`,
+    invitation:`<h3 class="student-portal-section-title">Package Invitation</h3><div class="student-portal-panel"><div class="student-portal-empty">You have not been assigned a learning package yet. Once your teacher sends you a package invitation, it will appear here for you to review and accept. Your package, schedule, and lessons will appear after acceptance.</div></div>`,
     schedule:`<h3 class="student-portal-section-title">My Class Schedule</h3><div class="student-portal-empty">Your class schedule will appear here after you accept a package invitation from your teacher.</div>`,
     lessons:`<h3 class="student-portal-section-title">My Lessons</h3><div class="student-portal-empty">PDF lessons and learning materials shared by your teacher will appear here after your package is linked.</div>`,
     evaluations:`<h3 class="student-portal-section-title">My Evaluations</h3><div class="student-portal-empty">Your teacher's class evaluations and feedback will appear here.</div>`,
