@@ -1878,6 +1878,12 @@ button.secondary,
   margin-top:15px;
 }
 
+#accountChoicePanel .auth-btn{
+  min-height:48px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
 .auth-switch{
   margin-top:14px;
   text-align:center;
@@ -4979,7 +4985,7 @@ Don't have an account?
 
 <button
 type="button"
-onclick="showAuthPanel('signup')"
+onclick="showAuthPanel('accountChoice')"
 >
 Create Account
 </button>
@@ -4988,6 +4994,26 @@ Create Account
 
 </div>
 
+
+<div id="accountChoicePanel" class="hidden">
+
+<h2>WELCOME TO ES-KOOL</h2>
+<p style="margin:0 0 16px;color:#596579;font-size:14px;">CREATE YOUR ACCOUNT</p>
+
+<button type="button" class="primary auth-btn" onclick="showAuthPanel('signup')">
+  TEACHER
+</button>
+
+<button type="button" class="primary auth-btn" style="background:#334155;" onclick="showAuthPanel('studentSignup')">
+  STUDENT
+</button>
+
+<div class="auth-switch">
+  Already have an account?
+  <button type="button" onclick="showAuthPanel('login')">Login</button>
+</div>
+
+</div>
 
 <div id="signupPanel" class="hidden">
 
@@ -5121,6 +5147,41 @@ Back to Login
 
 </div>
 
+
+<div id="studentSignupPanel" class="hidden">
+
+<h2>Create Student Account</h2>
+
+<label>Full Name</label>
+<input id="studentSignupFullName" placeholder="Enter your full name" autocomplete="name">
+
+<label>Nickname</label>
+<input id="studentSignupNickname" placeholder="Enter your nickname" autocomplete="nickname">
+
+<label>Email Address</label>
+<input id="studentSignupEmail" type="email" placeholder="student@email.com" autocomplete="email">
+
+<label>Password</label>
+<div class="password-wrap">
+  <input id="studentSignupPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password">
+  <button type="button" class="password-toggle" onclick="togglePassword('studentSignupPassword',this)" aria-label="Show password">👁</button>
+</div>
+
+<label>Confirm Password</label>
+<div class="password-wrap">
+  <input id="studentSignupConfirm" type="password" placeholder="Re-enter password" autocomplete="new-password">
+  <button type="button" class="password-toggle" onclick="togglePassword('studentSignupConfirm',this)" aria-label="Show password">👁</button>
+</div>
+
+<button id="studentSignupBtn" type="button" class="primary auth-btn" onclick="createStudentAccount()">Create Student Account</button>
+
+<div class="auth-switch">
+  <button type="button" onclick="showAuthPanel('accountChoice')">Back</button>
+  <span style="margin:0 5px;">|</span>
+  Already have an account? <button type="button" onclick="showAuthPanel('login')">Login</button>
+</div>
+
+</div>
 
 <div id="forgotPanel" class="hidden">
 
@@ -8219,6 +8280,12 @@ document.getElementById('loginPanel')
 document.getElementById('signupPanel')
 .classList.toggle('hidden',panel!=='signup');
 
+document.getElementById('accountChoicePanel')
+.classList.toggle('hidden',panel!=='accountChoice');
+
+document.getElementById('studentSignupPanel')
+.classList.toggle('hidden',panel!=='studentSignup');
+
 document.getElementById('verifyPanel')
 .classList.toggle('hidden',panel!=='verify');
 
@@ -8471,6 +8538,47 @@ false,
 'Create Account'
 );
 
+}
+
+
+/* =========================================================
+   CREATE STUDENT ACCOUNT (NO EMAIL CONFIRMATION)
+   Uses a Supabase Edge Function so the service-role key never
+   appears in this browser HTML. Student role is stored in
+   trusted app_metadata by the Edge Function.
+========================================================= */
+
+async function createStudentAccount(){
+  const fullName=document.getElementById('studentSignupFullName').value.trim();
+  const nickname=document.getElementById('studentSignupNickname').value.trim();
+  const email=document.getElementById('studentSignupEmail').value.trim();
+  const password=document.getElementById('studentSignupPassword').value;
+  const confirm=document.getElementById('studentSignupConfirm').value;
+
+  if(!fullName) return showAuthMessage('Please enter your full name.');
+  if(!nickname) return showAuthMessage('Please enter your nickname.');
+  if(!email) return showAuthMessage('Please enter your email address.');
+  if(password.length<6) return showAuthMessage('Password must be at least 6 characters.');
+  if(password!==confirm) return showAuthMessage('Passwords do not match.');
+
+  setAuthBusy('studentSignupBtn',true,'Create Student Account');
+  try{
+    const {data,error}=await supabaseClient.functions.invoke('create-student-account',{
+      body:{full_name:fullName,nickname,email,password}
+    });
+    if(error) throw error;
+    if(!data || data.success!==true) throw new Error(data?.error || 'Student account could not be created.');
+
+    document.getElementById('loginEmail').value=email;
+    document.getElementById('loginPassword').value='';
+    showAuthPanel('login');
+    showAuthMessage('Student account created successfully. No email confirmation is required. You can now log in. Your Student Portal and package invitation will be available when activated.',true);
+  }catch(error){
+    console.error('Student account creation failed:',error);
+    showAuthMessage(error?.message || 'Unable to create student account. Please try again.');
+  }finally{
+    setAuthBusy('studentSignupBtn',false,'Create Student Account');
+  }
 }
 
 
@@ -9649,6 +9757,19 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
 ========================================================= */
 
 function handleSignedIn(user){
+  // Student accounts are identified by trusted Supabase app_metadata.
+  // Never allow a student login to initialize the Teacher Dashboard.
+  if(String(user?.app_metadata?.account_type||'').toLowerCase()==='student'){
+    return supabaseClient.auth.signOut().then(()=>{
+      showAuthPanel('login');
+      showAuthMessage('Student account recognized. The Student Portal is not yet available. Your account is ready; please wait for the teacher invitation and portal activation.',true);
+    }).catch(error=>{
+      console.error('Could not safely end student session:',error);
+      showAuthPanel('login');
+      showAuthMessage('This is a Student account. It cannot access the Teacher Dashboard. Please try again later when the Student Portal is available.');
+    });
+  }
+
   const appShell=document.getElementById('appShell');
   const sameUser=currentUser && user && currentUser.id===user.id;
 
@@ -9854,6 +9975,11 @@ createTeacherAccount();
 
 }
 );
+
+document.getElementById('studentSignupConfirm')
+.addEventListener('keydown',e=>{
+  if(e.key==='Enter') createStudentAccount();
+});
 
 document.getElementById(
 'forgotEmail'
