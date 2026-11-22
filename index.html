@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=ABeeZee:wght@400;600;700&family=Abril+Fatface&family=Anton&family=Archivo:wght@400;600;700&family=Barlow:wght@400;600;700&family=Bebas+Neue:wght@400;600;700&family=Bangers&family=Cabin:wght@400;600;700&family=Caveat:wght@400;600;700&family=Cinzel:wght@400;600;700&family=Comfortaa:wght@400;600;700&family=Cormorant+Garamond:wght@400;600;700&family=Crimson+Text:wght@400;600;700&family=Dancing+Script:wght@400;600;700&family=DM+Sans:wght@400;600;700&family=Exo+2:wght@400;600;700&family=Fira+Sans:wght@400;600;700&family=Great+Vibes&family=Indie+Flower&family=Inter:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&family=Karla:wght@400;600;700&family=Lato:wght@400;600;700&family=Lexend:wght@400;600;700&family=Libre+Baskerville:wght@400;600;700&family=Lobster&family=Manrope:wght@400;600;700&family=Merriweather:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Mulish:wght@400;600;700&family=Nunito:wght@400;600;700&family=Nunito+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Oswald:wght@400;600;700&family=Outfit:wght@400;600;700&family=Pacifico&family=Permanent+Marker&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700&family=Quicksand:wght@400;600;700&family=Raleway:wght@400;600;700&family=Righteous&family=Roboto:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&family=Rubik:wght@400;600;700&family=Sora:wght@400;600;700&family=Source+Sans+3:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&family=Ubuntu:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Teacher Management Portal</title>
+<title>Es-Kool</title>
 
 <style>
 *{box-sizing:border-box}
@@ -2733,6 +2733,27 @@ body.portal-dark .teacher-dashboard-card{background-image:linear-gradient(90deg,
 body.portal-dark .teacher-dashboard-datebox{background:rgba(25,36,41,.9);border-color:#3a777a;}
 body.portal-dark .teacher-dashboard-datebox .tdb-time,body.portal-dark .teacher-dashboard-datebox .tdb-date{color:#edf4f6;}
 
+
+/* Es-Kool Student Appointment table: balanced, compact columns */
+.sa-table{width:100%;min-width:940px;table-layout:fixed;border-collapse:collapse}
+.sa-table th:nth-child(1),.sa-table td:nth-child(1){width:6%;text-align:center}
+.sa-table th:nth-child(2),.sa-table td:nth-child(2){width:13%}
+.sa-table th:nth-child(3),.sa-table td:nth-child(3){width:11%}
+.sa-table th:nth-child(4),.sa-table td:nth-child(4){width:15%}
+.sa-table th:nth-child(5),.sa-table td:nth-child(5){width:22%;min-width:0}
+.sa-table th:nth-child(6),.sa-table td:nth-child(6){width:13%;min-width:0}
+.sa-table th:nth-child(7),.sa-table td:nth-child(7){width:20%;min-width:0}
+.sa-table td{overflow-wrap:anywhere}
+.sa-pdf-cell{min-width:0;width:100%;gap:5px;align-items:flex-start}
+.sa-pdf-cell .sa-status{white-space:normal;line-height:1.25}
+.sa-pdf-cell .sa-row-actions{display:flex;flex-wrap:wrap;gap:5px;width:100%}
+.sa-pdf-cell .sa-btn{padding:6px 8px;font-size:11px;white-space:nowrap;max-width:100%}
+.sa-table td:nth-child(6),.sa-table td:nth-child(7){text-align:center}
+.sa-enter-classroom,.sa-enter-disabled{min-width:62px;padding:7px 9px;font-size:11px;white-space:nowrap}
+.sa-enter-classroom{background:#0f766e!important;color:#fff!important}
+.sa-enter-disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:900px){.sa-table{min-width:940px}}
+
 </style>
 
 
@@ -4864,11 +4885,11 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 
 <div class="auth-header">
 
-<div class="brand-logo" aria-label="Teacher Management Portal logo">
-<img src="./icons/icon-512.png" alt="TMP Teacher Management Portal Logo" onerror="this.onerror=null;this.src='./icons/icon-192.png';" />
+<div class="brand-logo" aria-label="Es-Kool logo">
+<img src="./icons/icon-512.png" alt="Es-Kool logo" onerror="this.onerror=null;this.src='./icons/icon-192.png';" />
 </div>
 
-<h1>Teacher Management Portal</h1>
+<h1>Es-Kool</h1>
 
 </div>
 
@@ -5197,7 +5218,7 @@ Update Password
 <div class="topbar">
   <div class="portal-header-brand">
     <img src="./icons/icon-512.png" alt="TMP Logo" onerror="this.onerror=null;this.src='./icons/icon-192.png';">
-    <strong>Teacher Management Portal</strong>
+    <strong>Es-Kool</strong>
   </div>
 </div>
 
@@ -5274,7 +5295,7 @@ Teacher
 
 <div id="portalSettingsPanel" class="portal-settings-panel" aria-hidden="true">
   <div class="portal-settings-header">
-    <div><h3>Settings</h3><span>Customize your Teacher Management Portal</span></div>
+    <div><h3>Settings</h3><span>Customize your Es-Kool portal</span></div>
     <button type="button" class="portal-settings-close" onclick="closePortalSettings()" aria-label="Close Settings">×</button>
   </div>
 
@@ -5312,7 +5333,7 @@ Teacher
     <select id="portalFontSelect" class="settings-select" onchange="applyPortalFont(this.value)" aria-label="Choose website font"></select>
     <div class="font-choice-note"><strong>Double click to apply.</strong> Choose from 64 font styles. Each option shows its actual preview.</div>
     <div id="fontGallery" class="font-gallery" aria-label="Font style previews"></div>
-    <div id="fontPreview" class="font-preview">Teacher Management Portal — Font Preview</div>
+    <div id="fontPreview" class="font-preview">Es-Kool — Font Preview</div>
   </div>
 
   <div class="settings-section">
@@ -13912,6 +13933,20 @@ function saAppointmentLessonCell(item){
   const upload=`<label class="sa-btn lesson sa-pdf-upload-label">${file?.storage_path?'Replace PDF':'Upload PDF'}<input type="file" accept="application/pdf,.pdf" style="display:none" onchange="uploadAppointmentLessonPDF('${saEscape(String(item.id))}',this.files&&this.files[0],this)"></label>`;
   return `<div class="sa-pdf-cell"><span class="sa-status ${state.kind==='enter'?'done':state.kind==='missing'?'wait':''}">${state.label}</span><div class="sa-row-actions">${open}${upload}</div>${file?.file_name?`<small class="sa-muted">${saEscape(file.file_name)}</small>`:''}</div>`;
 }
+function saAppointmentClassroomCell(item){
+  if(String(item.status||'').toLowerCase()==='rescheduled')return '<span class="sa-muted">Not applicable</span>';
+  const state=saAppointmentLessonState(item);
+  if(!item?.lessonFile?.storage_path)return '<button type="button" class="sa-btn sa-enter-disabled" disabled title="Upload the PDF lesson first">ENTER</button>';
+  if(state.kind!=='enter')return '<button type="button" class="sa-btn sa-enter-disabled" disabled title="ENTER is available only from 10 minutes before class start until class end">ENTER</button>';
+  return `<button type="button" class="sa-btn sa-enter-classroom" onclick="openEsKoolVirtualClassroom('${saEscape(String(item.id))}')">ENTER</button>`;
+}
+function openEsKoolVirtualClassroom(appointmentId){
+  const item=getAppointments().find(a=>String(a.id)===String(appointmentId));
+  if(!item||!item.lessonFile?.storage_path){alert('Please ask your teacher to upload the PDF lesson first.');return;}
+  const state=saAppointmentLessonState(item);
+  if(state.kind!=='enter'){alert('The classroom entry window opens 10 minutes before the scheduled class and closes when the class ends.');return;}
+  alert('The Es-Kool Virtual Classroom connection is not yet implemented. The ENTER button and schedule gate are ready, but live video, audio, and classroom tools still need to be built.');
+}
 async function uploadAppointmentLessonPDF(appointmentId,file,input){
   if(!file)return;
   if(file.type!=='application/pdf'&&!/\.pdf$/i.test(file.name||'')){alert('Please select a PDF file only.');if(input)input.value='';return;}
@@ -13991,11 +14026,11 @@ function renderStudentAppointmentDashboard(){
      } else if(attendance==='absent') actions='<span class="sa-status">Absent</span>';
      else actions='<span class="sa-status wait">Waiting attendance</span>';
    }
-   return `<tr class="${String(a.status||'').toLowerCase()==='rescheduled'?'sa-rescheduled-row':''}"><td>${i+1}</td><td>${saDateLabel(date,time)}${String(a.status||'').toLowerCase()==='rescheduled'?'<span class="sa-rescheduled-note">NOTE: THIS CLASS WAS RESCHEDULED</span>':''}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(saAppointmentTimeRange(a,date,time))}</td><td>${saAppointmentLessonCell(a)}</td><td>${actions}</td></tr>`;
+   return `<tr class="${String(a.status||'').toLowerCase()==='rescheduled'?'sa-rescheduled-row':''}"><td>${i+1}</td><td>${saDateLabel(date,time)}${String(a.status||'').toLowerCase()==='rescheduled'?'<span class="sa-rescheduled-note">NOTE: THIS CLASS WAS RESCHEDULED</span>':''}</td><td>${saEscape(dt?dt.toLocaleDateString(undefined,{weekday:'long'}):(a.day||'—'))}</td><td>${saEscape(saAppointmentTimeRange(a,date,time))}</td><td>${saAppointmentLessonCell(a)}</td><td>${saAppointmentClassroomCell(a)}</td><td>${actions}</td></tr>`;
  }).join('');
  const schedule=typeof scheduleDataToText==='function'?scheduleDataToText(student.scheduleDetails,student.preferredSchedule,student.duration):(student.preferredSchedule||'—');
  root.innerHTML=`<aside class="sa-card"><div class="sa-card-head">👥 STUDENT BOARD <span>${students.length}</span></div><div class="sa-card-body"><input class="sa-search" type="search" placeholder="Search student..." value="${saEscape(document.getElementById('appointmentSearch')?.value||'')}" oninput="document.getElementById('appointmentSearch').value=this.value;renderStudentAppointmentDashboard()"><div class="sa-student-list">${board}</div></div></aside>
- <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><p class="sa-muted">Upload one PDF lesson for each scheduled class. PDF upload requires the supplied Supabase setup SQL.</p><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Upload PDF Lesson</th><th>Action</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="6" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?`<button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button>`:`<button type="button" class="sa-btn lesson" style="min-width:220px;padding:12px 20px;font-size:14px" onclick="confirmGenerateStudentClassSchedule('${saEscape(String(student.id))}')">＋ Generate Class Schedule</button>`}</div><p class="sa-muted">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?'Use Add Individual Class to add an extra class one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.':'Generate the purchased and free/bonus class records from the student’s saved preferred days and times. After the schedule is generated, use Add Individual Class only when you need an extra class.'}</p></div></section>
+ <div class="sa-main-column"><section class="sa-card sa-section"><div class="sa-card-head sa-centered-heading">PREFERRED CLASS SCHEDULE AND CLASS RECORD <span class="sa-status wait">${all.length} appointments</span></div><div class="sa-card-body"><p class="sa-muted">Upload one PDF lesson for each scheduled class. PDF upload requires the supplied Supabase setup SQL.</p><div class="sa-table-wrap"><table class="sa-table"><thead><tr><th>Class No.</th><th>Date</th><th>Day</th><th>Time</th><th>Upload PDF Lesson</th><th>Enter Classroom</th><th>Action</th></tr></thead><tbody>${lessonRows(all,'attendance')||'<tr><td colspan="7" class="sa-empty">No classes booked for this student yet.</td></tr>'}</tbody></table></div><div style="display:flex;justify-content:center;margin:16px 0 8px">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?`<button type="button" class="sa-btn lesson" style="min-width:180px;padding:12px 20px;font-size:14px" onclick="openManualIndividualClass('${String(student.id).replace(/'/g,"\'")}')">＋ Add Individual Class</button>`:`<button type="button" class="sa-btn lesson" style="min-width:220px;padding:12px 20px;font-size:14px" onclick="confirmGenerateStudentClassSchedule('${saEscape(String(student.id))}')">＋ Generate Class Schedule</button>`}</div><p class="sa-muted">${all.some(a=>String(a.type||'Regular Class').toLowerCase()==='regular class'&&!['cancelled','canceled','deleted','removed','rescheduled'].includes(String(a.status||'').toLowerCase())&&(!a.packageId||String(a.packageId)===String(p.currentPackage?.id||student.currentPackageId||'')))?'Use Add Individual Class to add an extra class one at a time. After a class ends, mark Present or Absent. For Present classes, use Evaluate to save the evaluation.':'Generate the purchased and free/bonus class records from the student’s saved preferred days and times. After the schedule is generated, use Add Individual Class only when you need an extra class.'}</p></div></section>
  </div>
  <aside class="sa-card sa-profile-card"><div class="sa-card-head">STUDENT INFORMATION</div><div class="sa-card-body"><div class="sa-profile-top"><div class="sa-profile-avatar">${saEscape(String(student.nickname||student.name||'S').split(/\s+/).map(x=>x[0]||'').slice(0,2).join('').toUpperCase())}</div><div><div class="sa-profile-name">${saEscape(student.nickname||student.name||'Student')}</div><div class="sa-muted">ID: ${saEscape(student.id||'—')}</div></div></div><ul class="sa-info-list"><li><b>Full Name:</b> ${saEscape(student.name||'—')}</li><li><b>Age:</b> ${saEscape(student.age||'—')}</li><li><b>Country:</b> ${saEscape(student.country||'—')}</li><li><b>English Level:</b> ${saEscape(student.level||'—')}</li><li><b>Parent / Guardian:</b> ${saEscape(student.parentName||'—')}</li><li><b>Parent Email:</b> ${saEscape(student.email||'—')}</li><li><b>Duration:</b> ${saEscape(student.duration||'30 Minutes')}</li><li><b>Preferred Schedule:</b><ul class="sa-preferred-bullets">${(typeof getPreferredScheduleLines==='function'?getPreferredScheduleLines(student):String(schedule||'—').split(/\n|;|\s*\|\s*/).filter(Boolean)).map(line=>`<li>${saEscape(line.replace(/^\s*[-•]\s*/,''))}</li>`).join('')||'<li>Not set</li>'}</ul></li><li><b>Booking Mode:</b> ${saEscape(student.bookingMode||'Preferred schedule')}</li></ul><div class="sa-summary-grid"><div class="sa-stat"><b>${Number(p.purchased||0)}</b><span>Purchased</span></div><div class="sa-stat"><b>${total}</b><span>Total Lesson</span></div><div class="sa-stat"><b>${Number(p.completed||0)}</b><span>Completed</span></div><div class="sa-stat"><b>${remaining}</b><span>Remaining</span></div><div class="sa-stat"><b>${bonus}</b><span>Free/Bonus</span></div><div class="sa-stat"><b>${additional}</b><span>Additional</span></div></div><button type="button" class="sa-btn lesson" style="width:100%;margin:10px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}');setTimeout(()=>openRenewPackage('${String(student.id).replace(/'/g,"\'")}'),80)">Renew Classes</button><button type="button" class="sa-btn view" style="width:100%;margin:8px 0 0" onclick="openStudentProfile('${String(student.id).replace(/'/g,"\'")}')">Open Full Student Profile</button></div></aside>`;
 }
@@ -14297,7 +14332,7 @@ function performRescheduleStudentAppointment(id,forcedSlot=null){
         const inserted=await supabaseClient.from('appointments').insert([replacementRow]).select('id').single();
         if(inserted.error || !inserted.data?.id){
           // Roll the original back if the new slot could not be saved.
-          await supabaseClient.from('appointments').update({status:old.status||'Scheduled',notes:old.notes||null}).eq('user_id',currentUser.id).eq('id',originalDbId);
+          await supabaseClient.from('appointments').update({status:old.status||'Scheduled',notes:old.notes||null,attendance:old.attendance||null}).eq('user_id',currentUser.id).eq('id',originalDbId);
           throw inserted.error||new Error('The new preferred-schedule slot was not saved.');
         }
         savedReplacementId=String(inserted.data.id);
@@ -14305,7 +14340,7 @@ function performRescheduleStudentAppointment(id,forcedSlot=null){
 
       const latest=getAppointments();
       const oldIndex=latest.findIndex(a=>String(a.id)===String(old.id));
-      if(oldIndex>=0){latest[oldIndex]={...latest[oldIndex],status:'Rescheduled',notes:'NOTE: THIS CLASS WAS RESCHEDULED',updatedAt:now};}
+      if(oldIndex>=0){latest[oldIndex]={...latest[oldIndex],status:'Rescheduled',notes:[String(latest[oldIndex].notes||'').trim(),'NOTE: THIS CLASS WAS RESCHEDULED'].filter(Boolean).join(' | '),attendance:null,updatedAt:now};}
       replacement.id=savedReplacementId;
       latest.push(replacement);
       // Sort the student's classes by actual date/time so the replacement appears at the bottom.
@@ -19698,7 +19733,7 @@ function portalNotificationAdd(title,body,type='general',key='',options={}){
  renderPortalNotifications();
  const bell=document.getElementById('notificationBellBtn');if(bell){bell.classList.remove('has-new');void bell.offsetWidth;bell.classList.add('has-new');setTimeout(()=>bell.classList.remove('has-new'),1800);}
  if(options.sound!==false)playShortNotificationSound();
- if('Notification' in window&&Notification.permission==='granted'&&options.browser!==false){try{new Notification('Teacher Management Portal',{body:String(body||title||''),tag:cleanKey||undefined});}catch(e){}}
+ if('Notification' in window&&Notification.permission==='granted'&&options.browser!==false){try{new Notification('Es-Kool',{body:String(body||title||''),tag:cleanKey||undefined});}catch(e){}}
  showPortalToast('🔔 '+String(title||'Notification')+(body?` — ${body}`:''));
  return true;
 }
