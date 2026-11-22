@@ -4953,6 +4953,41 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 .sa-table .sa-row-actions .sa-btn{max-width:100%;white-space:nowrap}
 @media(max-width:900px){.sa-table{min-width:900px!important}}
 </style>
+
+<style id="eskool-student-portal-v1">
+body.student-portal-mode #appShell .nav,body.student-portal-mode #appShell #dashboardPage,body.student-portal-mode #appShell .page:not(#studentPortalPage){display:none!important}
+body.student-portal-mode #appShell .card{max-width:1200px;margin:20px auto}
+#studentPortalPage{padding:22px 18px 30px}
+.student-portal-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.student-portal-brand{font-weight:900;font-size:19px;letter-spacing:.2px;color:var(--global-accent-dark,#087e8b)}
+.student-portal-welcome{padding:23px;border-radius:18px;background:linear-gradient(130deg,#e8fbfb,#f4fbff);border:1px solid #cceeee;margin-bottom:18px}
+.student-portal-welcome h2{margin:0 0 6px;font-size:25px;color:#12333d}
+.student-portal-welcome p{margin:0;color:#52717b;font-size:13px}
+.student-portal-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:16px 0 22px}
+.student-portal-stat,.student-portal-panel,.student-portal-feature{background:var(--portal-surface,#fff);border:1px solid var(--global-border,#dce8eb);border-radius:14px;padding:16px;min-width:0}
+.student-portal-stat small{display:block;color:#71828a;font-weight:800;font-size:10px;letter-spacing:.6px}
+.student-portal-stat strong{display:block;font-size:23px;margin-top:7px;color:var(--portal-text,#172b33)}
+.student-portal-section-title{font-size:16px;font-weight:900;margin:0 0 12px}
+.student-portal-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:20px}
+.student-portal-feature{display:flex;align-items:flex-start;gap:12px;text-align:left;color:inherit;cursor:pointer;transition:.15s;border-radius:14px}
+.student-portal-feature:hover{border-color:var(--global-accent,#00b8c2);transform:translateY(-1px)}
+.student-portal-feature-icon{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:11px;background:#e7fafa;font-size:20px}
+.student-portal-feature strong{display:block;font-size:13px;margin:2px 0 4px}
+.student-portal-feature span{display:block;font-size:11px;line-height:1.45;color:#71828a}
+.student-portal-empty{padding:18px;border:1px dashed #b9d6dc;border-radius:12px;background:#f8fcfd;color:#58717a;font-size:13px;line-height:1.55}
+.student-portal-logout{border:1px solid #d7e3e7;border-radius:9px;padding:9px 14px;background:#fff;font-weight:800;cursor:pointer}
+.student-portal-subnav{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px}
+.student-portal-subnav button{border:1px solid #d6e4e8;border-radius:9px;padding:9px 12px;background:#fff;color:#29434b;font-weight:700;cursor:pointer}
+.student-portal-subnav button.active{background:var(--global-accent,#08bfc5);border-color:var(--global-accent,#08bfc5);color:#fff}
+body.portal-dark.student-portal-mode .student-portal-welcome{background:#1d343a;border-color:#35535a}
+body.portal-dark.student-portal-mode .student-portal-welcome h2{color:#effafa}
+body.portal-dark.student-portal-mode .student-portal-welcome p,body.portal-dark.student-portal-mode .student-portal-feature span{color:#b7cbd0}
+body.portal-dark.student-portal-mode .student-portal-empty{background:#1c2b31;border-color:#47616a;color:#c4d6db}
+body.portal-dark.student-portal-mode .student-portal-subnav button,body.portal-dark.student-portal-mode .student-portal-logout{background:#202c32;color:#edf4f6;border-color:#3a4a52}
+@media(max-width:800px){.student-portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.student-portal-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){#studentPortalPage{padding:15px 10px}.student-portal-feature-grid{grid-template-columns:1fr}.student-portal-welcome{padding:18px}.student-portal-welcome h2{font-size:21px}}
+</style>
+
 </head>
 
 <body>
@@ -5548,6 +5583,48 @@ Evaluation
 </button>
 
 
+</div>
+
+<!-- STUDENT PORTAL: separate student-only landing page -->
+<div id="studentPortalPage" class="page" style="display:none">
+  <div class="student-portal-top">
+    <div class="student-portal-brand">Es-Kool · Student Portal</div>
+    <button type="button" class="student-portal-logout" onclick="studentPortalLogout()">Log Out</button>
+  </div>
+  <div class="student-portal-welcome">
+    <h2 id="studentPortalWelcomeName">Welcome, Student!</h2>
+    <p>Your learning space for classes, lessons, evaluations, and progress.</p>
+  </div>
+  <div class="student-portal-grid">
+    <div class="student-portal-stat"><small>ACTIVE PACKAGE</small><strong id="studentPortalPackage">Not assigned</strong></div>
+    <div class="student-portal-stat"><small>REMAINING CLASSES</small><strong id="studentPortalRemaining">—</strong></div>
+    <div class="student-portal-stat"><small>UPCOMING CLASSES</small><strong id="studentPortalUpcoming">—</strong></div>
+    <div class="student-portal-stat"><small>COMPLETED CLASSES</small><strong id="studentPortalCompleted">—</strong></div>
+  </div>
+  <div class="student-portal-subnav" aria-label="Student portal sections">
+    <button type="button" class="active" data-student-section="overview" onclick="showStudentPortalSection('overview',this)">Overview</button>
+    <button type="button" data-student-section="schedule" onclick="showStudentPortalSection('schedule',this)">My Schedule</button>
+    <button type="button" data-student-section="lessons" onclick="showStudentPortalSection('lessons',this)">My Lessons</button>
+    <button type="button" data-student-section="evaluations" onclick="showStudentPortalSection('evaluations',this)">Evaluations</button>
+    <button type="button" data-student-section="records" onclick="showStudentPortalSection('records',this)">Class Records</button>
+    <button type="button" data-student-section="teacher" onclick="showStudentPortalSection('teacher',this)">My Teacher</button>
+    <button type="button" data-student-section="account" onclick="showStudentPortalSection('account',this)">My Account</button>
+  </div>
+  <div id="studentPortalSectionContent">
+    <h3 class="student-portal-section-title">Your Learning Overview</h3>
+    <div class="student-portal-feature-grid">
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button>
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('lessons')"><span class="student-portal-feature-icon">📚</span><span><strong>My Lessons</strong><span>Open lesson files shared by your teacher.</span></span></button>
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('evaluations')"><span class="student-portal-feature-icon">📝</span><span><strong>My Evaluations</strong><span>Review feedback from your classes.</span></span></button>
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('records')"><span class="student-portal-feature-icon">📊</span><span><strong>My Class Records</strong><span>Review attendance and completed classes.</span></span></button>
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('teacher')"><span class="student-portal-feature-icon">👩‍🏫</span><span><strong>My Teacher</strong><span>View your assigned teacher and package.</span></span></button>
+      <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button>
+    </div>
+    <div class="student-portal-panel">
+      <h3 class="student-portal-section-title">Package Invitation</h3>
+      <div class="student-portal-empty" id="studentPortalInvitationNotice">You have not been assigned a learning package yet. Once your teacher sends you a package invitation and you accept it, your package, schedule, and lessons will appear here.</div>
+    </div>
+  </div>
 </div>
 
 
@@ -8652,11 +8729,11 @@ async function createStudentAccount(){
     if(error) throw error;
 
     if(data?.session){
-      showAuthMessage('Student account created. Please log in after confirming your email if prompted.',true);
+      pendingVerificationEmail=email;
+      document.getElementById('verifyEmailText').textContent=email;
       await supabaseClient.auth.signOut();
-      showAuthPanel('login');
-      document.getElementById('loginEmail').value=email;
-      document.getElementById('loginPassword').value='';
+      showAuthPanel('verify');
+      showAuthMessage('Your account was created. Check Gmail and confirm your email before logging in.',true);
     }else{
       pendingVerificationEmail=email;
       document.getElementById('verifyEmailText').textContent=email;
@@ -9846,19 +9923,66 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
    SIGNED IN
 ========================================================= */
 
+function isStudentPortalUser(user){
+  return String(user?.app_metadata?.account_type || user?.user_metadata?.account_type || '').toLowerCase()==='student';
+}
+
+function renderStudentPortal(user){
+  const nickname=String(user?.user_metadata?.nickname||'').trim();
+  const fullName=String(user?.user_metadata?.full_name||'').trim();
+  const displayName=nickname||fullName||'Student';
+  document.getElementById('studentPortalWelcomeName').textContent='Welcome, '+displayName+'!';
+  document.getElementById('studentPortalPackage').textContent='Not assigned';
+  document.getElementById('studentPortalRemaining').textContent='—';
+  document.getElementById('studentPortalUpcoming').textContent='—';
+  document.getElementById('studentPortalCompleted').textContent='—';
+  document.body.classList.add('student-portal-mode');
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appShell').classList.remove('hidden');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('studentPortalPage');
+  page.style.display='block';
+  page.classList.add('active');
+  showStudentPortalSection('overview');
+}
+
+function showStudentPortalSection(section,button){
+  const content=document.getElementById('studentPortalSectionContent');
+  if(!content)return;
+  document.querySelectorAll('#studentPortalPage .student-portal-subnav button').forEach(b=>b.classList.toggle('active',b.dataset.studentSection===section));
+  const sections={
+    overview:`<h3 class="student-portal-section-title">Your Learning Overview</h3><div class="student-portal-feature-grid"><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('lessons')"><span class="student-portal-feature-icon">📚</span><span><strong>My Lessons</strong><span>Open lesson files shared by your teacher.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('evaluations')"><span class="student-portal-feature-icon">📝</span><span><strong>My Evaluations</strong><span>Review feedback from your classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('records')"><span class="student-portal-feature-icon">📊</span><span><strong>My Class Records</strong><span>Review attendance and completed classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('teacher')"><span class="student-portal-feature-icon">👩‍🏫</span><span><strong>My Teacher</strong><span>View your assigned teacher and package.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button></div><div class="student-portal-panel"><h3 class="student-portal-section-title">Package Invitation</h3><div class="student-portal-empty">You have not been assigned a learning package yet. Once your teacher sends you a package invitation and you accept it, your package, schedule, and lessons will appear here.</div></div>`,
+    schedule:`<h3 class="student-portal-section-title">My Class Schedule</h3><div class="student-portal-empty">Your class schedule will appear here after you accept a package invitation from your teacher.</div>`,
+    lessons:`<h3 class="student-portal-section-title">My Lessons</h3><div class="student-portal-empty">PDF lessons and learning materials shared by your teacher will appear here after your package is linked.</div>`,
+    evaluations:`<h3 class="student-portal-section-title">My Evaluations</h3><div class="student-portal-empty">Your teacher's class evaluations and feedback will appear here.</div>`,
+    records:`<h3 class="student-portal-section-title">My Class Records</h3><div class="student-portal-empty">Your attendance and completed class history will appear here.</div>`,
+    teacher:`<h3 class="student-portal-section-title">My Teacher</h3><div class="student-portal-empty">Your assigned teacher information will appear here after your package invitation is accepted.</div>`,
+    account:`<h3 class="student-portal-section-title">My Account</h3><div class="student-portal-panel"><p><strong>Nickname:</strong> ${escapeStudentPortalText(currentUser?.user_metadata?.nickname||'—')}</p><p><strong>Full Name:</strong> ${escapeStudentPortalText(currentUser?.user_metadata?.full_name||'—')}</p><p><strong>Email:</strong> ${escapeStudentPortalText(currentUser?.email||'—')}</p></div>`
+  };
+  content.innerHTML=sections[section]||sections.overview;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function escapeStudentPortalText(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+async function studentPortalLogout(){
+  const {error}=await supabaseClient.auth.signOut();
+  if(error) alert('Unable to log out right now: '+error.message);
+}
+
 function handleSignedIn(user){
-  // Student signup is marked as student in Supabase metadata.
-  // Never allow a student login to initialize the Teacher Dashboard; enforce data access separately with Supabase RLS.
-  if(String(user?.app_metadata?.account_type||user?.user_metadata?.account_type||'').toLowerCase()==='student'){
-    return supabaseClient.auth.signOut().then(()=>{
-      showAuthPanel('login');
-      showAuthMessage('Student account recognized. The Student Portal is not yet available. Your account is ready; please wait for the teacher invitation and portal activation.',true);
-    }).catch(error=>{
-      console.error('Could not safely end student session:',error);
-      showAuthPanel('login');
-      showAuthMessage('This is a Student account. It cannot access the Teacher Dashboard. Please try again later when the Student Portal is available.');
-    });
+  // Student accounts are routed to their own portal and never initialize teacher data.
+  if(isStudentPortalUser(user)){
+    currentUser=user;
+    evaluationMemoryCache=null;
+    renderStudentPortal(user);
+    return Promise.resolve();
   }
+  document.body.classList.remove('student-portal-mode');
+  const studentPage=document.getElementById('studentPortalPage');
+  if(studentPage) studentPage.style.display='none';
 
   const appShell=document.getElementById('appShell');
   const sameUser=currentUser && user && currentUser.id===user.id;
@@ -9925,6 +10049,8 @@ function handleSignedIn(user){
 
 function handleSignedOut(){
 
+document.body.classList.remove('student-portal-mode');
+const studentPage=document.getElementById('studentPortalPage');if(studentPage)studentPage.style.display='none';
 currentUser=null;
 studentsMemoryCache=null;
 studentsMemoryCacheKey='';
