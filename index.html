@@ -1884,6 +1884,57 @@ button.secondary,
   letter-spacing:.5px;
 }
 
+/* Account type selector: two rounded cards, matching the Es-Kool reference */
+#accountChoicePanel .account-choice-heading{
+  margin:0 0 8px;
+  font-size:20px;
+  font-weight:800;
+}
+#accountChoicePanel .account-choice-subtitle{
+  margin:0 0 12px;
+  color:#159b9b;
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+}
+.account-choice-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 12px;
+}
+.account-choice-card{
+  min-height:112px;
+  padding:12px 8px;
+  border:1px solid #d7d7d7;
+  border-radius:14px;
+  background:#fff;
+  color:#159b9b;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  transition:border-color .15s ease,background .15s ease,box-shadow .15s ease,transform .15s ease;
+}
+.account-choice-card:hover{
+  border-color:#00cfcf;
+  box-shadow:0 3px 10px rgba(0,180,180,.12);
+  transform:translateY(-1px);
+}
+.account-choice-card.selected{
+  border:2px solid #00cfcf;
+  background:#efffff;
+  box-shadow:0 0 0 2px rgba(0,207,207,.10);
+}
+.account-choice-icon{font-size:24px;line-height:1.2;margin-bottom:7px;}
+.account-choice-name{font-size:13px;font-weight:800;letter-spacing:.3px;}
+.account-choice-description{margin-top:5px;font-size:10px;line-height:1.35;color:#4d9999;}
+#accountChoiceContinue:disabled{opacity:.55;cursor:not-allowed;}
+@media(max-width:380px){.account-choice-grid{gap:7px}.account-choice-card{min-height:105px;padding:10px 5px}}
+
+
 .auth-switch{
   margin-top:14px;
   text-align:center;
@@ -4997,16 +5048,23 @@ Create Account
 
 <div id="accountChoicePanel" class="hidden">
 
-<h2>WELCOME TO ES-KOOL</h2>
-<p style="margin:0 0 16px;color:#596579;font-size:14px;">CREATE YOUR ACCOUNT</p>
+<h2 class="account-choice-heading">Create Account</h2>
+<p class="account-choice-subtitle">Choose your account type</p>
 
-<button type="button" class="primary auth-btn" onclick="showAuthPanel('signup')">
-  TEACHER
-</button>
+<div class="account-choice-grid" role="group" aria-label="Choose your account type">
+  <button type="button" class="account-choice-card" data-account-type="teacher" aria-pressed="false" onclick="selectAccountType('teacher',this)">
+    <span class="account-choice-icon" aria-hidden="true">🎓</span>
+    <span class="account-choice-name">TEACHER</span>
+    <span class="account-choice-description">For teachers who manage and teach classes</span>
+  </button>
+  <button type="button" class="account-choice-card" data-account-type="student" aria-pressed="false" onclick="selectAccountType('student',this)">
+    <span class="account-choice-icon" aria-hidden="true">📚</span>
+    <span class="account-choice-name">STUDENT</span>
+    <span class="account-choice-description">For students who attend online classes</span>
+  </button>
+</div>
 
-<button type="button" class="primary auth-btn" style="background:#334155;" onclick="showAuthPanel('studentSignup')">
-  STUDENT
-</button>
+<button id="accountChoiceContinue" type="button" class="primary auth-btn" disabled onclick="continueAccountChoice()">Create Account</button>
 
 <div class="auth-switch">
   Already have an account?
@@ -8272,6 +8330,25 @@ JSON.stringify(data)
    AUTH UI
 ========================================================= */
 
+let selectedAccountType='';
+
+function selectAccountType(type,button){
+  selectedAccountType=type;
+  document.querySelectorAll('.account-choice-card').forEach(card=>{
+    const selected=card===button;
+    card.classList.toggle('selected',selected);
+    card.setAttribute('aria-pressed',selected?'true':'false');
+  });
+  const continueButton=document.getElementById('accountChoiceContinue');
+  if(continueButton) continueButton.disabled=false;
+}
+
+function continueAccountChoice(){
+  if(selectedAccountType==='teacher') return showAuthPanel('signup');
+  if(selectedAccountType==='student') return showAuthPanel('studentSignup');
+  showAuthMessage('Please choose Teacher or Student first.');
+}
+
 function showAuthPanel(panel){
 
 document.getElementById('loginPanel')
@@ -8542,10 +8619,7 @@ false,
 
 
 /* =========================================================
-   CREATE STUDENT ACCOUNT (NO EMAIL CONFIRMATION)
-   Uses a Supabase Edge Function so the service-role key never
-   appears in this browser HTML. Student role is stored in
-   trusted app_metadata by the Edge Function.
+   CREATE STUDENT ACCOUNT (EMAIL CONFIRMATION REQUIRED)
 ========================================================= */
 
 async function createStudentAccount(){
@@ -8563,16 +8637,32 @@ async function createStudentAccount(){
 
   setAuthBusy('studentSignupBtn',true,'Create Student Account');
   try{
-    const {data,error}=await supabaseClient.functions.invoke('create-student-account',{
-      body:{full_name:fullName,nickname,email,password}
+    const {data,error}=await supabaseClient.auth.signUp({
+      email,
+      password,
+      options:{
+        data:{
+          full_name:fullName,
+          nickname,
+          account_type:'student'
+        },
+        emailRedirectTo:SUPABASE_REDIRECT_URL
+      }
     });
     if(error) throw error;
-    if(!data || data.success!==true) throw new Error(data?.error || 'Student account could not be created.');
 
-    document.getElementById('loginEmail').value=email;
-    document.getElementById('loginPassword').value='';
-    showAuthPanel('login');
-    showAuthMessage('Student account created successfully. No email confirmation is required. You can now log in. Your Student Portal and package invitation will be available when activated.',true);
+    if(data?.session){
+      showAuthMessage('Student account created. Please log in after confirming your email if prompted.',true);
+      await supabaseClient.auth.signOut();
+      showAuthPanel('login');
+      document.getElementById('loginEmail').value=email;
+      document.getElementById('loginPassword').value='';
+    }else{
+      pendingVerificationEmail=email;
+      document.getElementById('verifyEmailText').textContent=email;
+      showAuthPanel('verify');
+      showAuthMessage('A confirmation link has been sent to your email. Open Gmail and click Confirm email address, then return here to log in.',true);
+    }
   }catch(error){
     console.error('Student account creation failed:',error);
     showAuthMessage(error?.message || 'Unable to create student account. Please try again.');
@@ -9757,9 +9847,9 @@ async function refreshPortalSubscriptionAccess(user=currentUser){
 ========================================================= */
 
 function handleSignedIn(user){
-  // Student accounts are identified by trusted Supabase app_metadata.
-  // Never allow a student login to initialize the Teacher Dashboard.
-  if(String(user?.app_metadata?.account_type||'').toLowerCase()==='student'){
+  // Student signup is marked as student in Supabase metadata.
+  // Never allow a student login to initialize the Teacher Dashboard; enforce data access separately with Supabase RLS.
+  if(String(user?.app_metadata?.account_type||user?.user_metadata?.account_type||'').toLowerCase()==='student'){
     return supabaseClient.auth.signOut().then(()=>{
       showAuthPanel('login');
       showAuthMessage('Student account recognized. The Student Portal is not yet available. Your account is ready; please wait for the teacher invitation and portal activation.',true);
