@@ -2809,8 +2809,6 @@ body.portal-dark .teacher-dashboard-datebox .tdb-time,body.portal-dark .teacher-
 .sa-pdf-cell .sa-row-actions{display:flex;flex-wrap:wrap;gap:5px;width:100%}
 .sa-pdf-cell .sa-btn{padding:6px 8px;font-size:11px;white-space:nowrap;max-width:100%}
 .sa-table td:nth-child(6),.sa-table td:nth-child(7){text-align:center}
-.sa-enter-classroom,.sa-enter-disabled{min-width:62px;padding:7px 9px;font-size:11px;white-space:nowrap}
-.sa-enter-classroom{background:#0f766e!important;color:#fff!important}
 .sa-enter-disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:900px){.sa-table{min-width:940px}}
 
@@ -4957,7 +4955,7 @@ body.portal-dark .dashboard-summary-date-card .tdb-time,body.portal-dark .dashbo
 <style id="eskool-student-portal-v1">
 body.student-portal-mode #appShell .nav,body.student-portal-mode #appShell #dashboardPage,body.student-portal-mode #appShell .page:not(#studentPortalPage){display:none!important}
 body.student-portal-mode #appShell .card{max-width:1200px;margin:20px auto}
-#studentPortalPage{padding:22px 18px 30px}
+#studentPortalPage{display:none!important;padding:22px 18px 30px}
 .student-portal-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
 .student-portal-brand{font-weight:900;font-size:19px;letter-spacing:.2px;color:var(--global-accent-dark,#087e8b)}
 .student-portal-welcome{padding:23px;border-radius:18px;background:linear-gradient(130deg,#e8fbfb,#f4fbff);border:1px solid #cceeee;margin-bottom:18px}
@@ -5038,20 +5036,7 @@ body.portal-dark.student-portal-mode .student-portal-sidebar,body.portal-dark.st
 <div id="loginPanel">
 
 <h2>Login</h2>
-<p class="account-choice-subtitle">Choose which portal you want to access</p>
-<div class="account-choice-grid login-account-choice-grid" role="group" aria-label="Choose login account type">
-  <button type="button" class="account-choice-card" data-login-account-type="teacher" aria-pressed="false" onclick="selectLoginAccountType('teacher',this)">
-    <span class="account-choice-icon" aria-hidden="true">🎓</span>
-    <span class="account-choice-name">TEACHER LOGIN</span>
-    <span class="account-choice-description">Open the Teacher Portal</span>
-  </button>
-  <button type="button" class="account-choice-card" data-login-account-type="student" aria-pressed="false" onclick="selectLoginAccountType('student',this)">
-    <span class="account-choice-icon" aria-hidden="true">📚</span>
-    <span class="account-choice-name">STUDENT LOGIN</span>
-    <span class="account-choice-description">Open the Student Portal</span>
-  </button>
-</div>
-<div id="loginAccountTypeNotice" class="student-portal-empty" style="margin:0 0 12px;padding:9px 12px">Please choose Teacher Login or Student Login.</div>
+<p class="account-choice-subtitle">Sign in to your Teacher Portal</p>
 
 <label>Email</label>
 
@@ -5108,7 +5093,7 @@ Don't have an account?
 
 <button
 type="button"
-onclick="showAuthPanel('accountChoice')"
+onclick="showAuthPanel('signup')"
 >
 Create Account
 </button>
@@ -5118,7 +5103,7 @@ Create Account
 </div>
 
 
-<div id="accountChoicePanel" class="hidden">
+<div id="accountChoicePanel" class="hidden" style="display:none!important">
 
 <h2 class="account-choice-heading">Create Account</h2>
 <p class="account-choice-subtitle">Choose your account type</p>
@@ -5233,52 +5218,15 @@ Login
 <div id="verifyPanel" class="hidden">
 
 <h2>Verify Your Email</h2>
-
-<p style="font-size:14px;line-height:1.5;margin-top:0">
-
-We sent a confirmation link to
-
-<b id="verifyEmailText">your email</b>.
-
-</p>
-
-<p style="font-size:14px;line-height:1.5;margin-top:12px">
-
-Please open the email and click
-<b>Confirm email address</b>
-to verify your account.
-
-</p>
-
-<p style="font-size:13px;line-height:1.5;margin-top:12px">
-
-After confirming your email, return to this website and log in using your email and password.
-
-</p>
-
-<button
-id="resendBtn"
-type="button"
-class="secondary auth-btn"
->
-Resend Confirmation Email
-</button>
-
-<div class="auth-switch">
-
-<button
-type="button"
-onclick="showAuthPanel('login')"
->
-Back to Login
-</button>
-
+<p style="font-size:14px;line-height:1.5;margin-top:0">Enter the 6-digit verification code sent to <b id="verifyEmailText">your email</b>.</p>
+<label for="emailOtpInput">6-Digit Email Code</label>
+<input id="emailOtpInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit code" style="text-align:center;letter-spacing:8px;font-size:22px;font-weight:800">
+<button id="verifyOtpBtn" type="button" class="primary auth-btn" onclick="verifySignupOtp()">Verify Email</button>
+<button id="resendBtn" type="button" class="secondary auth-btn">Resend Code</button>
+<div class="auth-switch"><button type="button" onclick="showAuthPanel('login')">Back to Login</button></div>
 </div>
 
-</div>
-
-
-<div id="studentSignupPanel" class="hidden">
+<div id="studentSignupPanel" class="hidden" style="display:none!important">
 
 <h2>Create Student Account</h2>
 
@@ -5647,8 +5595,7 @@ Evaluation
     <aside class="student-portal-sidebar">
       <div class="student-portal-sidebar-title">STUDENT MENU</div>
       <nav class="student-portal-subnav" aria-label="Student portal sections">
-        <button type="button" class="active" data-student-section="overview" onclick="showStudentPortalSection('overview',this)">⌂ &nbsp; Your Learning Overview</button>
-        <button type="button" data-student-section="invitation" onclick="showStudentPortalSection('invitation',this)">✉ &nbsp; Package Invitation</button>
+        <button type="button" class="active" data-student-section="invitation" onclick="showStudentPortalSection('invitation',this)">✉ &nbsp; Package Activation</button>
         <button type="button" data-student-section="schedule" onclick="showStudentPortalSection('schedule',this)">▦ &nbsp; My Class Schedule</button>
         <button type="button" data-student-section="lessons" onclick="showStudentPortalSection('lessons',this)">▤ &nbsp; My Lessons</button>
         <button type="button" data-student-section="evaluations" onclick="showStudentPortalSection('evaluations',this)">✎ &nbsp; My Evaluations</button>
@@ -5669,8 +5616,8 @@ Evaluation
       <button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button>
     </div>
     <div class="student-portal-panel">
-      <h3 class="student-portal-section-title">Package Invitation</h3>
-      <div class="student-portal-empty" id="studentPortalInvitationNotice">You have not been assigned a learning package yet. Once your teacher sends you a package invitation and you accept it, your package, schedule, and lessons will appear here.</div>
+      <h3 class="student-portal-section-title">Package Activation</h3>
+      <div class="student-portal-empty" id="studentPortalInvitationNotice">You have not been assigned a learning package yet. Once your teacher sends you a package activation and you accept it, your package, schedule, and lessons will appear here.</div>
     </div>
       </div>
     </main>
@@ -6560,6 +6507,15 @@ class="rating"
   <!-- Legacy fields retained for compatibility with existing comment and evaluation logic. -->
   <textarea id="vocabulary" hidden></textarea>
   <textarea id="improvement" hidden></textarea>
+</div>
+
+<div class="section" id="evaluationAiSection">
+  <div class="section-title">PDF AI AUTO-FILL</div>
+  <div class="section-body">
+    <p class="small" style="margin-top:0">Generate draft suggestions from the lesson PDF uploaded for this class. Review and edit every field before saving.</p>
+    <button type="button" class="primary" id="generateEvaluationAiBtn" onclick="generateAIEvaluationSuggestions()">Generate AI Evaluation Suggestions</button>
+    <div id="evaluationAiStatus" class="small" role="status" aria-live="polite" style="margin-top:8px"></div>
+  </div>
 </div>
 
 <div class="section">
@@ -8456,8 +8412,8 @@ JSON.stringify(data)
    AUTH UI
 ========================================================= */
 
-let selectedAccountType='';
-let selectedLoginAccountType='';
+let selectedAccountType='teacher';
+let selectedLoginAccountType='teacher';
 function selectLoginAccountType(type,button){
   selectedLoginAccountType=type;
   document.querySelectorAll('[data-login-account-type]').forEach(card=>{
@@ -8488,10 +8444,11 @@ function continueAccountChoice(){
 }
 
 function showAuthPanel(panel){
+if(panel==='accountChoice')panel='signup';
 if(panel==='login'){
-  selectedLoginAccountType='';
+  selectedLoginAccountType='teacher';
   document.querySelectorAll('[data-login-account-type]').forEach(card=>{card.classList.remove('selected');card.setAttribute('aria-pressed','false');});
-  const loginButton=document.getElementById('loginBtn'); if(loginButton) loginButton.disabled=true;
+  const loginButton=document.getElementById('loginBtn'); if(loginButton) loginButton.disabled=false;
   const notice=document.getElementById('loginAccountTypeNotice'); if(notice) notice.textContent='Please choose Teacher Login or Student Login.';
 }
 document.getElementById('loginPanel')
@@ -8599,8 +8556,7 @@ button.setAttribute(
 async function loginTeacher(){
   const email=document.getElementById('loginEmail').value.trim();
   const password=document.getElementById('loginPassword').value;
-  if(!selectedLoginAccountType) return showAuthMessage('Please choose Teacher Login or Student Login first.');
-  if(!email) return showAuthMessage('Please enter your email.');
+    if(!email) return showAuthMessage('Please enter your email.');
   if(!password) return showAuthMessage('Please enter your password.');
 
   setAuthBusy('loginBtn',true,'Login');
@@ -8615,23 +8571,15 @@ async function loginTeacher(){
     if(!user.email_confirmed_at && !user.confirmed_at){
       await supabaseClient.auth.signOut();
       pendingVerificationEmail=email;
-      const verifyText=document.getElementById('verifyEmailText');
-      if(verifyText) verifyText.textContent=email;
-      showAuthPanel('verify');
-      showAuthMessage('Please confirm your email using the link sent to your Gmail before logging in. You can resend the confirmation email below.');
+      showAuthPanel('login');
+      showAuthMessage('Please open the email confirmation link sent to your Gmail, then log in again.');
       return;
     }
 
     const actualType=String(user.app_metadata?.account_type||user.user_metadata?.account_type||'').toLowerCase();
-    const isStudent=actualType==='student';
-    if(selectedLoginAccountType==='student' && !isStudent){
+    if(actualType==='student'){
       await supabaseClient.auth.signOut();
-      showAuthMessage('This email is not registered as a Student account. Please choose Teacher Login.');
-      return;
-    }
-    if(selectedLoginAccountType==='teacher' && isStudent){
-      await supabaseClient.auth.signOut();
-      showAuthMessage('This email is registered as a Student account. Please choose Student Login.');
+      showAuthMessage('Student Portal access is currently paused. Please use a Teacher account.');
       return;
     }
     // Existing teacher accounts without account_type remain compatible.
@@ -8639,10 +8587,8 @@ async function loginTeacher(){
     const msg=String(error?.message||'Login failed.');
     if(/email not confirmed|email_not_confirmed/i.test(msg)){
       pendingVerificationEmail=email;
-      const verifyText=document.getElementById('verifyEmailText');
-      if(verifyText) verifyText.textContent=email;
-      showAuthPanel('verify');
-      showAuthMessage('Your email is not confirmed yet. Open the confirmation link in Gmail before logging in.');
+      showAuthPanel('login');
+      showAuthMessage('Your email is not confirmed yet. Open the confirmation link sent to your Gmail, then log in again.');
     }else{
       showAuthMessage(msg);
     }
@@ -8656,233 +8602,100 @@ async function loginTeacher(){
 ========================================================= */
 
 async function createTeacherAccount(){
-
-const name=
-document.getElementById('signupName')
-.value.trim();
-
-const email=
-document.getElementById('signupEmail')
-.value.trim();
-
-const password=
-document.getElementById('signupPassword')
-.value;
-
-const confirm=
-document.getElementById('signupConfirm')
-.value;
-
-if(!name)
-return showAuthMessage(
-'Please enter your teacher name.'
-);
-
-if(!email)
-return showAuthMessage(
-'Please enter your email.'
-);
-
-if(password.length<6)
-return showAuthMessage(
-'Password must be at least 6 characters.'
-);
-
-if(password!==confirm)
-return showAuthMessage(
-'Passwords do not match.'
-);
-
-setAuthBusy(
-'signupBtn',
-true,
-'Create Account'
-);
-
-const {data,error}=
-await supabaseClient.auth.signUp({
-
-email,
-
-password,
-
-options:{
-
-data:{
-full_name:name,
-account_type:'teacher'
-},
-
-emailRedirectTo:
-SUPABASE_REDIRECT_URL
-
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  const confirm=document.getElementById('signupConfirm').value;
+  if(!name) return showAuthMessage('Please enter your teacher name.');
+  if(!email) return showAuthMessage('Please enter your email.');
+  if(password.length<6) return showAuthMessage('Password must be at least 6 characters.');
+  if(password!==confirm) return showAuthMessage('Passwords do not match.');
+  setAuthBusy('signupBtn',true,'Create Account');
+  try{
+    const {data,error}=await supabaseClient.auth.signUp({
+      email,password,
+      options:{
+        data:{full_name:name,account_type:'teacher'},
+        emailRedirectTo:SUPABASE_REDIRECT_URL
+      }
+    });
+    if(error) throw error;
+    if(data?.session) await supabaseClient.auth.signOut();
+    pendingVerificationEmail=email;
+    showAuthPanel('login');
+    showAuthMessage('Teacher account created. Please open the confirmation link sent to your email, then return here and log in.',true);
+  }catch(error){ showAuthMessage(error?.message||'Unable to create teacher account.'); }
+  finally{ setAuthBusy('signupBtn',false,'Create Account'); }
 }
-
-});
-
-if(error){
-
-showAuthMessage(error.message);
-
-setAuthBusy(
-'signupBtn',
-false,
-'Create Account'
-);
-
-return;
-
-}
-
-if(data.session){
-  await supabaseClient.auth.signOut();
-  pendingVerificationEmail=email;
-  document.getElementById('verifyEmailText').textContent=email;
-  showAuthPanel('verify');
-  showAuthMessage('Your account was created. Please confirm your email through the Gmail link before logging in.',true);
-
-}else{
-
-pendingVerificationEmail=email;
-
-document.getElementById(
-'verifyEmailText'
-).textContent=email;
-
-showAuthPanel('verify');
-
-showAuthMessage(
-'A confirmation email has been sent to your email address.',
-true
-);
-
-}
-
-setAuthBusy(
-'signupBtn',
-false,
-'Create Account'
-);
-
-}
-
 
 /* =========================================================
-   CREATE STUDENT ACCOUNT (EMAIL CONFIRMATION REQUIRED)
+   CREATE STUDENT ACCOUNT (6-DIGIT EMAIL OTP)
 ========================================================= */
-
 async function createStudentAccount(){
   const fullName=document.getElementById('studentSignupFullName').value.trim();
   const nickname=document.getElementById('studentSignupNickname').value.trim();
   const email=document.getElementById('studentSignupEmail').value.trim();
   const password=document.getElementById('studentSignupPassword').value;
   const confirm=document.getElementById('studentSignupConfirm').value;
-
   if(!fullName) return showAuthMessage('Please enter your full name.');
   if(!nickname) return showAuthMessage('Please enter your nickname.');
   if(!email) return showAuthMessage('Please enter your email address.');
   if(password.length<6) return showAuthMessage('Password must be at least 6 characters.');
   if(password!==confirm) return showAuthMessage('Passwords do not match.');
-
   setAuthBusy('studentSignupBtn',true,'Create Student Account');
   try{
     const {data,error}=await supabaseClient.auth.signUp({
-      email,
-      password,
-      options:{
-        data:{
-          full_name:fullName,
-          nickname,
-          account_type:'student'
-        },
-        emailRedirectTo:SUPABASE_REDIRECT_URL
-      }
+      email,password,
+      options:{data:{full_name:fullName,nickname,account_type:'student'}}
     });
     if(error) throw error;
-
-    if(data?.session){
-      pendingVerificationEmail=email;
-      document.getElementById('verifyEmailText').textContent=email;
-      await supabaseClient.auth.signOut();
-      showAuthPanel('verify');
-      showAuthMessage('Your account was created. Check Gmail and confirm your email before logging in.',true);
-    }else{
-      pendingVerificationEmail=email;
-      document.getElementById('verifyEmailText').textContent=email;
-      showAuthPanel('verify');
-      showAuthMessage('A confirmation link has been sent to your email. Open Gmail and click Confirm email address, then return here to log in.',true);
-    }
+    if(data?.session) await supabaseClient.auth.signOut();
+    pendingVerificationEmail=email;
+    document.getElementById('verifyEmailText').textContent=email;
+    document.getElementById('emailOtpInput').value='';
+    showAuthPanel('verify');
+    showAuthMessage('A 6-digit verification code has been sent to your email. Enter it here to activate your account.',true);
   }catch(error){
     console.error('Student account creation failed:',error);
-    showAuthMessage(error?.message || 'Unable to create student account. Please try again.');
-  }finally{
-    setAuthBusy('studentSignupBtn',false,'Create Student Account');
-  }
+    showAuthMessage(error?.message||'Unable to create student account. Please try again.');
+  }finally{ setAuthBusy('studentSignupBtn',false,'Create Student Account'); }
 }
 
+/* =========================================================
+   VERIFY SIGNUP EMAIL USING 6-DIGIT OTP
+========================================================= */
+async function verifySignupOtp(){
+  const email=pendingVerificationEmail;
+  const token=document.getElementById('emailOtpInput').value.trim();
+  if(!email) return showAuthMessage('Please register again so we know which email to verify.');
+  if(!/^\d{6}$/.test(token)) return showAuthMessage('Please enter the complete 6-digit code.');
+  setAuthBusy('verifyOtpBtn',true,'Verifying...');
+  try{
+    const {data,error}=await supabaseClient.auth.verifyOtp({email,token,type:'signup'});
+    if(error) throw error;
+    if(data?.session) await supabaseClient.auth.signOut();
+    pendingVerificationEmail='';
+    showAuthPanel('login');
+    showAuthMessage('Email verified successfully. You can now log in.',true);
+  }catch(error){ showAuthMessage(error?.message||'The verification code is invalid or expired.'); }
+  finally{ setAuthBusy('verifyOtpBtn',false,'Verify Email'); }
+}
 
 /* =========================================================
    RESEND CONFIRMATION EMAIL
 ========================================================= */
 
 async function resendVerificationEmail(){
-
-const email=
-pendingVerificationEmail ||
-document.getElementById('signupEmail')
-.value.trim();
-
-if(!email){
-
-return showAuthMessage(
-'No verification email is available. Please create the account again.'
-);
-
+  const email=pendingVerificationEmail || document.getElementById('signupEmail').value.trim() || document.getElementById('studentSignupEmail').value.trim();
+  if(!email) return showAuthMessage('No email address is available. Please create the account again.');
+  setAuthBusy('resendBtn',true,'Resending Code');
+  try{
+    const {error}=await supabaseClient.auth.resend({type:'signup',email});
+    if(error) throw error;
+    showAuthMessage('A new 6-digit verification code has been sent. Check your inbox and spam folder.',true);
+  }catch(error){showAuthMessage(error?.message||'Unable to resend the verification code.');}
+  finally{setAuthBusy('resendBtn',false,'Resend Code');}
 }
-
-setAuthBusy(
-'resendBtn',
-true,
-'Resend Confirmation Email'
-);
-
-const {error}=
-await supabaseClient.auth.resend({
-
-type:'signup',
-
-email,
-
-options:{
-
-emailRedirectTo:
-SUPABASE_REDIRECT_URL
-
-}
-
-});
-
-if(error){
-
-showAuthMessage(error.message);
-
-}else{
-
-showAuthMessage(
-'A new confirmation email has been sent. Please check your inbox.',
-true
-);
-
-}
-
-setAuthBusy(
-'resendBtn',
-false,
-'Resend Confirmation Email'
-);
-
-}
-
 
 /* =========================================================
    FORGOT PASSWORD
@@ -10026,12 +9839,12 @@ function showStudentPortalSection(section,button){
   document.querySelectorAll('#studentPortalPage .student-portal-subnav button').forEach(b=>b.classList.toggle('active',b.dataset.studentSection===section));
   const sections={
     overview:`<h3 class="student-portal-section-title">Your Learning Overview</h3><div class="student-portal-feature-grid"><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('schedule')"><span class="student-portal-feature-icon">📅</span><span><strong>My Class Schedule</strong><span>See your upcoming and past classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('lessons')"><span class="student-portal-feature-icon">📚</span><span><strong>My Lessons</strong><span>Open lesson files shared by your teacher.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('evaluations')"><span class="student-portal-feature-icon">📝</span><span><strong>My Evaluations</strong><span>Review feedback from your classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('records')"><span class="student-portal-feature-icon">📊</span><span><strong>My Class Records</strong><span>Review attendance and completed classes.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('teacher')"><span class="student-portal-feature-icon">👩‍🏫</span><span><strong>My Teacher</strong><span>View your assigned teacher and package.</span></span></button><button class="student-portal-feature" type="button" onclick="showStudentPortalSection('account')"><span class="student-portal-feature-icon">👤</span><span><strong>My Account</strong><span>Check your student account information.</span></span></button></div>`,
-    invitation:`<h3 class="student-portal-section-title">Package Invitation</h3><div class="student-portal-panel"><div class="student-portal-empty">You have not been assigned a learning package yet. Once your teacher sends you a package invitation, it will appear here for you to review and accept. Your package, schedule, and lessons will appear after acceptance.</div></div>`,
-    schedule:`<h3 class="student-portal-section-title">My Class Schedule</h3><div class="student-portal-empty">Your class schedule will appear here after you accept a package invitation from your teacher.</div>`,
+    invitation:`<h3 class="student-portal-section-title">Package Activation</h3><div class="student-portal-panel"><div class="student-portal-empty">You have not been assigned a learning package yet. Once your teacher sends you a package activation, it will appear here for you to review and accept. Your package, schedule, and lessons will appear after acceptance.</div></div>`,
+    schedule:`<h3 class="student-portal-section-title">My Class Schedule</h3><div class="student-portal-empty">Your class schedule will appear here after you accept a package activation from your teacher.</div>`,
     lessons:`<h3 class="student-portal-section-title">My Lessons</h3><div class="student-portal-empty">PDF lessons and learning materials shared by your teacher will appear here after your package is linked.</div>`,
     evaluations:`<h3 class="student-portal-section-title">My Evaluations</h3><div class="student-portal-empty">Your teacher's class evaluations and feedback will appear here.</div>`,
     records:`<h3 class="student-portal-section-title">My Class Records</h3><div class="student-portal-empty">Your attendance and completed class history will appear here.</div>`,
-    teacher:`<h3 class="student-portal-section-title">My Teacher</h3><div class="student-portal-empty">Your assigned teacher information will appear here after your package invitation is accepted.</div>`,
+    teacher:`<h3 class="student-portal-section-title">My Teacher</h3><div class="student-portal-empty">Your assigned teacher information will appear here after your package activation is accepted.</div>`,
     account:`<h3 class="student-portal-section-title">My Account</h3><div class="student-portal-panel"><p><strong>Nickname:</strong> ${escapeStudentPortalText(currentUser?.user_metadata?.nickname||'—')}</p><p><strong>Full Name:</strong> ${escapeStudentPortalText(currentUser?.user_metadata?.full_name||'—')}</p><p><strong>Email:</strong> ${escapeStudentPortalText(currentUser?.email||'—')}</p></div>`
   };
   content.innerHTML=sections[section]||sections.overview;
@@ -10048,12 +9861,18 @@ async function studentPortalLogout(){
 }
 
 function handleSignedIn(user){
-  // Student accounts are routed to their own portal and never initialize teacher data.
+  // Student Portal is paused in this Teacher-only release. Block restored student sessions too.
   if(isStudentPortalUser(user)){
-    currentUser=user;
-    evaluationMemoryCache=null;
-    renderStudentPortal(user);
-    return Promise.resolve();
+    currentUser=null;
+    document.body.classList.remove('student-portal-mode');
+    const studentPage=document.getElementById('studentPortalPage');
+    if(studentPage)studentPage.style.display='none';
+    const appShell=document.getElementById('appShell');
+    if(appShell)appShell.classList.add('hidden');
+    return supabaseClient.auth.signOut().finally(()=>{
+      showAuthPanel('login');
+      showAuthMessage('Student Portal access is currently paused. Please sign in with a Teacher account.');
+    });
   }
   document.body.classList.remove('student-portal-mode');
   const studentPage=document.getElementById('studentPortalPage');
@@ -14363,7 +14182,7 @@ function saAppointmentLessonState(item){
   const start=parseAppointmentDate(item.date,item.time);
   if(!start||isNaN(start.getTime()))return {label:'Uploaded File – Upcoming',kind:'upcoming'};
   const now=Date.now(),startMs=start.getTime(),endMs=startMs+durationToMinutes(item.duration||'30 Minutes')*60000;
-  if(now>=startMs-10*60000 && now<=endMs)return {label:'Uploaded File – ENTER',kind:'enter'};
+  if(now>=startMs-10*60000 && now<=endMs)return {label:'Uploaded File – Ready',kind:'ready'};
   if(now>endMs)return {label:'Uploaded File – Completed',kind:'completed'};
   return {label:'Uploaded File – Upcoming',kind:'upcoming'};
 }
@@ -14373,11 +14192,10 @@ function saAppointmentLessonCell(item){
   const file=item.lessonFile;
   const open=file?.signedUrl?`<a class="sa-btn lesson" href="${saEscape(file.signedUrl)}" target="_blank" rel="noopener noreferrer">Open PDF</a>`:'';
   const upload=`<label class="sa-btn lesson sa-pdf-upload-label">${file?.storage_path?'Replace PDF':'Upload PDF'}<input type="file" accept="application/pdf,.pdf" style="display:none" onchange="uploadAppointmentLessonPDF('${saEscape(String(item.id))}',this.files&&this.files[0],this)"></label>`;
-  return `<div class="sa-pdf-cell"><span class="sa-status ${state.kind==='enter'?'done':state.kind==='missing'?'wait':''}">${state.label}</span><div class="sa-row-actions">${open}${upload}</div>${file?.file_name?`<small class="sa-muted">${saEscape(file.file_name)}</small>`:''}</div>`;
+  return `<div class="sa-pdf-cell"><span class="sa-status ${state.kind==='ready'?'done':state.kind==='missing'?'wait':''}">${state.label}</span><div class="sa-row-actions">${open}${upload}</div>${file?.file_name?`<small class="sa-muted">${saEscape(file.file_name)}</small>`:''}</div>`;
 }
 function saAppointmentClassroomCell(item){
-  if(String(item.status||'').toLowerCase()==='rescheduled')return '<span class="sa-muted">Not applicable</span>';
-  return `<button type="button" class="sa-btn sa-enter-classroom" onclick="openEsKoolVirtualClassroom('${saEscape(String(item.id))}')">ENTER</button>`;
+  return '<span class="sa-muted">—</span>';
 }
 function openEsKoolVirtualClassroom(appointmentId){
   const item=getAppointments().find(a=>String(a.id)===String(appointmentId));
@@ -15441,7 +15259,7 @@ if(activeBox){
       const time=saAppointmentTimeRange(item,item.date, item.time);
       const lessonState=saAppointmentLessonState(item);
       const pdfOpen=item.lessonFile?.signedUrl?`<a class="sa-btn lesson" style="display:inline-block;margin-top:5px" href="${escapeHtml(item.lessonFile.signedUrl)}" target="_blank" rel="noopener noreferrer">Open PDF</a>`:'';
-      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')} · ${escapeHtml(lessonState.label)}</div>${pdfOpen}</div><div class="dashboard-todo-card-actions"><div class="dashboard-todo-card-time">${escapeHtml(time)}</div><button type="button" class="sa-btn sa-enter-classroom dashboard-todo-enter" onclick="openEsKoolVirtualClassroom('${escapeHtml(String(item.id))}')">ENTER CLASSROOM</button></div></div>`;
+      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}</div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')} · ${escapeHtml(lessonState.label)}</div>${pdfOpen}</div><div class="dashboard-todo-card-actions"><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div></div>`;
     }).join('')+(activeToday.length>2?`<button type="button" class="dashboard-todo-showall" onclick="toggleDashboardAllClasses()">${dashboardShowAllClasses?'▲ Show Less':`▼ Show All Classes (${activeToday.length-2} more)`}</button>`:'');
   }
 }
@@ -15455,7 +15273,7 @@ if(completedBox){
       const studentName=getAppointmentDisplayName(item);
       const type=item.type||item.title||item.subject||'Regular Class';
       const time=x.date.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-actions"><div class="dashboard-todo-card-time">${escapeHtml(time)}</div><button type="button" class="sa-btn sa-enter-classroom dashboard-todo-enter" onclick="openEsKoolVirtualClassroom('${escapeHtml(String(item.id))}')">ENTER CLASSROOM</button></div></div>`;
+      return `<div class="dashboard-todo-card"><div class="dashboard-todo-card-main"><div class="dashboard-todo-card-name">${escapeHtml(studentName)}<span class="dashboard-todo-completed-badge">COMPLETED</span></div><div class="dashboard-todo-card-meta">${escapeHtml(type)} · ${escapeHtml(item.duration||'30 Minutes')}</div></div><div class="dashboard-todo-card-actions"><div class="dashboard-todo-card-time">${escapeHtml(time)}</div></div></div>`;
     }).join('')}${completedToday.length?`<button type="button" class="dashboard-todo-showall" onclick="toggleDashboardAllCompleted()">${dashboardShowAllCompleted?'▲ Hide Completed Classes':`▼ Show All Completed Classes Today (${completedToday.length})`}</button>`:''}</div>`;
   }
 }
@@ -16532,6 +16350,9 @@ function populateStudentSelect(selectedId){
 }
 
 function resetEvaluationDraftForStudentSwitch(){
+  evaluationAiManualEditStarted=false;
+  const aiBtn=document.getElementById('generateEvaluationAiBtn');if(aiBtn)aiBtn.disabled=false;
+  setEvaluationAiStatus('');
   /* Clear unsaved inputs whenever the teacher switches to another class/student.
      Saved evaluation records are not touched. */
   const ids=[
@@ -16635,6 +16456,64 @@ function selectStudent(){
   }
 }
 
+
+/* =========================================================
+   PDF AI EVALUATION SUGGESTIONS
+========================================================= */
+let evaluationAiManualEditStarted=false;
+const evaluationAiFieldIds=[
+  'learnedVocabulary','learnedSentences','learnedQuestionsAnswers',
+  'practiceVocabulary','practiceSentences','practiceQuestionsAnswers'
+];
+function setEvaluationAiStatus(message,isError=false){
+  const el=document.getElementById('evaluationAiStatus');
+  if(el){el.textContent=message;el.style.color=isError?'#b42318':'';}
+}
+function markEvaluationAiManualEdit(){
+  evaluationAiManualEditStarted=true;
+  const btn=document.getElementById('generateEvaluationAiBtn');
+  if(btn)btn.disabled=true;
+  setEvaluationAiStatus('Manual editing has started. AI Auto-Fill is locked to protect your changes.');
+}
+evaluationAiFieldIds.forEach(id=>{
+  const field=document.getElementById(id);
+  if(field)field.addEventListener('input',markEvaluationAiManualEdit);
+});
+async function generateAIEvaluationSuggestions(){
+  const btn=document.getElementById('generateEvaluationAiBtn');
+  if(!currentUser||!supabaseClient){setEvaluationAiStatus('Please sign in again before using PDF AI.',true);return;}
+  if(!currentEvaluationAppointmentId){setEvaluationAiStatus('Open an evaluation from a completed class with an uploaded PDF lesson first.',true);return;}
+  if(evaluationAiManualEditStarted){setEvaluationAiStatus('AI Auto-Fill is locked because manual editing has started. Your changes are protected.',true);return;}
+  if(btn){btn.disabled=true;btn.textContent='Reading PDF and preparing suggestions...';}
+  setEvaluationAiStatus('AI is reading the uploaded lesson PDF. Please wait.');
+  try{
+    const {data,error}=await supabaseClient.functions.invoke('generate-evaluation-from-pdf',{
+      body:{appointment_id:String(currentEvaluationAppointmentId)}
+    });
+    if(error)throw error;
+    const suggestions=data?.suggestions||data;
+    const keys={
+      learnedVocabulary:'learnedVocabulary',learnedSentences:'learnedSentences',
+      learnedQuestionsAnswers:'learnedQuestionsAnswers',practiceVocabulary:'practiceVocabulary',
+      practiceSentences:'practiceSentences',practiceQuestionsAnswers:'practiceQuestionsAnswers'
+    };
+    for(const [key,id] of Object.entries(keys)){
+      const field=document.getElementById(id);
+      if(field && typeof suggestions?.[key]==='string')field.value=suggestions[key];
+    }
+    setEvaluationAiStatus('AI suggestions are ready. Review and edit the six fields before clicking Save Evaluation.');
+    evaluationAiManualEditStarted=false;
+    evaluationAiFieldIds.forEach(id=>{
+      const field=document.getElementById(id);
+      if(field)field.addEventListener('input',markEvaluationAiManualEdit,{once:true});
+    });
+  }catch(error){
+    console.error('PDF AI evaluation failed:',error);
+    setEvaluationAiStatus(error?.message||'Unable to generate suggestions. Confirm that the Supabase Edge Function and OpenAI secret are configured.',true);
+  }finally{
+    if(btn){btn.disabled=evaluationAiManualEditStarted;btn.textContent='Generate AI Evaluation Suggestions';}
+  }
+}
 
 /* =========================================================
    SECURITY / HTML HELPERS
