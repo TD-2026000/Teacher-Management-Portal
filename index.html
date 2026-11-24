@@ -3320,7 +3320,28 @@ a,
 .sa-row-more-menu button.reschedule-option{color:#6d28d9}
 .sa-row-more-menu button.delete-option{color:#b91c1c}.sa-row-more-menu button.delete-option:hover{background:#fef2f2;color:#991b1b}
 
-.sa-status.rescheduled{background:#454b54;color:#fff}.sa-pdf-cell{display:flex;flex-direction:column;gap:6px;min-width:150px}.sa-pdf-upload-label{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.sa-pdf-cell small{overflow-wrap:anywhere}.sa-table tr.sa-rescheduled-row td{background:#e5e7eb!important;color:#374151!important}.sa-rescheduled-note{display:block;margin-top:4px;font-size:11px;font-weight:800;color:#374151}.student-calendar-overlay{position:fixed;inset:0;z-index:100100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}.student-calendar-modal{width:min(1100px,96vw);height:min(88vh,900px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.32);padding:18px}.student-calendar-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;padding:4px 0 12px;z-index:2;border-bottom:1px solid #d8eeee;margin-bottom:12px}.student-calendar-modal-head h3{margin:0;color:#00aeb8}.student-calendar-modal-close{border:0;border-radius:8px;padding:8px 12px;background:#e7fbfb;color:#006f75;font-weight:800;cursor:pointer}.student-calendar-modal .appointment-day-detail-footer{display:none!important}.student-calendar-modal .appointment-day-slot-actions,.student-calendar-modal .appointment-slot-actions,.student-calendar-modal button.add-class{display:none!important}.appointment-toolbar-right{display:flex;align-items:flex-end;justify-content:flex-end}.appointment-calendar-open{border:0;border-radius:8px;padding:10px 15px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer;white-space:nowrap}@media(max-width:700px){.student-calendar-modal{width:98vw;height:92vh;padding:12px}.appointment-toolbar{gap:10px;flex-wrap:wrap}.appointment-toolbar-right{width:100%;justify-content:flex-end}}
+.sa-status.rescheduled{background:#454b54;color:#fff}.sa-pdf-cell{display:flex;flex-direction:column;gap:6px;min-width:150px}.sa-pdf-upload-label{display:inline-flex;align-items:center;justify-content:center;cursor:pointer}.sa-pdf-cell small{overflow-wrap:anywhere}.sa-table tr.sa-rescheduled-row td{background:#e5e7eb!important;color:#374151!important}.sa-rescheduled-note{display:block;margin-top:4px;font-size:11px;font-weight:800;color:#374151}/* Weekly appointment calendar: Monday-first, half-hour slots */
+.appointment-week-calendar{border:1px solid #cfe5e8;border-radius:12px;background:var(--card-bg,#fff);overflow:hidden}
+.appt-week-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px;border-bottom:1px solid #d9e9eb}
+.appt-week-nav,.appt-week-options{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.appt-week-nav button,.appt-week-options button{border:1px solid #cbdde0;border-radius:7px;background:#f7fcfc;color:#24515a;padding:8px 11px;font-weight:800;cursor:pointer}
+.appt-week-title{font-weight:900;color:#007f89}
+.appt-week-options label{font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.appt-week-options input[type=time]{padding:7px;border:1px solid #cbdde0;border-radius:7px;background:#fff;color:#263b43}
+.appt-week-scroll{overflow:auto;max-height:72vh}
+.appt-week-grid{display:grid;grid-template-columns:82px repeat(7,minmax(135px,1fr));min-width:1030px}
+.appt-week-day-head{position:sticky;top:0;z-index:3;background:#eafafb;border-bottom:1px solid #cfe5e8;border-right:1px solid #dcebed;padding:10px 5px;text-align:center;font-size:12px;font-weight:900;color:#164b55}
+.appt-week-day-head small{display:block;font-size:11px;font-weight:700;margin-top:3px;color:#55747b}
+.appt-week-time-head{position:sticky;top:0;left:0;z-index:4;background:#f4f8f9;border-bottom:1px solid #dcebed}
+.appt-week-time{position:sticky;left:0;z-index:1;background:#f7fbfc;border-right:1px solid #dcebed;border-bottom:1px solid #e7eff0;padding:9px 6px;text-align:center;font-size:11px;font-weight:800;color:#526c73;min-height:48px;box-sizing:border-box}
+.appt-week-cell{border-right:1px solid #e5eef0;border-bottom:1px solid #e5eef0;min-height:48px;padding:3px;box-sizing:border-box;cursor:pointer;background:#fff}
+.appt-week-cell:hover{background:#f3fcfc}
+.appt-week-booking{display:block;width:100%;box-sizing:border-box;border:1px solid #b9e3e6;border-left:3px solid #00aeb8;border-radius:6px;background:#eafafb;color:#174c55;padding:5px;margin:2px 0;text-align:left;font-size:10px;line-height:1.3;cursor:pointer;overflow-wrap:anywhere}
+.appt-week-booking.completed{border-left-color:#16a36a;background:#eaf8f0}.appt-week-booking strong{display:block;font-size:11px}
+.appt-week-add{display:block;width:100%;height:100%;min-height:40px;border:0;background:transparent;color:#9ab0b5;font-size:14px;cursor:pointer}
+.appt-week-add:hover{color:#007f89}
+@media(max-width:700px){.appt-week-toolbar{align-items:flex-start}.appt-week-options{width:100%}.appt-week-options input[type=time]{max-width:112px}}
+.student-calendar-overlay{position:fixed;inset:0;z-index:100100;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px}.student-calendar-modal{width:min(1100px,96vw);height:min(88vh,900px);overflow:auto;background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.32);padding:18px}.student-calendar-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-18px;background:#fff;padding:4px 0 12px;z-index:2;border-bottom:1px solid #d8eeee;margin-bottom:12px}.student-calendar-modal-head h3{margin:0;color:#00aeb8}.student-calendar-modal-close{border:0;border-radius:8px;padding:8px 12px;background:#e7fbfb;color:#006f75;font-weight:800;cursor:pointer}.student-calendar-modal .appointment-day-detail-footer{display:none!important}.student-calendar-modal .appointment-day-slot-actions,.student-calendar-modal .appointment-slot-actions,.student-calendar-modal button.add-class{display:none!important}.appointment-toolbar-right{display:flex;align-items:flex-end;justify-content:flex-end}.appointment-calendar-open{border:0;border-radius:8px;padding:10px 15px;background:#00cfd2;color:#00383a;font-weight:800;cursor:pointer;white-space:nowrap}@media(max-width:700px){.student-calendar-modal{width:98vw;height:92vh;padding:12px}.appointment-toolbar{gap:10px;flex-wrap:wrap}.appointment-toolbar-right{width:100%;justify-content:flex-end}}
 .sa-reschedule-overlay{position:fixed;inset:0;z-index:100001;background:rgba(15,25,35,.48);display:flex;align-items:center;justify-content:center;padding:16px}.sa-reschedule-modal{width:min(440px,94vw);background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 65px rgba(0,0,0,.3);text-align:center}.sa-reschedule-modal h3{margin:0 0 10px;color:#5b21b6}.sa-reschedule-modal p{font-size:13px;line-height:1.5;color:#475569}.sa-reschedule-actions{display:flex;justify-content:center;gap:10px;margin-top:16px}.sa-reschedule-actions button{border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.sa-reschedule-cancel{background:#eef2f7;color:#334155}.sa-reschedule-confirm{background:#7c3aed;color:#fff}
 .sa-section-title{font-size:13px;font-weight:900;color:#007f89;padding:3px 0 9px}.sa-section{margin-bottom:14px}.sa-muted{font-size:11px;color:#687782;line-height:1.5}.sa-profile-top{display:flex;gap:11px;align-items:center;padding:12px;background:#f1fcfc;border-radius:9px;margin-bottom:10px}.sa-profile-avatar{width:60px;height:60px;border-radius:50%;border:2px solid #00cdd2;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900;color:#00a1a7;background:#fff;flex-shrink:0}.sa-profile-name{font-size:14px;font-weight:900;overflow-wrap:anywhere}.sa-info-list{list-style:none;padding:0;margin:0}.sa-info-list li{padding:7px 2px;border-bottom:1px solid #e6f5f5;font-size:11px;line-height:1.45}.sa-summary-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}.sa-stat{border:1px solid #c8f1f3;border-radius:8px;text-align:center;padding:10px 3px}.sa-stat b{font-size:19px;display:block;color:#07536c}.sa-stat span{font-size:9px;color:#647b8c}.sa-empty{padding:22px 12px;text-align:center;color:#718096;font-size:12px}
 .student-appointment-calendar-legacy>summary{cursor:pointer;font-weight:800;color:#007f89;padding:10px;border:1px solid #bdebef;border-radius:8px;background:#f4ffff}
@@ -5976,11 +5997,9 @@ onclick="if(event.target===this) closeAddStudent()"
     </div>
     <button type="button" class="primary" style="height:42px;white-space:nowrap" onclick="openAvailableSchedulePreview()">▦ Available Schedule</button>
   </div>
-  <div class="appointment-toolbar-right">
-    <button type="button" class="primary appointment-calendar-open" onclick="openStudentAppointmentCalendar()" aria-label="Open calendar">📅 Calendar</button>
-  </div>
 </div>
 
+<div id="appointmentCalendar" class="appointment-week-calendar" style="margin-top:14px"></div>
 <div id="studentAppointmentDashboard" class="student-appointment-layout" style="margin-top:14px"></div>
 
 
@@ -14034,13 +14053,58 @@ selectedAppointmentDate=getLocalDateString(now);
 renderAppointments();
 }
 
+let appointmentWeekShowAll=false;
+let appointmentWeekStartTime='06:00';
+let appointmentWeekEndTime='17:00';
+function appointmentWeekStart(dateValue){
+  const d=new Date(`${dateValue||getLocalDateString(new Date())}T12:00:00`);
+  const offset=(d.getDay()+6)%7;
+  d.setDate(d.getDate()-offset);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function moveAppointmentWeek(offset){
+  const base=appointmentWeekStart(selectedAppointmentDate||getLocalDateString(new Date()));
+  base.setDate(base.getDate()+offset*7);
+  selectedAppointmentDate=getLocalDateString(base);
+  renderAppointments();
+}
+function setAppointmentWeekToday(){selectedAppointmentDate=getLocalDateString(new Date());renderAppointments();}
+function updateAppointmentWeekRange(){
+  const start=document.getElementById('appointmentWeekStart')?.value||appointmentWeekStartTime;
+  const end=document.getElementById('appointmentWeekEnd')?.value||appointmentWeekEndTime;
+  if(start>end){alert('End time must be later than or equal to start time.');return;}
+  appointmentWeekStartTime=start;appointmentWeekEndTime=end;appointmentWeekShowAll=false;renderAppointments();
+}
+function toggleAppointmentWeekAll(show){appointmentWeekShowAll=!!show;renderAppointments();}
+function renderAppointmentWeek(items){
+  const weekStart=appointmentWeekStart(selectedAppointmentDate||getLocalDateString(new Date()));
+  const weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
+  const title=`${weekStart.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} – ${weekEnd.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+  const startMinutes=appointmentWeekShowAll?0:(Number(appointmentWeekStartTime.slice(0,2))*60+Number(appointmentWeekStartTime.slice(3,5)));
+  const endMinutes=appointmentWeekShowAll?23*60+30:(Number(appointmentWeekEndTime.slice(0,2))*60+Number(appointmentWeekEndTime.slice(3,5)));
+  const firstSlot=Math.ceil(startMinutes/30)*30;
+  const lastSlot=Math.floor(endMinutes/30)*30;
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(d.getDate()+i);return d;});
+  let grid='<div class="appt-week-grid"><div class="appt-week-day-head appt-week-time-head">TIME</div>';
+  grid+=days.map(d=>`<div class="appt-week-day-head">${d.toLocaleDateString(undefined,{weekday:'long'})}<small>${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</small></div>`).join('');
+  for(let mins=firstSlot;mins<=lastSlot;mins+=30){
+    const time=`${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}`;
+    grid+=`<div class="appt-week-time">${escapeHtml(formatAppointmentTime(time))}</div>`;
+    for(const d of days){
+      const date=getLocalDateString(d);
+      const bookings=items.filter(a=>String(a.date||'')===date&&String(a.time||'').slice(0,5)===time).sort((a,b)=>String(a.studentName||'').localeCompare(String(b.studentName||'')));
+      const content=bookings.length?bookings.map(a=>`<button type="button" class="appt-week-booking ${String(a.status||'').toLowerCase()==='completed'?'completed':''}" onclick="event.stopPropagation();viewAppointmentDetails('${escapeAttr(a.id)}')"><strong>${escapeHtml(getAppointmentDisplayName(a))}</strong>${escapeHtml(a.type||'Regular Class')} · ${escapeHtml(a.status||'Scheduled')}</button>`).join(''):`<button type="button" class="appt-week-add" aria-label="Add class ${date} ${time}" title="Add class" onclick="event.stopPropagation();openAppointmentModalForDate('${date}')">＋</button>`;
+      grid+=`<div class="appt-week-cell" data-date="${date}" data-time="${time}" onclick="openAppointmentModalForDate('${date}')">${content}</div>`;
+    }
+  }
+  grid+='</div>';
+  return `<div class="appt-week-toolbar"><div class="appt-week-nav"><button type="button" onclick="moveAppointmentWeek(-1)">‹ Previous Week</button><button type="button" onclick="setAppointmentWeekToday()">Today</button><button type="button" onclick="moveAppointmentWeek(1)">Next Week ›</button><span class="appt-week-title">${title}</span></div><div class="appt-week-options"><label><input type="checkbox" ${appointmentWeekShowAll?'checked':''} onchange="toggleAppointmentWeekAll(this.checked)"> Show All Time Slots</label><label>Start <input id="appointmentWeekStart" type="time" value="${appointmentWeekStartTime}" ${appointmentWeekShowAll?'disabled':''}></label><label>End <input id="appointmentWeekEnd" type="time" value="${appointmentWeekEndTime}" ${appointmentWeekShowAll?'disabled':''}></label><button type="button" onclick="updateAppointmentWeekRange()" ${appointmentWeekShowAll?'disabled':''}>Apply Range</button></div></div><div class="appt-week-scroll">${grid}</div>`;
+}
 function renderAppointments(){
 const container=document.getElementById('appointmentCalendar');
 const items=filteredAppointments();
-if(container){
-  container.innerHTML=renderAppointmentMonth(items)+`<div id="appointmentDayDetail"></div>`;
-  renderAppointmentDayDetail(items);
-}
+if(container)container.innerHTML=renderAppointmentWeek(items);
 if(typeof renderStudentAppointmentDashboard==='function') renderStudentAppointmentDashboard();
 }
 
@@ -14053,11 +14117,11 @@ function saDateLabel(date,time){
 function openStudentAppointmentCalendar(){
   if(document.getElementById('studentAppointmentCalendarModal')) return;
   const overlay=document.createElement('div');overlay.id='studentAppointmentCalendarModal';overlay.className='student-calendar-overlay';
-  overlay.innerHTML=`<section class="student-calendar-modal" role="dialog" aria-modal="true" aria-label="Student appointment calendar"><div class="student-calendar-modal-head"><h3>STUDENT APPOINTMENT CALENDAR</h3><button type="button" class="student-calendar-modal-close" onclick="closeStudentAppointmentCalendar()">Close ✕</button></div><div class="appointment-toolbar" style="margin-bottom:12px"><div id="studentCalendarMonthLabel" style="font-weight:800;color:#007f87"></div><div style="display:flex;gap:8px"><button type="button" class="secondary" onclick="changeAppointmentMonth(-1);renderStudentCalendarModal()">‹ Previous</button><button type="button" class="secondary" onclick="goAppointmentToday();renderStudentCalendarModal()">Today</button><button type="button" class="secondary" onclick="changeAppointmentMonth(1);renderStudentCalendarModal()">Next ›</button></div></div><div id="appointmentCalendar"></div></section>`;
+  overlay.innerHTML=`<section class="student-calendar-modal" role="dialog" aria-modal="true" aria-label="Student appointment calendar"><div class="student-calendar-modal-head"><h3>STUDENT APPOINTMENT CALENDAR</h3><button type="button" class="student-calendar-modal-close" onclick="closeStudentAppointmentCalendar()">Close ✕</button></div><div class="appointment-toolbar" style="margin-bottom:12px"><div id="studentCalendarMonthLabel" style="font-weight:800;color:#007f87"></div><div style="display:flex;gap:8px"><button type="button" class="secondary" onclick="changeAppointmentMonth(-1);renderStudentCalendarModal()">‹ Previous</button><button type="button" class="secondary" onclick="goAppointmentToday();renderStudentCalendarModal()">Today</button><button type="button" class="secondary" onclick="changeAppointmentMonth(1);renderStudentCalendarModal()">Next ›</button></div></div><div id="studentAppointmentCalendarGrid"></div></section>`;
   overlay.addEventListener('click',e=>{if(e.target===overlay)closeStudentAppointmentCalendar()});document.body.appendChild(overlay);renderStudentCalendarModal();
 }
 function renderStudentCalendarModal(){
-  const root=document.getElementById('appointmentCalendar');if(!root)return;
+  const root=document.getElementById('studentAppointmentCalendarGrid');if(!root)return;
   const selectedId=String(window.currentStudentAppointmentBoardId||'');
   const selectedStudent=getStudents().find(st=>String(st.id)===selectedId);
   // Filter all appointment records by the selected student's canonical ID before rendering.
