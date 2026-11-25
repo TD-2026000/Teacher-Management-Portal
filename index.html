@@ -6312,9 +6312,29 @@ Please check the currency and recipient details before confirming.</textarea></d
 <button type="button" class="page-back-btn" onclick="backToDashboard()">← Back to Dashboard</button>
 </div>
 
-<h2 style="margin-top:0">
-Evaluation
-</h2>
+<div class="evaluation-page-heading-row">
+  <h2 style="margin:0">Evaluation</h2>
+  <div class="evaluation-ai-header-card" id="evaluationAiSection">
+    <div class="evaluation-ai-header-title">PDF AI AUTO-FILL</div>
+    <div class="evaluation-ai-header-body">
+      <div id="evaluationAiLessonFileStatus" class="evaluation-ai-file-status">Open a completed class to use its uploaded lesson file.</div>
+      <label class="evaluation-ai-upload-label" for="evaluationAiLessonFileInput">Upload Lesson File for AI Auto-Fill</label>
+      <input id="evaluationAiLessonFileInput" type="file" accept="application/pdf,.pdf" style="display:none" onchange="handleEvaluationAiLessonFileInput(this)">
+      <button type="button" class="primary" id="generateEvaluationAiBtn" onclick="generateAIEvaluationSuggestions()">Generate AI Evaluation Suggestions</button>
+      <div id="evaluationAiStatus" class="small" role="status" aria-live="polite" style="margin-top:6px"></div>
+    </div>
+  </div>
+</div>
+<style>
+.evaluation-page-heading-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 0 16px;}
+.evaluation-ai-header-card{width:min(520px,58%);border:1px solid #00cfd2;border-radius:10px;overflow:hidden;background:#fff;box-sizing:border-box;}
+.evaluation-ai-header-title{background:#00e5e5;color:#000;font-weight:800;text-align:center;padding:9px 12px;}
+.evaluation-ai-header-body{padding:10px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.evaluation-ai-file-status{font-size:12px;color:#333;flex:1 1 100%;}
+.evaluation-ai-upload-label{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border-radius:8px;background:#e8ffff;border:1px solid #00cfd2;color:#000;font-weight:700;cursor:pointer;font-size:12px;}
+.evaluation-ai-header-body button{padding:9px 12px;font-size:12px;}
+@media(max-width:760px){.evaluation-page-heading-row{display:block}.evaluation-ai-header-card{width:100%;margin-top:12px}}
+</style>
 
 <div class="section" style="margin-top:0">
 
@@ -6532,15 +6552,6 @@ class="rating"
   <!-- Legacy fields retained for compatibility with existing comment and evaluation logic. -->
   <textarea id="vocabulary" hidden></textarea>
   <textarea id="improvement" hidden></textarea>
-</div>
-
-<div class="section" id="evaluationAiSection">
-  <div class="section-title">PDF AI AUTO-FILL</div>
-  <div class="section-body">
-    <p class="small" style="margin-top:0">Generate draft suggestions from the lesson PDF uploaded for this class. Review and edit every field before saving.</p>
-    <button type="button" class="primary" id="generateEvaluationAiBtn" onclick="generateAIEvaluationSuggestions()">Generate AI Evaluation Suggestions</button>
-    <div id="evaluationAiStatus" class="small" role="status" aria-live="polite" style="margin-top:8px"></div>
-  </div>
 </div>
 
 <div class="section">
@@ -14302,6 +14313,7 @@ async function uploadAppointmentLessonPDF(appointmentId,file,input){
     const idx=current.findIndex(a=>String(a.id)===String(appointmentId));
     if(idx>=0){current[idx]={...current[idx],id:dbAppointmentId,lessonFile:{...metadata,signedUrl:signed.error?'':(signed.data?.signedUrl||'')}};writeAppointmentCache(current);}
     renderStudentAppointmentDashboard();
+    if(String(currentEvaluationAppointmentId)===String(appointmentId))renderEvaluationAiLessonFile(current[idx>=0?idx:0]||getAppointments().find(a=>String(a.id)===String(appointmentId)));
     if(typeof renderDashboard==='function')renderDashboard();
     alert('PDF lesson uploaded successfully.');
   }catch(error){
@@ -16420,6 +16432,7 @@ function resetEvaluationDraftForStudentSwitch(){
   evaluationAiManualEditStarted=false;
   const aiBtn=document.getElementById('generateEvaluationAiBtn');if(aiBtn)aiBtn.disabled=false;
   setEvaluationAiStatus('');
+  renderEvaluationAiLessonFile(null);
   /* Clear unsaved inputs whenever the teacher switches to another class/student.
      Saved evaluation records are not touched. */
   const ids=[
@@ -16470,6 +16483,7 @@ function loadEvaluationFromAppointment(appointmentId,options={}){
 
   currentEvaluationAppointmentId=item.id;
   setEvaluationFormVisibility(true);
+  renderEvaluationAiLessonFile(item);
 
   const set=(id,value)=>{
     const el=document.getElementById(id);
@@ -16536,6 +16550,28 @@ function setEvaluationAiStatus(message,isError=false){
   const el=document.getElementById('evaluationAiStatus');
   if(el){el.textContent=message;el.style.color=isError?'#b42318':'';}
 }
+function renderEvaluationAiLessonFile(appointment){
+  const status=document.getElementById('evaluationAiLessonFileStatus');
+  const input=document.getElementById('evaluationAiLessonFileInput');
+  if(!status)return;
+  const file=appointment?.lessonFile;
+  if(file?.storage_path){
+    status.textContent=`Using the lesson file already uploaded for this class: ${file.file_name||'Uploaded lesson file'}. No need to upload it again.`;
+  }else{
+    status.textContent='No lesson file is attached to this class yet. Upload a PDF lesson file here or add it in the Appointment table.';
+  }
+  if(input)input.disabled=!currentEvaluationAppointmentId;
+}
+function handleEvaluationAiLessonFileInput(input){
+  const file=input?.files?.[0];
+  if(!file)return;
+  if(!currentEvaluationAppointmentId){
+    setEvaluationAiStatus('Open a completed class first, then upload its lesson file.',true);
+    input.value='';
+    return;
+  }
+  uploadAppointmentLessonPDF(currentEvaluationAppointmentId,file,input);
+}
 function markEvaluationAiManualEdit(){
   evaluationAiManualEditStarted=true;
   const btn=document.getElementById('generateEvaluationAiBtn');
@@ -16549,7 +16585,9 @@ evaluationAiFieldIds.forEach(id=>{
 async function generateAIEvaluationSuggestions(){
   const btn=document.getElementById('generateEvaluationAiBtn');
   if(!currentUser||!supabaseClient){setEvaluationAiStatus('Please sign in again before using PDF AI.',true);return;}
-  if(!currentEvaluationAppointmentId){setEvaluationAiStatus('Open an evaluation from a completed class with an uploaded PDF lesson first.',true);return;}
+  if(!currentEvaluationAppointmentId){setEvaluationAiStatus('Open an evaluation from a completed class first.',true);return;}
+  const selectedAppointment=getAppointments().find(a=>String(a.id)===String(currentEvaluationAppointmentId));
+  if(!selectedAppointment?.lessonFile?.storage_path){setEvaluationAiStatus('No lesson file is linked to this class yet. Upload a PDF here or in the Appointment table first.',true);return;}
   if(evaluationAiManualEditStarted){setEvaluationAiStatus('AI Auto-Fill is locked because manual editing has started. Your changes are protected.',true);return;}
   if(btn){btn.disabled=true;btn.textContent='Reading PDF and preparing suggestions...';}
   setEvaluationAiStatus('AI is reading the uploaded lesson PDF. Please wait.');
@@ -16576,7 +16614,7 @@ async function generateAIEvaluationSuggestions(){
     });
   }catch(error){
     console.error('PDF AI evaluation failed:',error);
-    setEvaluationAiStatus(error?.message||'Unable to generate suggestions. Confirm that the Supabase Edge Function and OpenAI secret are configured.',true);
+    setEvaluationAiStatus(`Could not contact the PDF AI service. Check that the generate-evaluation-from-pdf Edge Function is deployed, its OpenAI API key secret is configured, and the function is returning a valid response. Details: ${error?.message||'No response from the Edge Function.'}`,true);
   }finally{
     if(btn){btn.disabled=evaluationAiManualEditStarted;btn.textContent='Generate AI Evaluation Suggestions';}
   }
@@ -17377,6 +17415,7 @@ function buildEvaluationParentReport(){
   report.style.color='#111827';
 
   report.querySelectorAll('.page-back-wrap, .buttons, #status').forEach(el=>el.remove());
+  report.querySelector('#evaluationAiSection')?.remove();
 
   // Parent-facing image must contain ONLY the final evaluation report.
   // Never include the teacher-only "Students Ready for Evaluation" queue.
