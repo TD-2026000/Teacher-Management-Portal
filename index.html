@@ -6320,7 +6320,7 @@ Please check the currency and recipient details before confirming.</textarea></d
       <div id="evaluationAiLessonFileStatus" class="evaluation-ai-file-status">Open a completed class to use its uploaded lesson file.</div>
       <label class="evaluation-ai-upload-label" for="evaluationAiLessonFileInput">Upload Lesson File for AI Auto-Fill</label>
       <input id="evaluationAiLessonFileInput" type="file" accept="application/pdf,.pdf" style="display:none" onchange="handleEvaluationAiLessonFileInput(this)">
-      <button type="button" class="primary" id="generateEvaluationAiBtn" onclick="generateAIEvaluationSuggestions()">Generate AI Evaluation Suggestions</button>
+      <button type="button" class="primary" id="generateEvaluationAiBtn" onclick="generateAIEvaluationSuggestions()">Extract Lesson Content</button>
       <div id="evaluationAiStatus" class="small" role="status" aria-live="polite" style="margin-top:6px"></div>
     </div>
   </div>
@@ -16590,33 +16590,41 @@ async function generateAIEvaluationSuggestions(){
   if(!selectedAppointment?.lessonFile?.storage_path){setEvaluationAiStatus('No lesson file is linked to this class yet. Upload a PDF here or in the Appointment table first.',true);return;}
   if(evaluationAiManualEditStarted){setEvaluationAiStatus('AI Auto-Fill is locked because manual editing has started. Your changes are protected.',true);return;}
   if(btn){btn.disabled=true;btn.textContent='Reading PDF and preparing suggestions...';}
-  setEvaluationAiStatus('AI is reading the uploaded lesson PDF. Please wait.');
+  setEvaluationAiStatus('Reading the uploaded lesson PDF. Please wait.');
   try{
     const {data,error}=await supabaseClient.functions.invoke('generate-evaluation-from-pdf',{
       body:{appointment_id:String(currentEvaluationAppointmentId)}
     });
     if(error)throw error;
+    if(data?.error)throw new Error(data.error);
     const suggestions=data?.suggestions||data;
     const keys={
-      learnedVocabulary:'learnedVocabulary',learnedSentences:'learnedSentences',
-      learnedQuestionsAnswers:'learnedQuestionsAnswers',practiceVocabulary:'practiceVocabulary',
-      practiceSentences:'practiceSentences',practiceQuestionsAnswers:'practiceQuestionsAnswers'
+      learnedVocabulary:'learnedVocabulary',
+      learnedSentences:'learnedSentences',
+      learnedQuestionsAnswers:'learnedQuestionsAnswers'
     };
+    let filled=0;
     for(const [key,id] of Object.entries(keys)){
       const field=document.getElementById(id);
-      if(field && typeof suggestions?.[key]==='string')field.value=suggestions[key];
+      if(field && typeof suggestions?.[key]==='string'){
+        field.value=suggestions[key];
+        field.dispatchEvent(new Event('input',{bubbles:true}));
+        filled++;
+      }
     }
-    setEvaluationAiStatus('AI suggestions are ready. Review and edit the six fields before clicking Save Evaluation.');
+    if(!filled)throw new Error('The PDF did not return readable lesson suggestions.');
+    /* Needs Improvement fields are intentionally never changed by PDF extraction. */
     evaluationAiManualEditStarted=false;
     evaluationAiFieldIds.forEach(id=>{
       const field=document.getElementById(id);
       if(field)field.addEventListener('input',markEvaluationAiManualEdit,{once:true});
     });
+    setEvaluationAiStatus('PDF text extracted. The three WHAT WE LEARNED TODAY fields are ready. Review them, then copy any needed words manually into NEEDS IMPROVEMENT before saving.');
   }catch(error){
-    console.error('PDF AI evaluation failed:',error);
-    setEvaluationAiStatus(`Could not contact the PDF AI service. Check that the generate-evaluation-from-pdf Edge Function is deployed, its OpenAI API key secret is configured, and the function is returning a valid response. Details: ${error?.message||'No response from the Edge Function.'}`,true);
+    console.error('PDF evaluation extraction failed:',error);
+    setEvaluationAiStatus(`Could not extract the lesson PDF. Check the deployed generate-evaluation-from-pdf function and the uploaded PDF. Details: ${error?.message||'No response from the function.'}`,true);
   }finally{
-    if(btn){btn.disabled=evaluationAiManualEditStarted;btn.textContent='Generate AI Evaluation Suggestions';}
+    if(btn){btn.disabled=evaluationAiManualEditStarted;btn.textContent='Extract Lesson Content';}
   }
 }
 
