@@ -16622,7 +16622,23 @@ async function generateAIEvaluationSuggestions(){
     setEvaluationAiStatus('PDF text extracted. The three WHAT WE LEARNED TODAY fields are ready. Review them, then copy any needed words manually into NEEDS IMPROVEMENT before saving.');
   }catch(error){
     console.error('PDF evaluation extraction failed:',error);
-    setEvaluationAiStatus(`Could not extract the lesson PDF. Check the deployed generate-evaluation-from-pdf function and the uploaded PDF. Details: ${error?.message||'No response from the function.'}`,true);
+    let diagnosticMessage=error?.message||'No response from the function.';
+    let diagnosticStatus=error?.context?.status||error?.status||'';
+    try{
+      const response=error?.context;
+      if(response && typeof response.clone==='function'){
+        const responseText=await response.clone().text();
+        if(responseText){
+          let responseDetail=responseText;
+          try{responseDetail=JSON.stringify(JSON.parse(responseText));}catch(_parseError){}
+          diagnosticMessage+=` | Function response: ${responseDetail}`;
+        }
+      }
+    }catch(readError){
+      console.warn('Could not read function error response:',readError);
+    }
+    const statusText=diagnosticStatus?`HTTP ${diagnosticStatus} — `:'';
+    setEvaluationAiStatus(`PDF Auto-Fill failed. ${statusText}${diagnosticMessage}`,true);
   }finally{
     if(btn){btn.disabled=evaluationAiManualEditStarted;btn.textContent='Extract Lesson Content';}
   }
